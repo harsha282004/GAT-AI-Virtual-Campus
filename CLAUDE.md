@@ -63,8 +63,9 @@ cd frontend && npm install && npm run dev
 # backend (Phase 2+)
 uvicorn app.main:app --reload --app-dir backend
 
-# database migrations
-cd backend && alembic revision --autogenerate -m "message" && alembic upgrade head
+# database migrations (run from repo root — alembic.ini lives there, not backend/,
+# so script_location = database/migrations stays a plain child path)
+alembic revision --autogenerate -m "message" && alembic upgrade head
 
 # local LLM
 ollama pull llama3

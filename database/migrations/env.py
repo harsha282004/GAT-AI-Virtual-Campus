@@ -8,7 +8,7 @@ from sqlalchemy import engine_from_config, pool
 # Make the backend package importable from this migrations directory.
 sys.path.append(os.path.join(os.path.dirname(__file__), "../../backend"))
 
-from app.core.config import settings  # noqa: E402
+from app.core.settings import settings  # noqa: E402
 from app.db.base import Base  # noqa: E402
 
 config = context.config
@@ -17,7 +17,8 @@ config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Empty until models are added under backend/app/models/.
+# app.db.base imports app.models for its side effect of registering every
+# model on Base.metadata — see backend/app/db/base.py.
 target_metadata = Base.metadata
 
 
