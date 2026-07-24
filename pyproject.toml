@@ -1,0 +1,26 @@
+[project]
+name = "ai-agent-indoor-virtual-campus-tour"
+version = "0.1.0"
+description = "AI Agent-Based Indoor Virtual Campus Tour and Query Assistant — backend"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["backend/app"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "backend"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+testpaths = ["tests/backend"]

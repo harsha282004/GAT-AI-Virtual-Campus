@@ -1,0 +1,4 @@
+-- Placeholder for PostgreSQL initialization scripts (extensions, roles, schemas).
+-- Mounted into the postgres container's /docker-entrypoint-initdb.d on first run.
+-- Intentionally empty at skeleton stage — no tables are created here; see
+-- backend/app/models/ (SQLAlchemy models) and database/migrations/ (Alembic) instead.

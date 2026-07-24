@@ -1,0 +1,40 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# --- Node / Next.js ---
+node_modules/
+.next/
+out/
+next-env.d.ts
+npm-debug.log*
+.eslintcache
+
+# --- Env files ---
+.env
+.env.local
+.env.*.local
+
+# --- Database ---
+*.sqlite3
+postgres_data/
+
+# --- AI / Vector store / model artifacts ---
+data/chroma_db/
+*.pt
+*.pth
+
+# --- Docker / logs ---
+*.log
+
+# --- OS / Editor ---
+.DS_Store
+Thumbs.db
+.idea/
+*.bak
