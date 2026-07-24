@@ -15,7 +15,7 @@ export function CurrentLocationSelect() {
 
   return (
     <div>
-      <label className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gat-navy/60 dark:text-white/60">
+      <label className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
         <MapPin className="h-3.5 w-3.5" />
         Current Location
       </label>
@@ -29,7 +29,7 @@ export function CurrentLocationSelect() {
             const node = sortedNodes.find((n) => n.id === id);
             if (node) setCurrentLocation(node.id, node.name);
           }}
-          className="w-full rounded-xl border border-gat-navy/15 bg-white px-4 py-2.5 text-sm text-gat-navy focus:border-gat-maroon focus:outline-none focus:ring-2 focus:ring-gat-maroon/20 dark:border-white/15 dark:bg-gat-navy-light dark:text-white"
+          className="w-full rounded-xl border border-hairline bg-white px-4 py-2.5 text-sm text-ink focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
         >
           <option value="" disabled>
             Select your starting point…

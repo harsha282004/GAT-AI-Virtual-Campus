@@ -18,7 +18,7 @@ export default function NavigationPage() {
       />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        <div className="space-y-6 rounded-2xl border border-gat-navy/10 bg-white p-6 dark:border-white/10 dark:bg-gat-navy-light lg:col-span-2">
+        <div className="space-y-6 rounded-3xl border border-hairline bg-white p-7 shadow-soft lg:col-span-2">
           <DestinationSearch />
           <SelectedDestination />
           <CurrentLocationSelect />

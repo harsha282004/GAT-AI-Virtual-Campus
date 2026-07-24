@@ -79,19 +79,17 @@ export function DestinationSearch() {
 
   return (
     <div>
-      <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gat-navy/60 dark:text-white/60">
+      <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-muted">
         Destination
       </label>
 
-      <div className="mb-3 inline-flex rounded-xl bg-gat-navy/5 p-1 dark:bg-white/5">
+      <div className="mb-3 inline-flex rounded-xl bg-brand/5 p-1">
         <button
           type="button"
           onClick={() => handleTabChange("room")}
           className={cn(
             "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
-            tab === "room"
-              ? "bg-white text-gat-navy shadow-sm dark:bg-gat-navy-light dark:text-white"
-              : "text-gat-navy/60 dark:text-white/60",
+            tab === "room" ? "bg-white text-ink shadow-sm" : "text-muted",
           )}
         >
           <DoorOpen className="h-3.5 w-3.5" /> Room
@@ -101,9 +99,7 @@ export function DestinationSearch() {
           onClick={() => handleTabChange("building")}
           className={cn(
             "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
-            tab === "building"
-              ? "bg-white text-gat-navy shadow-sm dark:bg-gat-navy-light dark:text-white"
-              : "text-gat-navy/60 dark:text-white/60",
+            tab === "building" ? "bg-white text-ink shadow-sm" : "text-muted",
           )}
         >
           <Building2 className="h-3.5 w-3.5" /> Building
@@ -115,18 +111,18 @@ export function DestinationSearch() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={tab === "room" ? "e.g. Server Room, Reading Hall…" : "e.g. Library, CSE Block…"}
-          className="flex-1 rounded-xl border border-gat-navy/15 bg-white px-4 py-2.5 text-sm text-gat-navy focus:border-gat-maroon focus:outline-none focus:ring-2 focus:ring-gat-maroon/20 dark:border-white/15 dark:bg-gat-navy-light dark:text-white"
+          className="flex-1 rounded-xl border border-hairline bg-white px-4 py-2.5 text-sm text-ink focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
         <button
           type="submit"
           aria-label="Search"
-          className="flex items-center justify-center rounded-xl bg-gat-navy px-4 text-white transition-colors hover:bg-gat-navy-light dark:bg-white dark:text-gat-navy"
+          className="flex items-center justify-center rounded-xl bg-brand px-4 text-white transition-colors hover:bg-brand-dark"
         >
           <Search className="h-4 w-4" />
         </button>
       </form>
 
-      <p className="mt-2 text-[11px] text-gat-navy/40 dark:text-white/40">
+      <p className="mt-2 text-[11px] text-muted">
         {isBrowsing ? "Browsing all — search to narrow down." : `Results for "${query}"`}
       </p>
 
@@ -138,14 +134,14 @@ export function DestinationSearch() {
         {activeMutation.isPending && <Spinner size="sm" label="Searching…" />}
 
         {activeMutation.isError && (
-          <p className="text-xs text-gat-maroon">Search failed. Please try again.</p>
+          <p className="text-xs text-rose-500">Search failed. Please try again.</p>
         )}
 
         {tab === "room" &&
           !activeMutation.isPending &&
           !activeMutation.isError &&
           (roomResults.length === 0 ? (
-            <p className="text-xs text-gat-navy/50 dark:text-white/50">
+            <p className="text-xs text-muted">
               {roomSearch.isSuccess ? `No rooms matched "${query}".` : "No rooms available yet."}
             </p>
           ) : (
@@ -159,12 +155,12 @@ export function DestinationSearch() {
                 className={cn(
                   "flex w-full flex-col items-start rounded-xl border px-4 py-2.5 text-left text-sm transition-colors",
                   destinationType === "room" && destinationId === room.id
-                    ? "border-gat-maroon bg-gat-maroon/5"
-                    : "border-gat-navy/10 hover:border-gat-maroon/30 dark:border-white/10",
+                    ? "border-brand bg-brand/5"
+                    : "border-hairline hover:border-brand/30",
                 )}
               >
-                <span className="font-medium text-gat-navy dark:text-white">{room.name}</span>
-                <span className="text-xs text-gat-navy/50 dark:text-white/50">
+                <span className="font-medium text-ink">{room.name}</span>
+                <span className="text-xs text-muted">
                   {room.building_name} · {room.floor_name}
                   {room.node_id === null && " · No route point set"}
                 </span>
@@ -176,7 +172,7 @@ export function DestinationSearch() {
           !activeMutation.isPending &&
           !activeMutation.isError &&
           (buildingResults.length === 0 ? (
-            <p className="text-xs text-gat-navy/50 dark:text-white/50">
+            <p className="text-xs text-muted">
               {buildingSearch.isSuccess
                 ? `No buildings matched "${query}".`
                 : "No buildings available yet."}
@@ -190,14 +186,12 @@ export function DestinationSearch() {
                 className={cn(
                   "flex w-full flex-col items-start rounded-xl border px-4 py-2.5 text-left text-sm transition-colors",
                   destinationType === "building" && destinationId === building.id
-                    ? "border-gat-maroon bg-gat-maroon/5"
-                    : "border-gat-navy/10 hover:border-gat-maroon/30 dark:border-white/10",
+                    ? "border-brand bg-brand/5"
+                    : "border-hairline hover:border-brand/30",
                 )}
               >
-                <span className="font-medium text-gat-navy dark:text-white">{building.name}</span>
-                {building.code && (
-                  <span className="text-xs text-gat-navy/50 dark:text-white/50">{building.code}</span>
-                )}
+                <span className="font-medium text-ink">{building.name}</span>
+                {building.code && <span className="text-xs text-muted">{building.code}</span>}
               </button>
             ))
           ))}

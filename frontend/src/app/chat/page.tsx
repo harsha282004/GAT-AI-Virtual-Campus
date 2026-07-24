@@ -14,7 +14,7 @@ export default function ChatPage() {
         className="mx-0"
       />
 
-      <div className="mb-6 flex items-center gap-2.5 rounded-2xl border border-gat-gold/30 bg-gat-gold/10 px-4 py-3 text-sm text-gat-gold-dark">
+      <div className="mb-6 flex items-center gap-2.5 rounded-2xl border border-accent-gold/30 bg-accent-gold/10 px-4 py-3 text-sm text-accent-gold">
         <Info className="h-4 w-4 shrink-0" />
         <p>Backend integration coming in AI Phase.</p>
       </div>

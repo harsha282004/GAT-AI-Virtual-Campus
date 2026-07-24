@@ -1,0 +1,330 @@
+[
+  {
+    "id": "main-gate",
+    "name": "Main Gate",
+    "building": "Main Gate",
+    "floor": "Ground",
+    "room": null,
+    "image": "/panoramas/MainGate/main-gate.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "forward", "label": "Central Pathway", "yaw": 0, "pitch": 0, "targetId": "central-pathway" }
+    ]
+  },
+  {
+    "id": "central-pathway",
+    "name": "Central Pathway",
+    "building": "Main Gate",
+    "floor": "Ground",
+    "room": null,
+    "image": "/panoramas/MainGate/central-pathway.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "back", "label": "Main Gate", "yaw": 180, "pitch": 0, "targetId": "main-gate" },
+      { "type": "forward", "label": "Admin Block", "yaw": 0, "pitch": 0, "targetId": "admin-entrance" },
+      { "type": "left", "label": "Library", "yaw": -60, "pitch": 0, "targetId": "library-entrance" },
+      { "type": "right", "label": "Block A", "yaw": 60, "pitch": 0, "targetId": "blockA-entrance" },
+      { "type": "forward", "label": "Block B", "yaw": 30, "pitch": 0, "targetId": "blockB-entrance" },
+      { "type": "left", "label": "Cafeteria", "yaw": -120, "pitch": 0, "targetId": "cafeteria" },
+      { "type": "right", "label": "Labs", "yaw": 120, "pitch": 0, "targetId": "labs-entrance" },
+      { "type": "forward", "label": "Classrooms", "yaw": -30, "pitch": 0, "targetId": "classrooms-entrance" }
+    ]
+  },
+  {
+    "id": "admin-entrance",
+    "name": "Admin Block Entrance",
+    "building": "Admin Block",
+    "floor": "Ground Floor",
+    "room": "Entrance",
+    "image": "/panoramas/Admin/admin-entrance.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "back", "label": "Central Pathway", "yaw": 180, "pitch": 0, "targetId": "central-pathway" },
+      { "type": "enter_room", "label": "Reception", "yaw": 0, "pitch": 0, "targetId": "reception" }
+    ]
+  },
+  {
+    "id": "reception",
+    "name": "Reception",
+    "building": "Admin Block",
+    "floor": "Ground Floor",
+    "room": "Reception",
+    "image": "/panoramas/Admin/reception.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "exit_room", "label": "Admin Block Entrance", "yaw": 180, "pitch": 0, "targetId": "admin-entrance" },
+      { "type": "enter_room", "label": "Principal Office", "yaw": 0, "pitch": 0, "targetId": "principal-office" }
+    ]
+  },
+  {
+    "id": "principal-office",
+    "name": "Principal Office",
+    "building": "Admin Block",
+    "floor": "Ground Floor",
+    "room": "Principal Office",
+    "image": "/panoramas/Admin/principal-office.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "exit_room", "label": "Reception", "yaw": 180, "pitch": 0, "targetId": "reception" }
+    ]
+  },
+  {
+    "id": "library-entrance",
+    "name": "Library Entrance",
+    "building": "Library",
+    "floor": "Ground Floor",
+    "room": "Entrance",
+    "image": "/panoramas/Library/library-entrance.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "back", "label": "Central Pathway", "yaw": 180, "pitch": 0, "targetId": "central-pathway" },
+      { "type": "forward", "label": "Reading Hall", "yaw": 0, "pitch": 0, "targetId": "reading-hall" }
+    ]
+  },
+  {
+    "id": "reading-hall",
+    "name": "Reading Hall",
+    "building": "Library",
+    "floor": "Ground Floor",
+    "room": "Reading Hall",
+    "image": "/panoramas/Library/reading-hall.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "back", "label": "Library Entrance", "yaw": 180, "pitch": 0, "targetId": "library-entrance" },
+      { "type": "enter_room", "label": "Reference Section", "yaw": 0, "pitch": 0, "targetId": "reference-section" }
+    ]
+  },
+  {
+    "id": "reference-section",
+    "name": "Reference Section",
+    "building": "Library",
+    "floor": "Ground Floor",
+    "room": "Reference Section",
+    "image": "/panoramas/Library/reference-section.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "exit_room", "label": "Reading Hall", "yaw": 180, "pitch": 0, "targetId": "reading-hall" }
+    ]
+  },
+  {
+    "id": "blockA-entrance",
+    "name": "Block A Entrance",
+    "building": "Block A",
+    "floor": "Ground Floor",
+    "room": "Entrance",
+    "image": "/panoramas/BlockA/blockA-entrance.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "back", "label": "Central Pathway", "yaw": 180, "pitch": 0, "targetId": "central-pathway" },
+      { "type": "forward", "label": "Ground Corridor", "yaw": 0, "pitch": 0, "targetId": "blockA-corridor-ground" }
+    ]
+  },
+  {
+    "id": "blockA-corridor-ground",
+    "name": "Block A Ground Corridor",
+    "building": "Block A",
+    "floor": "Ground Floor",
+    "room": "Corridor",
+    "image": "/panoramas/BlockA/blockA-corridor-ground.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "back", "label": "Block A Entrance", "yaw": 180, "pitch": 0, "targetId": "blockA-entrance" },
+      { "type": "enter_room", "label": "Classroom 101", "yaw": -45, "pitch": 0, "targetId": "classroom-101" },
+      { "type": "upstairs", "label": "First Floor", "yaw": 90, "pitch": 0, "targetId": "blockA-corridor-first" }
+    ]
+  },
+  {
+    "id": "classroom-101",
+    "name": "Classroom 101",
+    "building": "Block A",
+    "floor": "Ground Floor",
+    "room": "Classroom 101",
+    "image": "/panoramas/BlockA/classroom-101.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "exit_room", "label": "Ground Corridor", "yaw": 180, "pitch": 0, "targetId": "blockA-corridor-ground" }
+    ]
+  },
+  {
+    "id": "blockA-corridor-first",
+    "name": "Block A First Floor Corridor",
+    "building": "Block A",
+    "floor": "First Floor",
+    "room": "Corridor",
+    "image": "/panoramas/BlockA/blockA-corridor-first.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "downstairs", "label": "Ground Corridor", "yaw": 180, "pitch": 0, "targetId": "blockA-corridor-ground" },
+      { "type": "enter_room", "label": "Classroom 201", "yaw": 0, "pitch": 0, "targetId": "classroom-201" }
+    ]
+  },
+  {
+    "id": "classroom-201",
+    "name": "Classroom 201",
+    "building": "Block A",
+    "floor": "First Floor",
+    "room": "Classroom 201",
+    "image": "/panoramas/BlockA/classroom-201.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "exit_room", "label": "First Floor Corridor", "yaw": 180, "pitch": 0, "targetId": "blockA-corridor-first" }
+    ]
+  },
+  {
+    "id": "blockB-entrance",
+    "name": "Block B Entrance",
+    "building": "Block B",
+    "floor": "Ground Floor",
+    "room": "Entrance",
+    "image": "/panoramas/BlockB/blockB-entrance.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "back", "label": "Central Pathway", "yaw": 180, "pitch": 0, "targetId": "central-pathway" },
+      { "type": "enter_room", "label": "Seminar Hall", "yaw": 0, "pitch": 0, "targetId": "seminar-hall" }
+    ]
+  },
+  {
+    "id": "seminar-hall",
+    "name": "Seminar Hall",
+    "building": "Block B",
+    "floor": "Ground Floor",
+    "room": "Seminar Hall",
+    "image": "/panoramas/BlockB/seminar-hall.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "exit_room", "label": "Block B Entrance", "yaw": 180, "pitch": 0, "targetId": "blockB-entrance" }
+    ]
+  },
+  {
+    "id": "cafeteria",
+    "name": "Cafeteria",
+    "building": "Cafeteria",
+    "floor": "Ground Floor",
+    "room": "Dining Area",
+    "image": "/panoramas/Cafeteria/cafeteria.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "back", "label": "Central Pathway", "yaw": 180, "pitch": 0, "targetId": "central-pathway" }
+    ]
+  },
+  {
+    "id": "labs-entrance",
+    "name": "Labs Entrance",
+    "building": "Labs",
+    "floor": "Ground Floor",
+    "room": "Entrance",
+    "image": "/panoramas/Labs/labs-entrance.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "back", "label": "Central Pathway", "yaw": 180, "pitch": 0, "targetId": "central-pathway" },
+      { "type": "enter_room", "label": "Computer Lab", "yaw": 0, "pitch": 0, "targetId": "computer-lab" }
+    ]
+  },
+  {
+    "id": "computer-lab",
+    "name": "Computer Lab",
+    "building": "Labs",
+    "floor": "Ground Floor",
+    "room": "Computer Lab",
+    "image": "/panoramas/Labs/computer-lab.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "exit_room", "label": "Labs Entrance", "yaw": 180, "pitch": 0, "targetId": "labs-entrance" },
+      { "type": "forward", "label": "Electronics Lab", "yaw": 0, "pitch": 0, "targetId": "electronics-lab" }
+    ]
+  },
+  {
+    "id": "electronics-lab",
+    "name": "Electronics Lab",
+    "building": "Labs",
+    "floor": "Ground Floor",
+    "room": "Electronics Lab",
+    "image": "/panoramas/Labs/electronics-lab.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "back", "label": "Computer Lab", "yaw": 180, "pitch": 0, "targetId": "computer-lab" }
+    ]
+  },
+  {
+    "id": "classrooms-entrance",
+    "name": "Classrooms Entrance",
+    "building": "Classrooms",
+    "floor": "Ground Floor",
+    "room": "Entrance",
+    "image": "/panoramas/Classrooms/classrooms-entrance.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "back", "label": "Central Pathway", "yaw": 180, "pitch": 0, "targetId": "central-pathway" },
+      { "type": "enter_room", "label": "Room 101", "yaw": 0, "pitch": 0, "targetId": "room-101" }
+    ]
+  },
+  {
+    "id": "room-101",
+    "name": "Room 101",
+    "building": "Classrooms",
+    "floor": "Ground Floor",
+    "room": "Room 101",
+    "image": "/panoramas/Classrooms/room-101.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "exit_room", "label": "Classrooms Entrance", "yaw": 180, "pitch": 0, "targetId": "classrooms-entrance" },
+      { "type": "forward", "label": "Room 102", "yaw": 0, "pitch": 0, "targetId": "room-102" }
+    ]
+  },
+  {
+    "id": "room-102",
+    "name": "Room 102",
+    "building": "Classrooms",
+    "floor": "Ground Floor",
+    "room": "Room 102",
+    "image": "/panoramas/Classrooms/room-102.jpg",
+    "yaw": 0,
+    "pitch": 0,
+    "hfov": 110,
+    "hotspots": [
+      { "type": "back", "label": "Room 101", "yaw": 180, "pitch": 0, "targetId": "room-101" }
+    ]
+  }
+]

@@ -19,9 +19,7 @@ export function ChatMessageBubble({ message }: { message: ChatMessage }) {
       <span
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-          isUser
-            ? "bg-gat-navy text-white dark:bg-white dark:text-gat-navy"
-            : "bg-gat-maroon/10 text-gat-maroon",
+          isUser ? "bg-brand text-white" : "bg-accent-purple/12 text-accent-purple",
         )}
       >
         {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
@@ -30,9 +28,7 @@ export function ChatMessageBubble({ message }: { message: ChatMessage }) {
       <div
         className={cn(
           "max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
-          isUser
-            ? "rounded-br-sm bg-gat-navy text-white dark:bg-white dark:text-gat-navy"
-            : "rounded-bl-sm bg-gat-navy/5 text-gat-navy dark:bg-white/10 dark:text-white",
+          isUser ? "rounded-br-sm bg-brand text-white" : "rounded-bl-sm bg-brand/5 text-ink",
         )}
       >
         <p>{message.content}</p>
@@ -42,7 +38,7 @@ export function ChatMessageBubble({ message }: { message: ChatMessage }) {
             {message.sources.map((source) => (
               <span
                 key={source.label}
-                className="rounded-full bg-gat-gold/15 px-2.5 py-0.5 text-[11px] font-medium text-gat-gold-dark"
+                className="rounded-full bg-accent-gold/15 px-2.5 py-0.5 text-[11px] font-medium text-accent-gold"
               >
                 {source.label}
               </span>

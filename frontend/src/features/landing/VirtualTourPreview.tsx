@@ -10,7 +10,7 @@ const LOCATIONS = ["Main Gate", "Admin Block", "Library", "CSE Block", "Auditori
 
 export function VirtualTourPreview() {
   return (
-    <section className="section-padding bg-white dark:bg-gat-navy">
+    <section className="section-padding">
       <div className="container-page">
         <SectionTitle
           eyebrow="360° Experience"
@@ -28,18 +28,18 @@ export function VirtualTourPreview() {
             >
               <Link
                 href="/tour"
-                className="group relative flex aspect-square flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gat-hero text-white shadow-sm transition-transform duration-300 hover:-translate-y-1"
+                className="group relative flex aspect-square flex-col items-center justify-center gap-2 overflow-hidden rounded-3xl bg-brand-gradient text-white shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-glow"
               >
-                <Camera className="h-6 w-6 text-gat-gold transition-transform duration-300 group-hover:scale-110" />
+                <Camera className="h-6 w-6 text-white transition-transform duration-300 group-hover:scale-110" />
                 <span className="px-2 text-center text-xs font-medium">{location}</span>
-                <span className="absolute inset-x-0 bottom-0 bg-black/40 py-1 text-center text-[10px] uppercase tracking-wide text-white/70">
+                <span className="absolute inset-x-0 bottom-0 bg-black/25 py-1 text-center text-[10px] uppercase tracking-wide text-white/80">
                   Coming Soon
                 </span>
               </Link>
             </motion.div>
           ))}
         </div>
-        <div className="mt-10 flex justify-center">
+        <div className="mt-12 flex justify-center">
           <Button href="/tour" variant="outline" icon={<DoorOpen className="h-4 w-4" />}>
             Enter the Virtual Tour
           </Button>

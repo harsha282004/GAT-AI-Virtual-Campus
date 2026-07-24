@@ -7,36 +7,51 @@ html {
 }
 
 body {
-  @apply bg-white text-gat-navy antialiased;
+  @apply bg-canvas-gradient bg-fixed text-ink antialiased;
 }
 
 ::selection {
-  @apply bg-gat-gold/30 text-gat-navy;
+  @apply bg-brand/20 text-ink;
 }
 
 @layer utilities {
+  /* Floating glass surfaces (navbar, panels) — light theme only, per design spec */
   .glass {
-    @apply bg-white/10 backdrop-blur-md border border-white/10;
-  }
-
-  .glass-light {
-    @apply bg-white/70 backdrop-blur-md border border-white/40;
+    @apply border border-white/60 bg-white/80 backdrop-blur-xl;
   }
 
   .section-padding {
-    @apply px-6 py-20 sm:px-10 lg:px-16;
+    @apply px-6 py-24 sm:px-10 lg:px-16;
   }
 
   .container-page {
     @apply mx-auto w-full max-w-7xl;
   }
 
-  .text-gradient-gold {
-    @apply bg-gradient-to-r from-gat-gold-light to-gat-gold bg-clip-text text-transparent;
+  .text-gradient-brand {
+    @apply bg-gradient-to-r from-brand to-brand-dark bg-clip-text text-transparent;
+  }
+
+  .gradient-underline {
+    position: relative;
+  }
+  .gradient-underline::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -0.6rem;
+    height: 4px;
+    width: 64px;
+    border-radius: 9999px;
+    background: linear-gradient(90deg, #2344d4 0%, #7c6feb 100%);
+  }
+  .gradient-underline--center::after {
+    left: 50%;
+    transform: translateX(-50%);
   }
 }
 
-/* Thin, GAT-toned scrollbar (WebKit) — purely cosmetic, degrades gracefully elsewhere */
+/* Thin, brand-toned scrollbar (WebKit) — purely cosmetic, degrades gracefully elsewhere */
 ::-webkit-scrollbar {
   width: 10px;
 }
@@ -44,6 +59,9 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: theme("colors.gat.navy.light");
+  background-color: theme("colors.hairline");
   border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: theme("colors.brand.DEFAULT" / 40%);
 }

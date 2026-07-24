@@ -10,35 +10,35 @@ const FEATURES = [
     title: "AI Chat Assistant",
     description:
       "Ask questions about admissions, academics, or facilities and get answers grounded in GAT's own knowledge base.",
-    accent: "maroon" as const,
+    accent: "purple" as const,
   },
   {
     icon: Navigation,
     title: "Indoor Navigation",
     description:
       "Find the shortest path between any building, floor, or room — with turn-by-turn walking directions.",
-    accent: "navy" as const,
+    accent: "blue" as const,
   },
   {
     icon: Camera,
     title: "360° Virtual Tour",
     description:
       "Walk through campus panorama by panorama, Street-View style, starting from the Main Gate.",
-    accent: "gold" as const,
+    accent: "orange" as const,
   },
   {
     icon: MapIcon,
     title: "3D Campus Map",
     description:
       "See the whole ~10-acre campus from above, with buildings and pathways rendered in interactive 3D.",
-    accent: "navy" as const,
+    accent: "green" as const,
   },
   {
     icon: Mic,
     title: "Voice Navigation",
     description:
       '"Take me to the library" — speak your destination and let the assistant guide the way.',
-    accent: "maroon" as const,
+    accent: "pink" as const,
   },
   {
     icon: Languages,
@@ -50,7 +50,7 @@ const FEATURES = [
 
 export function Features() {
   return (
-    <section className="section-padding bg-white dark:bg-gat-navy">
+    <section className="section-padding">
       <div className="container-page">
         <SectionTitle
           eyebrow="Platform"

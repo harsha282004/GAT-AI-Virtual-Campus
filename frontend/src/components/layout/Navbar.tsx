@@ -1,7 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Landmark, Menu, Moon, Sun, X } from "lucide-react";
+import { Menu, Moon, Sun, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -28,33 +29,38 @@ export function Navbar() {
   const isActive = (href: string) => href !== "/" && href.startsWith("/") && pathname === href;
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50">
-      <nav className="glass-light mx-auto mt-3 flex w-[95%] max-w-7xl items-center justify-between rounded-2xl px-4 py-3 shadow-sm dark:bg-gat-navy/60 dark:border-white/10 sm:px-6">
-        <Link href="/" className="flex items-center gap-2.5" onClick={() => setIsOpen(false)}>
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gat-navy text-gat-gold">
-            <Landmark className="h-5 w-5" strokeWidth={1.75} />
-          </span>
-          <span className="font-display text-sm font-bold leading-tight text-gat-navy dark:text-white sm:text-base">
-            Global Academy
-            <span className="block text-[11px] font-medium tracking-wide text-gat-maroon dark:text-gat-gold-light">
-              of Technology
-            </span>
-          </span>
+    <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4">
+      <nav className="glass flex w-full max-w-6xl items-center justify-between rounded-full py-2.5 pl-3 pr-4 shadow-soft sm:pl-4 sm:pr-6">
+        {/* Logo slot — drop the official GAT crest at public/branding/gat-logo.svg to replace this placeholder */}
+        <Link href="/" className="flex shrink-0 items-center py-1" onClick={() => setIsOpen(false)}>
+          <Image
+            src="/branding/gat-logo.svg"
+            alt="Global Academy of Technology"
+            width={65}
+            height={65}
+            priority
+            style={{ height: "65px", width: "auto" }}
+          />
         </Link>
 
-        <div className="hidden items-center gap-1 lg:flex">
+        <div className="hidden items-center gap-1 xl:flex">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "rounded-full px-3.5 py-2 text-sm font-medium transition-colors",
-                isActive(link.href)
-                  ? "bg-gat-navy text-white dark:bg-white dark:text-gat-navy"
-                  : "text-gat-navy/70 hover:bg-gat-navy/5 hover:text-gat-navy dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white",
+                "relative px-4 py-2 text-sm font-medium text-ink/70 transition-colors hover:text-brand",
+                isActive(link.href) && "text-brand",
               )}
             >
               {link.label}
+              {isActive(link.href) && (
+                <motion.span
+                  layoutId="nav-underline"
+                  className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-brand"
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                />
+              )}
             </Link>
           ))}
         </div>
@@ -64,7 +70,7 @@ export function Navbar() {
             type="button"
             aria-label="Toggle theme"
             onClick={toggleTheme}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-gat-navy/70 transition-colors hover:bg-gat-navy/5 dark:text-white/70 dark:hover:bg-white/10"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-ink/60 transition-colors hover:bg-brand/8 hover:text-brand"
           >
             {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
           </button>
@@ -73,7 +79,7 @@ export function Navbar() {
             type="button"
             aria-label="Toggle navigation menu"
             onClick={() => setIsOpen((prev) => !prev)}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-gat-navy/70 transition-colors hover:bg-gat-navy/5 dark:text-white/70 dark:hover:bg-white/10 lg:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-ink/60 transition-colors hover:bg-brand/8 hover:text-brand xl:hidden"
           >
             {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -87,7 +93,7 @@ export function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.2 }}
-            className="glass-light mx-auto mt-2 w-[95%] max-w-7xl rounded-2xl p-3 shadow-sm dark:bg-gat-navy/80 lg:hidden"
+            className="glass absolute inset-x-4 top-[4.75rem] rounded-3xl p-3 shadow-soft xl:hidden"
           >
             <div className="flex flex-col gap-1">
               {NAV_LINKS.map((link) => (
@@ -96,10 +102,10 @@ export function Navbar() {
                   href={link.href}
                   onClick={() => setIsOpen(false)}
                   className={cn(
-                    "rounded-xl px-4 py-2.5 text-sm font-medium transition-colors",
+                    "rounded-xl px-4 py-3 text-sm font-medium transition-colors",
                     isActive(link.href)
-                      ? "bg-gat-navy text-white dark:bg-white dark:text-gat-navy"
-                      : "text-gat-navy/70 hover:bg-gat-navy/5 dark:text-white/70 dark:hover:bg-white/10",
+                      ? "bg-brand/10 text-brand"
+                      : "text-ink/70 hover:bg-brand/5 hover:text-brand",
                   )}
                 >
                   {link.label}

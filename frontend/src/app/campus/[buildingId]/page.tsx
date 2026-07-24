@@ -43,7 +43,7 @@ export default function BuildingDetailsPage() {
     <PageContainer narrow>
       <Link
         href="/campus"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-gat-navy/60 transition-colors hover:text-gat-maroon dark:text-white/60"
+        className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-brand"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Campus Overview

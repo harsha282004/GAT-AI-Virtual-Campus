@@ -14,7 +14,7 @@ export function Map3DPlaceholder() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="relative flex h-[calc(100vh-7rem)] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-3xl bg-gat-hero"
+      className="relative flex h-[calc(100vh-7rem)] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-3xl bg-brand-gradient shadow-glow"
     >
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.08]"
@@ -35,7 +35,7 @@ export function Map3DPlaceholder() {
 
       <div className="relative flex flex-col items-center gap-4 px-6 text-center">
         <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white/10">
-          <Move3d className="h-8 w-8 text-gat-gold" strokeWidth={1.5} />
+          <Move3d className="h-8 w-8 text-white" strokeWidth={1.5} />
         </span>
         <div>
           <p className="font-display text-xl font-semibold text-white">3D Campus Map</p>

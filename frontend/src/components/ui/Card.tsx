@@ -11,9 +11,9 @@ export function Card({ children, className, hoverLift = false, ...rest }: CardPr
   return (
     <div
       className={cn(
-        "rounded-2xl border border-gat-navy/10 bg-white p-6 shadow-sm",
-        "dark:border-white/10 dark:bg-gat-navy-light",
-        hoverLift && "transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg",
+        "rounded-3xl border border-hairline bg-white p-7 shadow-soft",
+        hoverLift &&
+          "transition-all duration-300 hover:-translate-y-1 hover:scale-[1.01] hover:shadow-glow",
         className,
       )}
       {...rest}

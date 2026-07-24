@@ -23,16 +23,16 @@ export function RouteResultPanel() {
   const ready = fromNodeId !== null && destinationType !== null && destinationId !== null;
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-gat-navy/10 bg-white p-6 dark:border-white/10 dark:bg-gat-navy-light">
-      <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-gat-navy dark:text-white">
-        <Route className="h-4 w-4 text-gat-maroon" />
+    <div className="flex h-full flex-col rounded-3xl border border-hairline bg-white p-7 shadow-soft">
+      <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-ink">
+        <Route className="h-4 w-4 text-brand" />
         Route
       </div>
 
       {!ready && (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
-          <MapPin className="h-8 w-8 text-gat-navy/20 dark:text-white/20" />
-          <p className="max-w-xs text-sm text-gat-navy/50 dark:text-white/50">
+          <MapPin className="h-8 w-8 text-brand/25" />
+          <p className="max-w-xs text-sm text-muted">
             Choose a current location and a destination to compute a route.
           </p>
         </div>
@@ -54,8 +54,8 @@ export function RouteResultPanel() {
 
       {ready && !isLoading && !isError && !route && (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
-          <MapPin className="h-8 w-8 text-gat-navy/20 dark:text-white/20" />
-          <p className="max-w-xs text-sm text-gat-navy/50 dark:text-white/50">
+          <MapPin className="h-8 w-8 text-brand/25" />
+          <p className="max-w-xs text-sm text-muted">
             &ldquo;{destinationLabel}&rdquo; doesn&apos;t have a navigable point set yet.
           </p>
         </div>
@@ -69,12 +69,12 @@ export function RouteResultPanel() {
           className="space-y-5"
         >
           <div className="flex flex-wrap gap-3 text-xs">
-            <span className="flex items-center gap-1.5 rounded-full bg-gat-navy/5 px-3 py-1.5 font-medium text-gat-navy dark:bg-white/10 dark:text-white">
-              <Milestone className="h-3.5 w-3.5" />
+            <span className="flex items-center gap-1.5 rounded-full bg-brand/8 px-3 py-1.5 font-medium text-ink">
+              <Milestone className="h-3.5 w-3.5 text-brand" />
               {formatDistance(route.total_distance)}
             </span>
-            <span className="flex items-center gap-1.5 rounded-full bg-gat-navy/5 px-3 py-1.5 font-medium text-gat-navy dark:bg-white/10 dark:text-white">
-              <Footprints className="h-3.5 w-3.5" />
+            <span className="flex items-center gap-1.5 rounded-full bg-brand/8 px-3 py-1.5 font-medium text-ink">
+              <Footprints className="h-3.5 w-3.5 text-brand" />
               {formatWalkTime(route.estimated_walk_time_minutes)}
             </span>
           </div>
@@ -82,15 +82,13 @@ export function RouteResultPanel() {
           <ol className="space-y-3">
             {route.turn_by_turn.map((step, index) => (
               <li key={`${step.node_id}-${index}`} className="flex gap-3 text-sm">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gat-maroon/10 text-xs font-semibold text-gat-maroon">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-semibold text-brand">
                   {index + 1}
                 </span>
                 <div>
-                  <p className="text-gat-navy dark:text-white">{step.instruction}</p>
+                  <p className="text-ink">{step.instruction}</p>
                   {step.edge_type && (
-                    <p className="text-xs text-gat-navy/40 dark:text-white/40">
-                      {formatEdgeType(step.edge_type)}
-                    </p>
+                    <p className="text-xs text-muted">{formatEdgeType(step.edge_type)}</p>
                   )}
                 </div>
               </li>
@@ -100,17 +98,13 @@ export function RouteResultPanel() {
       )}
 
       {/* Reserved for the future graphical/3D path visualization — see docs/architecture.md */}
-      <div className="mt-6 flex flex-1 min-h-[10rem] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-gat-navy/15 bg-gat-navy/[0.02] p-6 text-center dark:border-white/15 dark:bg-white/[0.02]">
-        <MapIcon className="h-6 w-6 text-gat-navy/25 dark:text-white/25" />
-        <p className="text-xs text-gat-navy/40 dark:text-white/40">
-          Visual path map — coming in a future phase
-        </p>
+      <div className="mt-6 flex min-h-[10rem] flex-1 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-hairline bg-brand/[0.02] p-6 text-center">
+        <MapIcon className="h-6 w-6 text-brand/25" />
+        <p className="text-xs text-muted">Visual path map — coming in a future phase</p>
       </div>
 
       {fromNodeLabel && (
-        <p className="mt-4 text-center text-xs text-gat-navy/40 dark:text-white/40">
-          Starting from {fromNodeLabel}
-        </p>
+        <p className="mt-4 text-center text-xs text-muted">Starting from {fromNodeLabel}</p>
       )}
     </div>
   );

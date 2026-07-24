@@ -54,34 +54,30 @@ export function ChatWindow() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-11rem)] flex-col overflow-hidden rounded-3xl border border-gat-navy/10 bg-white shadow-sm dark:border-white/10 dark:bg-gat-navy-light">
-      <div className="flex items-center justify-between border-b border-gat-navy/10 px-5 py-4 dark:border-white/10">
+    <div className="flex h-[calc(100vh-11rem)] flex-col overflow-hidden rounded-3xl border border-hairline bg-white shadow-soft">
+      <div className="flex items-center justify-between border-b border-hairline px-6 py-4">
         <div>
-          <p className="font-display text-sm font-semibold text-gat-navy dark:text-white">
-            GAT Assistant
-          </p>
-          <p className="text-xs text-gat-navy/50 dark:text-white/50">
-            Backend integration coming in AI Phase
-          </p>
+          <p className="font-display text-sm font-semibold text-ink">GAT Assistant</p>
+          <p className="text-xs text-muted">Backend integration coming in AI Phase</p>
         </div>
         <button
           type="button"
           onClick={clearMessages}
           aria-label="Clear conversation"
-          className="flex h-8 w-8 items-center justify-center rounded-full text-gat-navy/40 transition-colors hover:bg-gat-navy/5 hover:text-gat-maroon dark:text-white/40 dark:hover:bg-white/10"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-muted transition-colors hover:bg-brand/5 hover:text-brand"
         >
           <Trash2 className="h-4 w-4" />
         </button>
       </div>
 
-      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-5 py-6">
+      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-6 py-6">
         {messages.map((message) => (
           <ChatMessageBubble key={message.id} message={message} />
         ))}
         {isAssistantTyping && <TypingIndicator />}
       </div>
 
-      <div className="border-t border-gat-navy/10 p-4 dark:border-white/10">
+      <div className="border-t border-hairline p-4">
         <ChatInput onSend={handleSend} disabled={isAssistantTyping} />
       </div>
     </div>

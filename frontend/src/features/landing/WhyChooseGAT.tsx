@@ -16,7 +16,7 @@ const REASONS = [
 
 export function WhyChooseGAT() {
   return (
-    <section id="why-choose-gat" className="section-padding bg-white dark:bg-gat-navy">
+    <section id="why-choose-gat" className="section-padding">
       <div className="container-page grid grid-cols-1 gap-14 lg:grid-cols-2 lg:items-center">
         <div>
           <SectionTitle
@@ -35,12 +35,10 @@ export function WhyChooseGAT() {
                 transition={{ duration: 0.4, delay: index * 0.06 }}
                 className="flex items-start gap-3"
               >
-                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gat-maroon/10 text-gat-maroon">
+                <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
                   <reason.icon className="h-4 w-4" />
                 </span>
-                <span className="text-sm leading-relaxed text-gat-navy/80 dark:text-white/80">
-                  {reason.text}
-                </span>
+                <span className="text-sm leading-relaxed text-ink/80">{reason.text}</span>
               </motion.li>
             ))}
           </ul>
@@ -51,12 +49,12 @@ export function WhyChooseGAT() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.5 }}
-          className="relative overflow-hidden rounded-3xl bg-gat-hero p-10 text-white"
+          className="relative overflow-hidden rounded-3xl bg-brand-gradient p-10 text-white shadow-glow"
         >
-          <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gat-gold/10 blur-2xl" />
-          <CheckCircle2 className="h-10 w-10 text-gat-gold" strokeWidth={1.5} />
+          <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+          <CheckCircle2 className="h-10 w-10 text-white" strokeWidth={1.5} />
           <p className="mt-6 font-display text-2xl font-semibold">Growing Ahead Of Time</p>
-          <p className="mt-3 text-sm leading-relaxed text-white/70">
+          <p className="mt-3 text-sm leading-relaxed text-white/75">
             Since 2001, GAT has trained engineers across Computer Science, Information Science,
             Electronics, Electrical, Mechanical, and Civil Engineering — with admission through
             KCET, COMEDK, PGCET, GATE, and KMAT.

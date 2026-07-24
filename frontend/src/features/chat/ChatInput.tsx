@@ -23,14 +23,14 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-center gap-2 rounded-2xl border border-gat-navy/15 bg-white p-2 dark:border-white/15 dark:bg-gat-navy-light"
+      className="flex items-center gap-2 rounded-2xl border border-hairline bg-white p-2"
     >
       <button
         type="button"
         disabled
         title="Voice input arrives in a future phase"
         aria-label="Voice input (coming soon)"
-        className="flex h-10 w-10 shrink-0 cursor-not-allowed items-center justify-center rounded-xl text-gat-navy/30 dark:text-white/30"
+        className="flex h-10 w-10 shrink-0 cursor-not-allowed items-center justify-center rounded-xl text-ink/25"
       >
         <Mic className="h-4 w-4" />
       </button>
@@ -39,14 +39,14 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
         value={value}
         onChange={(event) => setValue(event.target.value)}
         placeholder="Ask about admissions, academics, facilities…"
-        className="flex-1 bg-transparent px-1 text-sm text-gat-navy placeholder:text-gat-navy/40 focus:outline-none dark:text-white dark:placeholder:text-white/40"
+        className="flex-1 bg-transparent px-1 text-sm text-ink placeholder:text-muted focus:outline-none"
       />
 
       <button
         type="submit"
         disabled={!value.trim() || disabled}
         aria-label="Send message"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gat-maroon text-white transition-colors hover:bg-gat-maroon-light disabled:cursor-not-allowed disabled:opacity-40"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-40"
       >
         <SendHorizontal className="h-4 w-4" />
       </button>

@@ -64,14 +64,12 @@ export default function CampusPage() {
       )}
 
       {!isLoading && !isError && buildings && buildings.length === 0 && (
-        <p className="text-sm text-gat-navy/60 dark:text-white/60">
-          No buildings have been added to the campus yet.
-        </p>
+        <p className="text-sm text-muted">No buildings have been added to the campus yet.</p>
       )}
 
-      <div className="mt-16">
-        <h2 className="mb-5 flex items-center gap-2 font-display text-lg font-semibold text-gat-navy dark:text-white">
-          <BookOpen className="h-5 w-5 text-gat-maroon" />
+      <div className="mt-20">
+        <h2 className="mb-6 flex items-center gap-2 font-display text-lg font-semibold text-ink">
+          <BookOpen className="h-5 w-5 text-brand" />
           Campus Information
         </h2>
 
@@ -94,30 +92,21 @@ export default function CampusPage() {
         {!documentsLoading && !documentsError && documents && documents.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {documents.map((doc) => (
-              <div
-                key={doc.id}
-                className="rounded-2xl border border-gat-navy/10 bg-white p-5 dark:border-white/10 dark:bg-gat-navy-light"
-              >
+              <div key={doc.id} className="rounded-3xl border border-hairline bg-white p-6 shadow-soft">
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <p className="font-display text-sm font-semibold text-gat-navy dark:text-white">
-                    {doc.title}
-                  </p>
-                  <span className="shrink-0 rounded-full bg-gat-gold/15 px-2.5 py-0.5 text-[11px] font-medium text-gat-gold-dark">
+                  <p className="font-display text-sm font-semibold text-ink">{doc.title}</p>
+                  <span className="shrink-0 rounded-full bg-brand/10 px-2.5 py-0.5 text-[11px] font-medium text-brand">
                     {DOMAIN_LABELS[doc.domain] ?? doc.domain}
                   </span>
                 </div>
-                <p className="text-sm leading-relaxed text-gat-navy/60 dark:text-white/60">
-                  {doc.content}
-                </p>
+                <p className="text-sm leading-relaxed text-muted">{doc.content}</p>
               </div>
             ))}
           </div>
         )}
 
         {!documentsLoading && !documentsError && documents && documents.length === 0 && (
-          <p className="text-sm text-gat-navy/60 dark:text-white/60">
-            No campus information has been published yet.
-          </p>
+          <p className="text-sm text-muted">No campus information has been published yet.</p>
         )}
       </div>
     </PageContainer>

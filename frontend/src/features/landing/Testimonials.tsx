@@ -28,7 +28,7 @@ const TESTIMONIALS = [
 
 export function Testimonials() {
   return (
-    <section className="section-padding bg-white dark:bg-gat-navy">
+    <section className="section-padding">
       <div className="container-page">
         <SectionTitle
           eyebrow="Student Voices"
@@ -44,22 +44,18 @@ export function Testimonials() {
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.45, delay: index * 0.08 }}
             >
-              <Card className="flex h-full flex-col">
-                <Quote className="h-6 w-6 text-gat-gold" />
-                <p className="mt-4 flex-1 text-sm leading-relaxed text-gat-navy/80 dark:text-white/80">
+              <Card hoverLift className="flex h-full flex-col">
+                <Quote className="h-7 w-7 text-brand" />
+                <p className="mt-4 flex-1 text-sm leading-relaxed text-ink/80">
                   &ldquo;{testimonial.quote}&rdquo;
                 </p>
-                <div className="mt-6 flex items-center gap-3 border-t border-gat-navy/10 pt-4 dark:border-white/10">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gat-navy/10 text-gat-navy dark:bg-white/10 dark:text-white">
+                <div className="mt-6 flex items-center gap-3 border-t border-hairline pt-5">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand/10 text-brand">
                     <User className="h-5 w-5" />
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-gat-navy dark:text-white">
-                      {testimonial.name}
-                    </p>
-                    <p className="text-xs text-gat-navy/60 dark:text-white/60">
-                      {testimonial.department}
-                    </p>
+                    <p className="text-sm font-semibold text-ink">{testimonial.name}</p>
+                    <p className="text-xs text-muted">{testimonial.department}</p>
                   </div>
                 </div>
               </Card>

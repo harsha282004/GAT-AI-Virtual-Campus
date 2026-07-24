@@ -8,3 +8,4 @@ export * from "./navigation";
 export * from "./node";
 export * from "./panorama";
 export * from "./room";
+export * from "./tour";
