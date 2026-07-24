@@ -1,3 +1,49 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-white text-gat-navy antialiased;
+}
+
+::selection {
+  @apply bg-gat-gold/30 text-gat-navy;
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/10;
+  }
+
+  .glass-light {
+    @apply bg-white/70 backdrop-blur-md border border-white/40;
+  }
+
+  .section-padding {
+    @apply px-6 py-20 sm:px-10 lg:px-16;
+  }
+
+  .container-page {
+    @apply mx-auto w-full max-w-7xl;
+  }
+
+  .text-gradient-gold {
+    @apply bg-gradient-to-r from-gat-gold-light to-gat-gold bg-clip-text text-transparent;
+  }
+}
+
+/* Thin, GAT-toned scrollbar (WebKit) — purely cosmetic, degrades gracefully elsewhere */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: theme("colors.gat.navy.light");
+  border-radius: 9999px;
+}
