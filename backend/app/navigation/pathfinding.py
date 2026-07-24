@@ -41,11 +41,23 @@ class PathResult:
 
     @property
     def estimated_walk_time_minutes(self) -> float:
-        return round(self.total_distance / AVERAGE_WALK_SPEED_MPS / 60, 1)
+        if not self.edges:
+            return round(self.total_distance / AVERAGE_WALK_SPEED_MPS / 60, 1)
+        return round(sum(edge.walking_time for edge in self.edges), 1)
+
+    @property
+    def is_accessible(self) -> bool:
+        """Whether every edge on this path is wheelchair-passable — independent
+        of whether accessible-only routing was actually requested."""
+        return all(edge.accessible for edge in self.edges)
 
 
 def find_shortest_path(graph: CampusGraph, start_id: int, goal_id: int) -> PathResult:
-    """A* shortest path over the in-memory campus graph."""
+    """A* shortest path over the in-memory campus graph. Degrades to Dijkstra
+    automatically whenever no coordinate-based heuristic is available between
+    two nodes (see _heuristic) — the search logic is identical either way,
+    only the priority estimate changes, so no separate Dijkstra code path is
+    needed to satisfy that fallback."""
     if start_id not in graph.nodes_by_id:
         raise NoPathFoundError(f"Start node {start_id} does not exist.")
     if goal_id not in graph.nodes_by_id:
@@ -97,3 +109,30 @@ def _reconstruct_path(
     node_ids.reverse()
     edges.reverse()
     return PathResult(node_ids=node_ids, edges=edges, total_distance=total_distance)
+
+
+def single_source_distances(graph: CampusGraph, start_id: int) -> dict[int, float]:
+    """Plain Dijkstra from start_id to every reachable node. Used for
+    nearest-neighbor queries (nearby rooms, nearest panorama) where there's no
+    single fixed destination for A*'s heuristic to aim at, so Dijkstra is the
+    directly appropriate — not merely a fallback — algorithm here."""
+    if start_id not in graph.nodes_by_id:
+        raise NoPathFoundError(f"Start node {start_id} does not exist.")
+
+    distances: dict[int, float] = {start_id: 0.0}
+    visited: set[int] = set()
+    heap: list[tuple[float, int]] = [(0.0, start_id)]
+
+    while heap:
+        dist, current = heapq.heappop(heap)
+        if current in visited:
+            continue
+        visited.add(current)
+
+        for graph_edge in graph.adjacency.get(current, []):
+            tentative = dist + graph_edge.distance
+            if tentative < distances.get(graph_edge.neighbor_id, math.inf):
+                distances[graph_edge.neighbor_id] = tentative
+                heapq.heappush(heap, (tentative, graph_edge.neighbor_id))
+
+    return distances

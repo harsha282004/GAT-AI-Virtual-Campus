@@ -13,17 +13,17 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "backend"))
 
-from sqlalchemy.orm import Session  # noqa: E402
-
 from app.db.session import SessionLocal  # noqa: E402
 from app.models.building import Building  # noqa: E402
 from app.models.campus import Campus  # noqa: E402
 from app.models.document import Document, DocumentDomain  # noqa: E402
-from app.models.edge import Edge, EdgeType  # noqa: E402
+from app.models.edge import Edge, EdgeDirection, EdgeType  # noqa: E402
 from app.models.floor import Floor  # noqa: E402
 from app.models.node import Node, NodeType  # noqa: E402
 from app.models.panorama import Panorama  # noqa: E402
 from app.models.room import Room  # noqa: E402
+from app.navigation.pathfinding import AVERAGE_WALK_SPEED_MPS  # noqa: E402
+from sqlalchemy.orm import Session  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)-8s %(message)s")
 logger = logging.getLogger("seed")
@@ -34,9 +34,7 @@ CAMPUS_NAME = "Global Academy of Technology"
 def seed(db: Session) -> None:
     existing = db.query(Campus).filter(Campus.name == CAMPUS_NAME).first()
     if existing is not None:
-        logger.info(
-            "Campus '%s' already exists (id=%s) — skipping seed.", CAMPUS_NAME, existing.id
-        )
+        logger.info("Campus '%s' already exists (id=%s) — skipping seed.", CAMPUS_NAME, existing.id)
         return
 
     campus = Campus(
@@ -127,14 +125,14 @@ def seed(db: Session) -> None:
         building_id=admin_block.id,
         floor_id=admin_ground.id,
         name="Principal Office",
-        node_type=NodeType.ROOM,
+        node_type=NodeType.OFFICE,
     )
     accounts_office_node = Node(
         campus_id=campus.id,
         building_id=admin_block.id,
         floor_id=admin_ground.id,
         name="Accounts Office",
-        node_type=NodeType.ROOM,
+        node_type=NodeType.OFFICE,
     )
     db.add_all([admin_junction, principal_office_node, accounts_office_node])
     db.flush()
@@ -147,6 +145,7 @@ def seed(db: Session) -> None:
                 name="Principal Office",
                 room_number="A101",
                 room_type="office",
+                department="Administration",
             ),
             Room(
                 floor_id=admin_ground.id,
@@ -154,6 +153,7 @@ def seed(db: Session) -> None:
                 name="Accounts Office",
                 room_number="A102",
                 room_type="office",
+                department="Administration",
             ),
         ]
     )
@@ -178,14 +178,14 @@ def seed(db: Session) -> None:
         building_id=cse_block.id,
         floor_id=cse_ground.id,
         name="Reception",
-        node_type=NodeType.ROOM,
+        node_type=NodeType.OFFICE,
     )
     staff_room_node = Node(
         campus_id=campus.id,
         building_id=cse_block.id,
         floor_id=cse_ground.id,
         name="Staff Room",
-        node_type=NodeType.ROOM,
+        node_type=NodeType.OFFICE,
     )
     cse_first_junction = Node(
         campus_id=campus.id,
@@ -213,21 +213,21 @@ def seed(db: Session) -> None:
         building_id=cse_block.id,
         floor_id=cse_first.id,
         name="Server Room",
-        node_type=NodeType.ROOM,
+        node_type=NodeType.LAB,
     )
     room_101_node = Node(
         campus_id=campus.id,
         building_id=cse_block.id,
         floor_id=cse_first.id,
         name="Room 101",
-        node_type=NodeType.ROOM,
+        node_type=NodeType.CLASSROOM,
     )
     room_102_node = Node(
         campus_id=campus.id,
         building_id=cse_block.id,
         floor_id=cse_first.id,
         name="Room 102",
-        node_type=NodeType.ROOM,
+        node_type=NodeType.CLASSROOM,
     )
     db.add_all(
         [
@@ -253,6 +253,7 @@ def seed(db: Session) -> None:
                 name="Reception",
                 room_number="C001",
                 room_type="office",
+                department="Computer Science & Engineering",
             ),
             Room(
                 floor_id=cse_ground.id,
@@ -260,6 +261,7 @@ def seed(db: Session) -> None:
                 name="Staff Room",
                 room_number="C002",
                 room_type="office",
+                department="Computer Science & Engineering",
             ),
             Room(
                 floor_id=cse_first.id,
@@ -267,6 +269,7 @@ def seed(db: Session) -> None:
                 name="CSE Seminar Hall",
                 room_number="C101",
                 room_type="seminar_hall",
+                department="Computer Science & Engineering",
                 capacity=90,
             ),
             Room(
@@ -275,6 +278,7 @@ def seed(db: Session) -> None:
                 name="Server Room",
                 room_number="C102",
                 room_type="lab",
+                department="Computer Science & Engineering",
             ),
             Room(
                 floor_id=cse_first.id,
@@ -282,6 +286,7 @@ def seed(db: Session) -> None:
                 name="Room 101",
                 room_number="C103",
                 room_type="classroom",
+                department="Computer Science & Engineering",
                 capacity=60,
             ),
             Room(
@@ -290,6 +295,7 @@ def seed(db: Session) -> None:
                 name="Room 102",
                 room_number="C104",
                 room_type="classroom",
+                department="Computer Science & Engineering",
                 capacity=60,
             ),
         ]
@@ -308,14 +314,14 @@ def seed(db: Session) -> None:
         building_id=library.id,
         floor_id=library_ground.id,
         name="Reading Hall",
-        node_type=NodeType.ROOM,
+        node_type=NodeType.LIBRARY,
     )
     reference_section_node = Node(
         campus_id=campus.id,
         building_id=library.id,
         floor_id=library_ground.id,
         name="Reference Section",
-        node_type=NodeType.ROOM,
+        node_type=NodeType.LIBRARY,
     )
     db.add_all([library_junction, reading_hall_node, reference_section_node])
     db.flush()
@@ -328,6 +334,7 @@ def seed(db: Session) -> None:
                 name="Reading Hall",
                 room_number="L001",
                 room_type="reading_hall",
+                department="Library",
                 capacity=150,
             ),
             Room(
@@ -336,6 +343,7 @@ def seed(db: Session) -> None:
                 name="Reference Section",
                 room_number="L002",
                 room_type="reading_hall",
+                department="Library",
                 capacity=40,
             ),
         ]
@@ -371,154 +379,171 @@ def seed(db: Session) -> None:
     )
 
     # --- Edges (the navigable campus graph) ---
-    db.add_all(
-        [
-            Edge(
-                source_node_id=main_gate.id,
-                target_node_id=central_junction.id,
-                distance=30,
-                edge_type=EdgeType.OUTDOOR_PATH,
-            ),
-            Edge(
-                source_node_id=central_junction.id,
-                target_node_id=admin_entrance.id,
-                distance=22,
-                edge_type=EdgeType.OUTDOOR_PATH,
-            ),
-            Edge(
-                source_node_id=central_junction.id,
-                target_node_id=cse_entrance.id,
-                distance=30,
-                edge_type=EdgeType.OUTDOOR_PATH,
-            ),
-            Edge(
-                source_node_id=central_junction.id,
-                target_node_id=library_entrance.id,
-                distance=22,
-                edge_type=EdgeType.OUTDOOR_PATH,
-            ),
-            Edge(
-                source_node_id=central_junction.id,
-                target_node_id=auditorium_entrance.id,
-                distance=32,
-                edge_type=EdgeType.OUTDOOR_PATH,
-            ),
-            # Admin block interior
-            Edge(
-                source_node_id=admin_entrance.id,
-                target_node_id=admin_junction.id,
-                distance=6,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            Edge(
-                source_node_id=admin_junction.id,
-                target_node_id=principal_office_node.id,
-                distance=8,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            Edge(
-                source_node_id=admin_junction.id,
-                target_node_id=accounts_office_node.id,
-                distance=10,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            # CSE block interior — ground floor
-            Edge(
-                source_node_id=cse_entrance.id,
-                target_node_id=cse_ground_junction.id,
-                distance=6,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            Edge(
-                source_node_id=cse_ground_junction.id,
-                target_node_id=reception_node.id,
-                distance=5,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            Edge(
-                source_node_id=cse_ground_junction.id,
-                target_node_id=staff_room_node.id,
-                distance=9,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            Edge(
-                source_node_id=cse_ground_junction.id,
-                target_node_id=cse_ground_stair.id,
-                distance=7,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            # CSE block interior — stairs between floors
-            Edge(
-                source_node_id=cse_ground_stair.id,
-                target_node_id=cse_first_stair.id,
-                distance=6,
-                edge_type=EdgeType.STAIRS,
-            ),
-            # CSE block interior — first floor
-            Edge(
-                source_node_id=cse_first_stair.id,
-                target_node_id=cse_first_junction.id,
-                distance=5,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            Edge(
-                source_node_id=cse_first_junction.id,
-                target_node_id=seminar_hall_node.id,
-                distance=10,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            Edge(
-                source_node_id=cse_first_junction.id,
-                target_node_id=server_room_node.id,
-                distance=12,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            Edge(
-                source_node_id=cse_first_junction.id,
-                target_node_id=room_101_node.id,
-                distance=8,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            Edge(
-                source_node_id=cse_first_junction.id,
-                target_node_id=room_102_node.id,
-                distance=9,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            # Library interior
-            Edge(
-                source_node_id=library_entrance.id,
-                target_node_id=library_junction.id,
-                distance=6,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            Edge(
-                source_node_id=library_junction.id,
-                target_node_id=reading_hall_node.id,
-                distance=10,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            Edge(
-                source_node_id=library_junction.id,
-                target_node_id=reference_section_node.id,
-                distance=12,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            # Auditorium interior
-            Edge(
-                source_node_id=auditorium_entrance.id,
-                target_node_id=auditorium_junction.id,
-                distance=5,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-            Edge(
-                source_node_id=auditorium_junction.id,
-                target_node_id=main_hall_node.id,
-                distance=15,
-                edge_type=EdgeType.CORRIDOR,
-            ),
-        ]
-    )
+    campus_edges = [
+        Edge(
+            source_node_id=main_gate.id,
+            target_node_id=central_junction.id,
+            distance=30,
+            edge_type=EdgeType.OUTDOOR_PATH,
+        ),
+        Edge(
+            source_node_id=central_junction.id,
+            target_node_id=admin_entrance.id,
+            distance=22,
+            edge_type=EdgeType.OUTDOOR_PATH,
+        ),
+        Edge(
+            source_node_id=central_junction.id,
+            target_node_id=cse_entrance.id,
+            distance=30,
+            edge_type=EdgeType.OUTDOOR_PATH,
+            direction=EdgeDirection.RIGHT,
+        ),
+        Edge(
+            source_node_id=central_junction.id,
+            target_node_id=library_entrance.id,
+            distance=22,
+            edge_type=EdgeType.OUTDOOR_PATH,
+            direction=EdgeDirection.LEFT,
+        ),
+        Edge(
+            source_node_id=central_junction.id,
+            target_node_id=auditorium_entrance.id,
+            distance=32,
+            edge_type=EdgeType.OUTDOOR_PATH,
+            direction=EdgeDirection.LEFT,
+        ),
+        # Admin block interior
+        Edge(
+            source_node_id=admin_entrance.id,
+            target_node_id=admin_junction.id,
+            distance=6,
+            edge_type=EdgeType.CORRIDOR,
+        ),
+        Edge(
+            source_node_id=admin_junction.id,
+            target_node_id=principal_office_node.id,
+            distance=8,
+            edge_type=EdgeType.CORRIDOR,
+            direction=EdgeDirection.RIGHT,
+        ),
+        Edge(
+            source_node_id=admin_junction.id,
+            target_node_id=accounts_office_node.id,
+            distance=10,
+            edge_type=EdgeType.CORRIDOR,
+            direction=EdgeDirection.LEFT,
+        ),
+        # CSE block interior — ground floor
+        Edge(
+            source_node_id=cse_entrance.id,
+            target_node_id=cse_ground_junction.id,
+            distance=6,
+            edge_type=EdgeType.CORRIDOR,
+        ),
+        Edge(
+            source_node_id=cse_ground_junction.id,
+            target_node_id=reception_node.id,
+            distance=5,
+            edge_type=EdgeType.CORRIDOR,
+            direction=EdgeDirection.LEFT,
+        ),
+        Edge(
+            source_node_id=cse_ground_junction.id,
+            target_node_id=staff_room_node.id,
+            distance=9,
+            edge_type=EdgeType.CORRIDOR,
+            direction=EdgeDirection.RIGHT,
+        ),
+        Edge(
+            source_node_id=cse_ground_junction.id,
+            target_node_id=cse_ground_stair.id,
+            distance=7,
+            edge_type=EdgeType.CORRIDOR,
+        ),
+        # CSE block interior — stairs between floors
+        Edge(
+            source_node_id=cse_ground_stair.id,
+            target_node_id=cse_first_stair.id,
+            distance=6,
+            edge_type=EdgeType.STAIRS,
+            direction=EdgeDirection.UP,
+            floor_transition=True,
+            accessible=False,
+        ),
+        # CSE block interior — first floor
+        Edge(
+            source_node_id=cse_first_stair.id,
+            target_node_id=cse_first_junction.id,
+            distance=5,
+            edge_type=EdgeType.CORRIDOR,
+        ),
+        Edge(
+            source_node_id=cse_first_junction.id,
+            target_node_id=seminar_hall_node.id,
+            distance=10,
+            edge_type=EdgeType.CORRIDOR,
+            direction=EdgeDirection.LEFT,
+        ),
+        Edge(
+            source_node_id=cse_first_junction.id,
+            target_node_id=server_room_node.id,
+            distance=12,
+            edge_type=EdgeType.CORRIDOR,
+            direction=EdgeDirection.RIGHT,
+        ),
+        Edge(
+            source_node_id=cse_first_junction.id,
+            target_node_id=room_101_node.id,
+            distance=8,
+            edge_type=EdgeType.CORRIDOR,
+            direction=EdgeDirection.LEFT,
+        ),
+        Edge(
+            source_node_id=cse_first_junction.id,
+            target_node_id=room_102_node.id,
+            distance=9,
+            edge_type=EdgeType.CORRIDOR,
+            direction=EdgeDirection.RIGHT,
+        ),
+        # Library interior
+        Edge(
+            source_node_id=library_entrance.id,
+            target_node_id=library_junction.id,
+            distance=6,
+            edge_type=EdgeType.CORRIDOR,
+        ),
+        Edge(
+            source_node_id=library_junction.id,
+            target_node_id=reading_hall_node.id,
+            distance=10,
+            edge_type=EdgeType.CORRIDOR,
+        ),
+        Edge(
+            source_node_id=library_junction.id,
+            target_node_id=reference_section_node.id,
+            distance=12,
+            edge_type=EdgeType.CORRIDOR,
+            direction=EdgeDirection.RIGHT,
+        ),
+        # Auditorium interior
+        Edge(
+            source_node_id=auditorium_entrance.id,
+            target_node_id=auditorium_junction.id,
+            distance=5,
+            edge_type=EdgeType.CORRIDOR,
+        ),
+        Edge(
+            source_node_id=auditorium_junction.id,
+            target_node_id=main_hall_node.id,
+            distance=15,
+            edge_type=EdgeType.CORRIDOR,
+        ),
+    ]
+    for campus_edge in campus_edges:
+        if campus_edge.walking_time in (None, 0):
+            campus_edge.walking_time = campus_edge.distance / AVERAGE_WALK_SPEED_MPS / 60
+    db.add_all(campus_edges)
 
     # --- Panoramas (placeholder — real Insta360 exports land in Phase 5) ---
     db.add_all(

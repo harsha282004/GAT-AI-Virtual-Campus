@@ -22,6 +22,22 @@ class EdgeType(enum.StrEnum):
     OUTDOOR_PATH = "outdoor_path"
 
 
+class EdgeDirection(enum.StrEnum):
+    """Relative turn direction a pedestrian takes when arriving from the
+    source node and continuing onto this edge — drives turn-by-turn phrasing."""
+
+    FORWARD = "forward"
+    LEFT = "left"
+    RIGHT = "right"
+    BACK = "back"
+    UP = "up"
+    DOWN = "down"
+
+
+# Edge types that a wheelchair user cannot traverse.
+NON_ACCESSIBLE_EDGE_TYPES = {EdgeType.STAIRS}
+
+
 class Edge(Base, TimestampMixin):
     """A directed connection used by the pathfinder; is_bidirectional=True means
     the graph builder also treats it as traversable target->source."""
@@ -42,6 +58,13 @@ class Edge(Base, TimestampMixin):
         Enum(EdgeType, name="edge_type"), nullable=False, default=EdgeType.CORRIDOR
     )
     yaw: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+    walking_time: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    direction: Mapped[EdgeDirection] = mapped_column(
+        Enum(EdgeDirection, name="edge_direction"), nullable=False, default=EdgeDirection.FORWARD
+    )
+    floor_transition: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    accessible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     source_node: Mapped[Node] = relationship(
         back_populates="outgoing_edges", foreign_keys=[source_node_id]

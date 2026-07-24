@@ -9,6 +9,7 @@ class RoomBase(BaseModel):
     name: str
     room_number: str | None = None
     room_type: str = "classroom"
+    department: str | None = None
     capacity: int | None = None
     description: str | None = None
 
@@ -23,6 +24,7 @@ class RoomUpdate(BaseModel):
     name: str | None = None
     room_number: str | None = None
     room_type: str | None = None
+    department: str | None = None
     capacity: int | None = None
     description: str | None = None
 

@@ -16,6 +16,7 @@ class RouteResponse(BaseModel):
     path_node_names: list[str]
     total_distance: float
     estimated_walk_time_minutes: float
+    is_accessible: bool
     turn_by_turn: list[RouteStep]
 
 
@@ -23,6 +24,8 @@ class RoomMatch(BaseModel):
     id: int
     name: str
     room_number: str | None = None
+    room_type: str
+    department: str | None = None
     floor_id: int
     floor_name: str
     building_id: int
@@ -46,3 +49,27 @@ class BuildingMatch(BaseModel):
 class BuildingNavigationResponse(BaseModel):
     matches: list[BuildingMatch]
     route: RouteResponse | None = None
+
+
+class NearbyRoomMatch(BaseModel):
+    id: int
+    name: str
+    room_number: str | None = None
+    building_name: str
+    floor_name: str
+    distance: float
+    walking_time_minutes: float
+
+
+class NearbyRoomsResponse(BaseModel):
+    origin_node_id: int
+    rooms: list[NearbyRoomMatch]
+
+
+class NearestPanoramaResponse(BaseModel):
+    origin_node_id: int
+    panorama_id: int | None
+    panorama_node_id: int | None
+    panorama_title: str | None
+    image_path: str | None
+    distance: float | None

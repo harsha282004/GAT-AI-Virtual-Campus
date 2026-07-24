@@ -21,11 +21,17 @@ if TYPE_CHECKING:
 class NodeType(enum.StrEnum):
     ENTRANCE = "entrance"
     JUNCTION = "junction"
+    CORRIDOR = "corridor"
     ROOM = "room"
     STAIRCASE = "staircase"
     ELEVATOR = "elevator"
     LANDMARK = "landmark"
     OUTDOOR = "outdoor"
+    CLASSROOM = "classroom"
+    LAB = "lab"
+    OFFICE = "office"
+    LIBRARY = "library"
+    CAFETERIA = "cafeteria"
 
 
 class Node(Base, TimestampMixin):

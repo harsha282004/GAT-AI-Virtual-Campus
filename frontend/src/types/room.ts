@@ -5,6 +5,7 @@ export interface Room {
   name: string;
   room_number: string | null;
   room_type: string;
+  department: string | null;
   capacity: number | null;
   description: string | null;
   created_at: string;

@@ -5,7 +5,7 @@ relationship string-reference resolution)."""
 from app.models.building import Building
 from app.models.campus import Campus
 from app.models.document import Document, DocumentDomain
-from app.models.edge import Edge, EdgeType
+from app.models.edge import NON_ACCESSIBLE_EDGE_TYPES, Edge, EdgeDirection, EdgeType
 from app.models.floor import Floor
 from app.models.node import Node, NodeType
 from app.models.panorama import Panorama
@@ -20,6 +20,8 @@ __all__ = [
     "NodeType",
     "Edge",
     "EdgeType",
+    "EdgeDirection",
+    "NON_ACCESSIBLE_EDGE_TYPES",
     "Panorama",
     "Document",
     "DocumentDomain",

@@ -1,11 +1,17 @@
 export type NodeType =
   | "entrance"
   | "junction"
+  | "corridor"
   | "room"
   | "staircase"
   | "elevator"
   | "landmark"
-  | "outdoor";
+  | "outdoor"
+  | "classroom"
+  | "lab"
+  | "office"
+  | "library"
+  | "cafeteria";
 
 export interface CampusNode {
   id: number;

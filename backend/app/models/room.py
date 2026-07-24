@@ -26,6 +26,7 @@ class Room(Base, TimestampMixin):
     name: Mapped[str] = mapped_column(String(150), nullable=False)
     room_number: Mapped[str | None] = mapped_column(String(30), nullable=True)
     room_type: Mapped[str] = mapped_column(String(50), nullable=False, default="classroom")
+    department: Mapped[str | None] = mapped_column(String(100), nullable=True)
     capacity: Mapped[int | None] = mapped_column(Integer, nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
