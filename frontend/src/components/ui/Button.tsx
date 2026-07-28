@@ -34,23 +34,30 @@ type ButtonAsLink = BaseProps & {
 export type ButtonProps = ButtonAsButton | ButtonAsLink;
 
 const VARIANT_STYLES: Record<ButtonVariant, string> = {
-  primary: "bg-brand text-white shadow-soft hover:bg-brand-dark hover:-translate-y-0.5 hover:shadow-glow focus-visible:ring-brand",
+  primary:
+    "bg-[#2E4DB7] text-white shadow-lg hover:bg-[#17306D] hover:shadow-xl dark:hover:shadow-black/30 hover:-translate-y-0.5 focus-visible:ring-[#2E4DB7]",
+
   secondary:
-    "border-2 border-brand bg-white text-brand hover:-translate-y-0.5 hover:bg-brand hover:text-white hover:shadow-soft focus-visible:ring-brand",
+    "border-2 border-[#2E4DB7] bg-white text-[#2E4DB7] hover:bg-[#2E4DB7] hover:text-white hover:shadow-lg dark:hover:shadow-black/30 hover:-translate-y-0.5 focus-visible:ring-[#2E4DB7] dark:border-[#5B8CFF] dark:bg-[#0F172A] dark:text-[#5B8CFF] dark:hover:bg-[#5B8CFF]",
+
   outline:
-    "border border-hairline bg-white text-ink hover:border-brand/30 hover:bg-brand/5 focus-visible:ring-brand",
-  ghost: "text-ink hover:bg-brand/5 focus-visible:ring-brand",
+    "border border-slate-300 bg-white text-[#17306D] hover:border-[#2E4DB7] hover:bg-[#F4F8FF] focus-visible:ring-[#2E4DB7] dark:border-slate-700 dark:bg-[#0F172A] dark:text-white dark:hover:border-[#5B8CFF] dark:hover:bg-[#5B8CFF]/10",
+
+  ghost:
+    "text-[#17306D] hover:bg-[#F4F8FF] focus-visible:ring-[#2E4DB7] dark:text-white dark:hover:bg-[#5B8CFF]/10",
 };
 
 const SIZE_STYLES: Record<ButtonSize, string> = {
-  sm: "px-4 py-2 text-sm gap-1.5",
-  md: "px-6 py-3 text-sm gap-2",
-  lg: "px-8 py-4 text-base gap-2.5",
+  sm: "px-5 py-2.5 text-sm gap-2",
+
+  md: "px-7 py-3.5 text-base gap-2",
+
+  lg: "px-9 py-4.5 text-lg gap-3",
 };
 
 const BASE_STYLES =
-  "relative isolate inline-flex items-center justify-center overflow-hidden rounded-full font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
-
+  "relative isolate inline-flex items-center justify-center overflow-hidden rounded-full font-semibold transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50";
+  
 interface Ripple {
   id: number;
   x: number;

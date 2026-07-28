@@ -20,6 +20,10 @@ export interface CampusEdge {
   direction: EdgeDirection;
   floor_transition: boolean;
   accessible: boolean;
+  hotspot_pitch: number | null;
+  label_override: string | null;
+  entry_yaw: number | null;
+  entry_pitch: number | null;
   created_at: string;
   updated_at: string;
 }

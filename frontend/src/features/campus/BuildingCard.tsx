@@ -26,7 +26,7 @@ export function BuildingCard({ building, floorCount, index }: BuildingCardProps)
     >
       <Link
         href={`/campus/${building.id}`}
-        className="group block overflow-hidden rounded-3xl border border-hairline bg-white shadow-soft transition-shadow duration-300 hover:shadow-glow"
+        className="group block overflow-hidden rounded-3xl border border-hairline bg-white shadow-soft transition-shadow duration-300 hover:shadow-glow dark:bg-[#0F172A] dark:shadow-black/30"
       >
         {/* Building image placeholder — swap for a real photo later, no code change needed elsewhere */}
         <div className="flex aspect-[4/3] items-center justify-center bg-brand/5">

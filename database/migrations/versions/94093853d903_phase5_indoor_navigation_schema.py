@@ -5,15 +5,15 @@ Revises: 8810d8202265
 Create Date: 2026-07-24 22:14:12.481375
 
 """
+
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
 
-
 # revision identifiers, used by Alembic.
-revision: str = '94093853d903'
-down_revision: Union[str, Sequence[str], None] = '8810d8202265'
+revision: str = "94093853d903"
+down_revision: Union[str, Sequence[str], None] = "8810d8202265"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -45,8 +45,14 @@ def upgrade() -> None:
         sa.Column(
             "direction",
             sa.Enum(
-                "FORWARD", "LEFT", "RIGHT", "BACK", "UP", "DOWN",
-                name="edge_direction", create_type=False,
+                "FORWARD",
+                "LEFT",
+                "RIGHT",
+                "BACK",
+                "UP",
+                "DOWN",
+                name="edge_direction",
+                create_type=False,
             ),
             nullable=False,
             server_default="FORWARD",
@@ -54,9 +60,7 @@ def upgrade() -> None:
     )
     op.add_column(
         "edges",
-        sa.Column(
-            "floor_transition", sa.Boolean(), nullable=False, server_default=sa.false()
-        ),
+        sa.Column("floor_transition", sa.Boolean(), nullable=False, server_default=sa.false()),
     )
     op.add_column(
         "edges", sa.Column("accessible", sa.Boolean(), nullable=False, server_default=sa.true())

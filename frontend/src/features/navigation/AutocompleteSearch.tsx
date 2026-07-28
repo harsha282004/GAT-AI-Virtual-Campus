@@ -41,7 +41,7 @@ export function AutocompleteSearch() {
 
   return (
     <div className="relative w-full max-w-md">
-      <div className="flex items-center gap-2 rounded-full border border-hairline bg-white px-4 py-2.5 shadow-soft">
+      <div className="flex items-center gap-2 rounded-full border border-hairline bg-white px-4 py-2.5 shadow-soft dark:bg-[#0F172A] dark:shadow-black/30">
         <Search className="h-4 w-4 shrink-0 text-muted" />
         <input
           value={query}

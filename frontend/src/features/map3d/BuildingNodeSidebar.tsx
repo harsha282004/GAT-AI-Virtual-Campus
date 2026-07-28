@@ -27,7 +27,7 @@ export function BuildingNodeSidebar() {
     : (nodes.data ?? []);
 
   return (
-    <aside className="flex h-[calc(100vh-7rem)] w-full flex-col gap-6 overflow-y-auto rounded-3xl border border-hairline bg-white p-6 shadow-soft lg:w-80">
+    <aside className="flex h-[calc(100vh-7rem)] w-full flex-col gap-6 overflow-y-auto rounded-3xl border border-hairline bg-white p-6 shadow-soft dark:bg-[#0F172A] dark:shadow-black/30 lg:w-80">
       {isLoading && (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (

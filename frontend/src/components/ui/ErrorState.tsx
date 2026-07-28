@@ -21,12 +21,12 @@ export function ErrorState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-4 rounded-3xl border border-rose-200 bg-rose-50 px-6 py-14 text-center",
+        "flex flex-col items-center justify-center gap-4 rounded-3xl border border-rose-200 bg-rose-50 px-6 py-14 text-center dark:border-rose-900/50 dark:bg-rose-950/30",
         className,
       )}
     >
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100">
-        <AlertTriangle className="h-7 w-7 text-rose-500" />
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 dark:bg-rose-900/40">
+        <AlertTriangle className="h-7 w-7 text-rose-500 dark:text-rose-400" />
       </div>
       <div>
         <p className="font-display text-lg font-semibold text-ink">{title}</p>

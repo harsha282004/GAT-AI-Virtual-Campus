@@ -92,7 +92,7 @@ export default function CampusPage() {
         {!documentsLoading && !documentsError && documents && documents.length > 0 && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {documents.map((doc) => (
-              <div key={doc.id} className="rounded-3xl border border-hairline bg-white p-6 shadow-soft">
+              <div key={doc.id} className="rounded-3xl border border-hairline bg-white p-6 shadow-soft dark:bg-[#0F172A] dark:shadow-black/30">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <p className="font-display text-sm font-semibold text-ink">{doc.title}</p>
                   <span className="shrink-0 rounded-full bg-brand/10 px-2.5 py-0.5 text-[11px] font-medium text-brand">

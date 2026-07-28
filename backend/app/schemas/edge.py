@@ -16,6 +16,10 @@ class EdgeBase(BaseModel):
     direction: EdgeDirection = EdgeDirection.FORWARD
     floor_transition: bool = False
     accessible: bool = True
+    hotspot_pitch: float | None = 0.0
+    label_override: str | None = None
+    entry_yaw: float | None = None
+    entry_pitch: float | None = None
 
 
 class EdgeCreate(EdgeBase):
@@ -33,6 +37,10 @@ class EdgeUpdate(BaseModel):
     direction: EdgeDirection | None = None
     floor_transition: bool | None = None
     accessible: bool | None = None
+    hotspot_pitch: float | None = None
+    label_override: str | None = None
+    entry_yaw: float | None = None
+    entry_pitch: float | None = None
 
 
 class EdgeRead(EdgeBase):

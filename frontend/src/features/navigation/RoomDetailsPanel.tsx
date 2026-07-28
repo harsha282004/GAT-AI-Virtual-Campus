@@ -44,7 +44,7 @@ export function RoomDetailsPanel() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className="flex h-full flex-col rounded-3xl border border-hairline bg-white p-6 shadow-soft"
+      className="flex h-full flex-col rounded-3xl border border-hairline bg-white p-6 shadow-soft dark:bg-[#0F172A] dark:shadow-black/30"
     >
       <div className="mb-4 flex items-start justify-between gap-2">
         <div>

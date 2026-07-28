@@ -3,6 +3,8 @@ export * from "./useDocuments";
 export * from "./useFloors";
 export * from "./useNavigation";
 export * from "./useNodes";
+export * from "./usePanoramaPreloader";
 export * from "./usePanoramas";
 export * from "./useRooms";
+export * from "./useTourKeyboardShortcuts";
 export * from "./useTourPanoramas";

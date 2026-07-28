@@ -2,12 +2,12 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, Moon, Sun, X } from "lucide-react";
+import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { useThemeStore } from "@/store/themeStore";
 import { cn } from "@/utils";
 
 const NAV_LINKS = [
@@ -23,98 +23,189 @@ const NAV_LINKS = [
 export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const theme = useThemeStore((state) => state.theme);
-  const toggleTheme = useThemeStore((state) => state.toggleTheme);
 
-  const isActive = (href: string) => href !== "/" && href.startsWith("/") && pathname === href;
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
+
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4">
-      <nav className="glass flex w-full max-w-6xl items-center justify-between rounded-full py-2.5 pl-3 pr-4 shadow-soft sm:pl-4 sm:pr-6">
-        {/* Logo slot — drop the official GAT crest at public/branding/gat-logo.svg to replace this placeholder */}
-        <Link href="/" className="flex shrink-0 items-center py-1" onClick={() => setIsOpen(false)}>
+    <header className="fixed inset-x-0 top-5 z-50 flex justify-center px-6">
+
+      <nav
+        className="
+        flex
+        h-[78px]
+        w-full
+        max-w-[1350px]
+        items-center
+        justify-between
+        rounded-full
+        border
+        border-white/40
+        bg-white/82
+        px-7
+        shadow-xl
+        backdrop-blur-xl
+        dark:border-slate-700
+        dark:bg-slate-900/80
+        dark:shadow-black/30
+      "
+      >
+
+        {/* Logo */}
+
+        <Link href="/" className="flex items-center">
+
           <Image
-            src="/branding/gat-logo.svg"
-            alt="Global Academy of Technology"
-            width={65}
-            height={65}
-            priority
-            style={{ height: "65px", width: "auto" }}
-          />
+  src="/images/gat_logo.jpeg"
+  alt="GAT Logo"
+  width={256}
+  height={256}
+  priority
+  className="h-20 w-20 object-contain"
+/>
+
         </Link>
 
-        <div className="hidden items-center gap-1 xl:flex">
+        {/* Desktop Menu */}
+
+        <div className="hidden items-center gap-7 xl:flex">
+
           {NAV_LINKS.map((link) => (
+
             <Link
               key={link.href}
               href={link.href}
               className={cn(
-                "relative px-4 py-2 text-sm font-medium text-ink/70 transition-colors hover:text-brand",
-                isActive(link.href) && "text-brand",
+                "relative text-[16px] font-medium text-slate-600 transition-all duration-300 hover:text-[#2E4DB7] dark:text-slate-300 dark:hover:text-[#5B8CFF]",
+                isActive(link.href) && "text-[#2E4DB7] dark:text-[#5B8CFF]"
               )}
             >
               {link.label}
+
               {isActive(link.href) && (
                 <motion.span
-                  layoutId="nav-underline"
-                  className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-brand"
-                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  layoutId="underline"
+                  className="absolute left-0 right-0 -bottom-2 mx-auto h-[2px] w-full rounded-full bg-[#2E4DB7] dark:bg-[#5B8CFF]"
                 />
               )}
             </Link>
+
           ))}
+
         </div>
+
+        {/* Right Side */}
 
         <div className="flex items-center gap-2">
+
           <button
-            type="button"
-            aria-label="Toggle theme"
             onClick={toggleTheme}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-ink/60 transition-colors hover:bg-brand/8 hover:text-brand"
+            aria-label="Toggle theme"
+            className="
+            flex
+            h-10
+            w-10
+            items-center
+            justify-center
+            rounded-full
+            text-slate-600
+            transition
+            hover:bg-[#2E4DB7]/10
+            dark:text-slate-300
+            dark:hover:bg-[#5B8CFF]/10
+          "
           >
-            {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+            {mounted && resolvedTheme === "dark" ? (
+              <Sun size={18} />
+            ) : (
+              <Moon size={18} />
+            )}
           </button>
 
           <button
-            type="button"
-            aria-label="Toggle navigation menu"
-            onClick={() => setIsOpen((prev) => !prev)}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-ink/60 transition-colors hover:bg-brand/8 hover:text-brand xl:hidden"
+            onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle menu"
+            className="
+            xl:hidden
+            flex
+            h-10
+            w-10
+            items-center
+            justify-center
+            rounded-full
+            text-slate-600
+            dark:text-slate-300
+          "
           >
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {isOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
+
         </div>
+
       </nav>
 
+      {/* Mobile Menu */}
+
       <AnimatePresence>
+
         {isOpen && (
+
           <motion.div
-            initial={{ opacity: 0, y: -12 }}
+            initial={{ opacity: 0, y: -15 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.2 }}
-            className="glass absolute inset-x-4 top-[4.75rem] rounded-3xl p-3 shadow-soft xl:hidden"
+            exit={{ opacity: 0, y: -15 }}
+            className="
+            absolute
+            top-[90px]
+            w-[92%]
+            rounded-3xl
+            bg-white/95
+            p-4
+            shadow-xl
+            backdrop-blur-xl
+            xl:hidden
+            dark:bg-slate-900/95
+            dark:shadow-black/30
+          "
           >
-            <div className="flex flex-col gap-1">
+
+            <div className="flex flex-col gap-2">
+
               {NAV_LINKS.map((link) => (
+
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
                   className={cn(
-                    "rounded-xl px-4 py-3 text-sm font-medium transition-colors",
+                    "rounded-xl px-5 py-3 text-[15px] font-medium transition",
                     isActive(link.href)
-                      ? "bg-brand/10 text-brand"
-                      : "text-ink/70 hover:bg-brand/5 hover:text-brand",
+                      ? "bg-[#2E4DB7]/10 text-[#2E4DB7] dark:bg-[#5B8CFF]/10 dark:text-[#5B8CFF]"
+                      : "text-slate-700 hover:bg-[#2E4DB7]/5 dark:text-slate-300 dark:hover:bg-[#5B8CFF]/10"
                   )}
                 >
                   {link.label}
                 </Link>
+
               ))}
+
             </div>
+
           </motion.div>
+
         )}
+
       </AnimatePresence>
+
     </header>
   );
 }

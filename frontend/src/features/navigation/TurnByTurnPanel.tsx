@@ -37,7 +37,7 @@ export function TurnByTurnPanel() {
   }, [routeResponse]);
 
   return (
-    <div className="rounded-3xl border border-hairline bg-white p-5 shadow-soft">
+    <div className="rounded-3xl border border-hairline bg-white p-5 shadow-soft dark:bg-[#0F172A] dark:shadow-black/30">
       <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
         <ListChecks className="h-3.5 w-3.5 text-brand" />
         Route Instructions

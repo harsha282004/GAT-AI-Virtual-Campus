@@ -3,7 +3,7 @@ from __future__ import annotations
 import enum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Enum, Float, ForeignKey
+from sqlalchemy import Boolean, Enum, Float, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -65,6 +65,23 @@ class Edge(Base, TimestampMixin):
     )
     floor_transition: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     accessible: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+    # Tour-viewer hotspot placement (nullable — only meaningful for edges
+    # between two panorama-bearing nodes; yaw above already covers the
+    # horizontal angle, this adds the vertical one plus an optional label
+    # that overrides the direction-derived default, e.g. "Lift to 2nd Floor").
+    hotspot_pitch: Mapped[float | None] = mapped_column(Float, nullable=True, default=0.0)
+    label_override: Mapped[str | None] = mapped_column(String(150), nullable=True)
+
+    # Orientation calibration: the camera angle the *target* panorama should
+    # open with when a user arrives specifically via this edge (Street View
+    # style — continue facing the direction of travel). Distinct from yaw/
+    # hotspot_pitch above, which place the hotspot arrow in the *source*
+    # scene. Null means "use the target panorama's own resting initial_yaw/
+    # initial_pitch instead" (e.g. when jumping in via the sidebar, not by
+    # walking through a hotspot).
+    entry_yaw: Mapped[float | None] = mapped_column(Float, nullable=True)
+    entry_pitch: Mapped[float | None] = mapped_column(Float, nullable=True)
 
     source_node: Mapped[Node] = relationship(
         back_populates="outgoing_edges", foreign_keys=[source_node_id]

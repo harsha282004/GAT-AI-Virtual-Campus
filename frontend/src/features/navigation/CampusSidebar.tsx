@@ -53,7 +53,7 @@ export function CampusSidebar() {
 
   if (isLoading) {
     return (
-      <aside className="flex h-full w-full flex-col gap-3 overflow-y-auto rounded-3xl border border-hairline bg-white p-5 shadow-soft lg:w-72">
+      <aside className="flex h-full w-full flex-col gap-3 overflow-y-auto rounded-3xl border border-hairline bg-white p-5 shadow-soft dark:bg-[#0F172A] dark:shadow-black/30 lg:w-72">
         {Array.from({ length: 5 }).map((_, i) => (
           <Skeleton key={i} className="h-10 w-full" />
         ))}
@@ -62,7 +62,7 @@ export function CampusSidebar() {
   }
 
   return (
-    <aside className="flex h-full w-full flex-col overflow-y-auto rounded-3xl border border-hairline bg-white p-5 shadow-soft lg:w-72">
+    <aside className="flex h-full w-full flex-col overflow-y-auto rounded-3xl border border-hairline bg-white p-5 shadow-soft dark:bg-[#0F172A] dark:shadow-black/30 lg:w-72">
       <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
         <Landmark className="h-3.5 w-3.5" />
         Global Academy of Technology

@@ -30,6 +30,10 @@ data/chroma_db/
 *.pt
 *.pth
 
+# --- Generated tour panoramas (regenerate via scripts/media/build_panoramas.py
+# from the real source photos; too large to track in git) ---
+frontend/public/panoramas/main-building/
+
 # --- Docker / logs ---
 *.log
 

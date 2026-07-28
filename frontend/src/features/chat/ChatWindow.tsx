@@ -54,7 +54,7 @@ export function ChatWindow() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-11rem)] flex-col overflow-hidden rounded-3xl border border-hairline bg-white shadow-soft">
+    <div className="flex h-[calc(100vh-11rem)] flex-col overflow-hidden rounded-3xl border border-hairline bg-white shadow-soft dark:bg-[#0F172A] dark:shadow-black/30">
       <div className="flex items-center justify-between border-b border-hairline px-6 py-4">
         <div>
           <p className="font-display text-sm font-semibold text-ink">GAT Assistant</p>

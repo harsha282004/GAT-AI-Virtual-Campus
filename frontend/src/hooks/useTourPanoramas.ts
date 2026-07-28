@@ -1,25 +1,34 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { buildingsApi } from "@/api/buildings";
+import { tourApi } from "@/api/tour";
 import type { TourPanorama } from "@/types";
 
+const TOUR_BUILDING_CODE = "MAIN";
+
 /**
- * Loads the dummy panorama/hotspot graph from the static JSON asset. Field
- * shapes intentionally mirror the backend's Building/Floor/Room/Panorama
- * naming so this can be swapped for a real API response later with no
- * consumer changes — see docs note in public/panoramas/panoramas.json.
+ * Resolves the Main Building's id (buildings are looked up by code, same
+ * "fetch all, find client-side" pattern used elsewhere — see useBuildings)
+ * then loads its full scene sequence from the backend. Field shapes match
+ * the pre-existing TourPanorama type exactly, so PanoramaViewer, TourSidebar,
+ * TourControls and TourTopBar needed no changes for this swap.
  */
 async function fetchTourPanoramas(): Promise<TourPanorama[]> {
-  const response = await fetch("/panoramas/panoramas.json");
-  if (!response.ok) {
-    throw new Error(`Failed to load panorama metadata (${response.status})`);
+  const buildings = await buildingsApi.list();
+  const mainBuilding = buildings.find((b) => b.code === TOUR_BUILDING_CODE);
+  if (!mainBuilding) {
+    throw new Error(
+      "Main Building tour data not found — has the database been seeded? " +
+        "(run `python scripts/media/build_panoramas.py` then `python scripts/db/seed.py`)",
+    );
   }
-  return response.json();
+  return tourApi.listScenes(mainBuilding.id);
 }
 
 export function useTourPanoramas() {
   return useQuery({
     queryKey: ["tour-panoramas"],
     queryFn: fetchTourPanoramas,
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000,
   });
 }

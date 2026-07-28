@@ -32,6 +32,8 @@ declare module "pannellum-react" {
     width?: string;
     height?: string;
     image: string;
+    // Pannellum's own low-res blur-up image, shown while `image` loads.
+    preview?: string;
     haov?: number;
     vaov?: number;
     vOffset?: number;
@@ -58,6 +60,10 @@ declare module "pannellum-react" {
     showControls?: boolean;
     hotspotDebug?: boolean;
     onLoad?: () => void;
+    // Fires every render frame while the viewer is animating (drag momentum,
+    // auto-rotate, animated lookAt). Cheap direct-DOM-mutation hook point —
+    // never drive React state from it, that would re-render on every frame.
+    onRender?: () => void;
     onScenechange?: () => void;
     onScenechangefadedone?: () => void;
     onError?: (error: unknown) => void;

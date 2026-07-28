@@ -8,6 +8,11 @@ class PanoramaBase(BaseModel):
     image_path: str
     title: str | None = None
     is_placeholder: bool = True
+    sequence_index: int | None = None
+    initial_yaw: float | None = None
+    initial_pitch: float | None = None
+    hfov: float | None = 110.0
+    description: str | None = None
 
 
 class PanoramaCreate(PanoramaBase):
@@ -19,6 +24,11 @@ class PanoramaUpdate(BaseModel):
     image_path: str | None = None
     title: str | None = None
     is_placeholder: bool | None = None
+    sequence_index: int | None = None
+    initial_yaw: float | None = None
+    initial_pitch: float | None = None
+    hfov: float | None = None
+    description: str | None = None
 
 
 class PanoramaRead(PanoramaBase):

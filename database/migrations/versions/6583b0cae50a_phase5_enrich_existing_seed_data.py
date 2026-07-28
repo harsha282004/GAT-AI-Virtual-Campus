@@ -12,15 +12,15 @@ Revises: 94093853d903
 Create Date: 2026-07-24 22:25:39.243632
 
 """
+
 from typing import Sequence, Union
 
 import sqlalchemy as sa
 from alembic import op
 
-
 # revision identifiers, used by Alembic.
-revision: str = '6583b0cae50a'
-down_revision: Union[str, Sequence[str], None] = '94093853d903'
+revision: str = "6583b0cae50a"
+down_revision: Union[str, Sequence[str], None] = "94093853d903"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -72,16 +72,14 @@ NODE_TYPES = [
 def upgrade() -> None:
     bind = op.get_bind()
 
-    edge_stmt = sa.text(
-        """
+    edge_stmt = sa.text("""
         UPDATE edges SET direction = CAST(:direction AS edge_direction)
         FROM nodes sn, nodes tn
         WHERE edges.source_node_id = sn.id
           AND edges.target_node_id = tn.id
           AND sn.name = :source_name
           AND tn.name = :target_name
-        """
-    )
+        """)
     for source_name, target_name, direction in EDGE_DIRECTIONS:
         bind.execute(
             edge_stmt,

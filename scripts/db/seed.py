@@ -7,6 +7,7 @@ Safe to re-run: exits early if a campus with the same name already exists,
 rather than duplicating or deleting data.
 """
 
+import json
 import logging
 import sys
 from pathlib import Path
@@ -30,11 +31,143 @@ logger = logging.getLogger("seed")
 
 CAMPUS_NAME = "Global Academy of Technology"
 
+# Written by scripts/media/build_panoramas.py from the real source photos —
+# run that script first (see docs/adding_real_photos.md) or this section is
+# skipped with a warning rather than failing the whole seed.
+MAIN_BUILDING_MANIFEST = (
+    Path(__file__).resolve().parents[2]
+    / "frontend"
+    / "public"
+    / "panoramas"
+    / "main-building"
+    / "manifest.json"
+)
+
+# No surveyed real-world distance exists between consecutive tour photos —
+# this is a deliberate approximation (documented in docs/adding_real_photos.md)
+# used only for walking-time estimates and A* tie-breaking, not shown to users
+# as a precise figure.
+SEQUENTIAL_STEP_DISTANCE_M = 4.0
+
+
+def seed_main_building(db: Session, campus: Campus) -> None:
+    """Seed the Main Building tour (real Insta360 photos) from the manifest
+    produced by scripts/media/build_panoramas.py. Each floor's numbered
+    photos become a sequential chain of Node+Panorama+Edge rows — no
+    cross-floor connections are generated (see docs/adding_real_photos.md for
+    how to add staircase/lift edges once you know which photo numbers they
+    are)."""
+    existing = (
+        db.query(Building)
+        .filter(Building.campus_id == campus.id, Building.name == "Main Building")
+        .first()
+    )
+    if existing is not None:
+        logger.info("'Main Building' already seeded (id=%s) — skipping.", existing.id)
+        return
+
+    if not MAIN_BUILDING_MANIFEST.is_file():
+        logger.warning(
+            "No manifest at %s — run `python scripts/media/build_panoramas.py` first "
+            "to seed the Main Building tour. Skipping.",
+            MAIN_BUILDING_MANIFEST,
+        )
+        return
+
+    manifest = json.loads(MAIN_BUILDING_MANIFEST.read_text(encoding="utf-8"))
+
+    building = Building(
+        campus_id=campus.id,
+        name="Main Building",
+        code="MAIN",
+        description="The main academic block — entrance plus four floors, real 360° photos.",
+    )
+    db.add(building)
+    db.flush()
+
+    for floor_data in manifest["floors"]:
+        floor = Floor(building_id=building.id, level=floor_data["level"], name=floor_data["name"])
+        db.add(floor)
+        db.flush()
+
+        scenes = sorted(floor_data["scenes"], key=lambda s: s["index"])
+        nodes: list[Node] = []
+        for position, scene in enumerate(scenes):
+            is_first_entrance = floor_data["slug"] == "entrance" and position == 0
+            node = Node(
+                campus_id=campus.id,
+                building_id=building.id,
+                floor_id=floor.id,
+                name=f"{floor_data['name']} — Scene {scene['index']:02d}",
+                node_type=NodeType.ENTRANCE if is_first_entrance else NodeType.CORRIDOR,
+                pos_x=float(position) * SEQUENTIAL_STEP_DISTANCE_M,
+                pos_y=0.0,
+            )
+            db.add(node)
+            nodes.append(node)
+        db.flush()
+
+        for node, scene in zip(nodes, scenes, strict=True):
+            db.add(
+                Panorama(
+                    node_id=node.id,
+                    image_path=scene["primary"],
+                    title=node.name,
+                    is_placeholder=False,
+                    sequence_index=scene["index"],
+                    initial_yaw=0.0,
+                    initial_pitch=0.0,
+                    hfov=110.0,
+                )
+            )
+
+        for a, b in zip(nodes, nodes[1:], strict=False):
+            walking_time = SEQUENTIAL_STEP_DISTANCE_M / AVERAGE_WALK_SPEED_MPS / 60
+            db.add_all(
+                [
+                    Edge(
+                        source_node_id=a.id,
+                        target_node_id=b.id,
+                        distance=SEQUENTIAL_STEP_DISTANCE_M,
+                        is_bidirectional=False,
+                        edge_type=EdgeType.CORRIDOR,
+                        yaw=0.0,
+                        walking_time=walking_time,
+                        direction=EdgeDirection.FORWARD,
+                        # entry_yaw/entry_pitch intentionally left unset here:
+                        # app.api.v1.tour applies the forward/back default at
+                        # read time until a real per-scene value is generated
+                        # (see docs/adding_real_photos.md).
+                    ),
+                    Edge(
+                        source_node_id=b.id,
+                        target_node_id=a.id,
+                        distance=SEQUENTIAL_STEP_DISTANCE_M,
+                        is_bidirectional=False,
+                        edge_type=EdgeType.CORRIDOR,
+                        yaw=180.0,
+                        walking_time=walking_time,
+                        direction=EdgeDirection.BACK,
+                    ),
+                ]
+            )
+
+        logger.info("Seeded floor '%s' with %d scenes.", floor_data["name"], len(nodes))
+
+    logger.info("Main Building seed complete: building_id=%s", building.id)
+
 
 def seed(db: Session) -> None:
     existing = db.query(Campus).filter(Campus.name == CAMPUS_NAME).first()
     if existing is not None:
-        logger.info("Campus '%s' already exists (id=%s) — skipping seed.", CAMPUS_NAME, existing.id)
+        logger.info(
+            "Campus '%s' already exists (id=%s) — skipping base seed, "
+            "still checking Main Building.",
+            CAMPUS_NAME,
+            existing.id,
+        )
+        seed_main_building(db, existing)
+        db.commit()
         return
 
     campus = Campus(
@@ -630,6 +763,8 @@ def seed(db: Session) -> None:
             ),
         ]
     )
+
+    seed_main_building(db, campus)
 
     db.commit()
     logger.info("Seed complete: campus_id=%s", campus.id)

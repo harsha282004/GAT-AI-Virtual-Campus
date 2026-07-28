@@ -25,7 +25,7 @@ export default function NavigationPage() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           <div className="space-y-4 lg:col-span-3">
-            <div className="rounded-3xl border border-hairline bg-white p-4 shadow-soft">
+            <div className="rounded-3xl border border-hairline bg-white p-4 shadow-soft dark:bg-[#0F172A] dark:shadow-black/30">
               <AutocompleteSearch />
               <div className="mt-4">
                 <CurrentLocationSelect />

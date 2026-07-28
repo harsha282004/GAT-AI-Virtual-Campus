@@ -23,7 +23,7 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-center gap-2 rounded-2xl border border-hairline bg-white p-2"
+      className="flex items-center gap-2 rounded-2xl border border-hairline bg-white p-2 dark:bg-[#0F172A]"
     >
       <button
         type="button"

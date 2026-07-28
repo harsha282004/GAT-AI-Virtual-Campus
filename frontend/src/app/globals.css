@@ -2,66 +2,280 @@
 @tailwind components;
 @tailwind utilities;
 
+/* -------------------------------- */
+/* Theme tokens (light default, dark override) */
+/* -------------------------------- */
+
+:root {
+  --color-canvas: 248 251 255;   /* #F8FBFF */
+  --color-ink: 22 33 62;         /* #16213E */
+  --color-muted: 93 110 132;     /* #5D6E84 */
+  --color-hairline: 231 238 248; /* #E7EEF8 */
+}
+
+.dark {
+  --color-canvas: 2 6 23;        /* #020617 */
+  --color-ink: 255 255 255;      /* #FFFFFF */
+  --color-muted: 203 213 225;    /* slate-300 */
+  --color-hairline: 51 65 85;    /* slate-700 */
+}
+
+/* -------------------------------- */
+/* Base */
+/* -------------------------------- */
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  @apply bg-canvas-gradient bg-fixed text-ink antialiased;
+  background: rgb(var(--color-canvas));
+  color: rgb(var(--color-ink));
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 ::selection {
-  @apply bg-brand/20 text-ink;
+  background: rgba(46, 77, 183, 0.2);
+  color: #17306D;
 }
 
+.dark ::selection {
+  background: rgba(91, 140, 255, 0.3);
+  color: #ffffff;
+}
+
+/* -------------------------------- */
+/* Smooth theme transition, globally */
+/* -------------------------------- */
+
+*,
+*::before,
+*::after {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* -------------------------------- */
+/* Utilities */
+/* -------------------------------- */
+
 @layer utilities {
-  /* Floating glass surfaces (navbar, panels) — light theme only, per design spec */
+
   .glass {
-    @apply border border-white/60 bg-white/80 backdrop-blur-xl;
+    background: rgba(255, 255, 255, .82);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border: 1px solid rgba(255, 255, 255, .45);
+    box-shadow: 0 15px 40px rgba(23, 48, 109, .08);
   }
 
-  .section-padding {
-    @apply px-6 py-24 sm:px-10 lg:px-16;
+  .dark .glass {
+    background: rgba(15, 23, 42, .82);
+    border: 1px solid rgba(51, 65, 85, .6);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, .3);
   }
 
   .container-page {
-    @apply mx-auto w-full max-w-7xl;
+    max-width: 1350px;
+    width: 100%;
+    margin: 0 auto;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  @media (min-width:1024px) {
+    .container-page {
+      padding-left: 32px;
+      padding-right: 32px;
+    }
+  }
+
+  .section-padding {
+    padding-top: 96px;
+    padding-bottom: 96px;
   }
 
   .text-gradient-brand {
-    @apply bg-gradient-to-r from-brand to-brand-dark bg-clip-text text-transparent;
+    background: linear-gradient(90deg, #17306D, #2E4DB7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   .gradient-underline {
     position: relative;
   }
+
   .gradient-underline::after {
     content: "";
     position: absolute;
     left: 0;
-    bottom: -0.6rem;
+    bottom: -12px;
+    width: 70px;
     height: 4px;
-    width: 64px;
-    border-radius: 9999px;
-    background: linear-gradient(90deg, #2344d4 0%, #7c6feb 100%);
+    border-radius: 999px;
+    background: linear-gradient(90deg, #17306D, #2E4DB7);
   }
+
   .gradient-underline--center::after {
     left: 50%;
     transform: translateX(-50%);
   }
+
 }
 
-/* Thin, brand-toned scrollbar (WebKit) — purely cosmetic, degrades gracefully elsewhere */
+/* -------------------------------- */
+/* Background */
+/* -------------------------------- */
+
+body::before {
+
+  content: "";
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: -2;
+
+  background:
+    radial-gradient(circle at top left,
+      rgba(46, 77, 183, .05),
+      transparent 35%),
+
+    radial-gradient(circle at bottom right,
+      rgba(46, 77, 183, .04),
+      transparent 30%),
+
+    rgb(var(--color-canvas));
+}
+
+.dark body::before {
+
+  background:
+    radial-gradient(circle at top left,
+      rgba(91, 140, 255, .08),
+      transparent 35%),
+
+    radial-gradient(circle at bottom right,
+      rgba(91, 140, 255, .06),
+      transparent 30%),
+
+    rgb(var(--color-canvas));
+}
+
+body::after {
+
+  content: "";
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: -1;
+
+  opacity: .04;
+
+  background-image:
+    linear-gradient(rgba(46, 77, 183, .4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(46, 77, 183, .4) 1px, transparent 1px);
+
+  background-size: 70px 70px;
+}
+
+.dark body::after {
+  opacity: .06;
+
+  background-image:
+    linear-gradient(rgba(91, 140, 255, .4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 140, 255, .4) 1px, transparent 1px);
+}
+
+/* -------------------------------- */
+/* Scrollbar */
+/* -------------------------------- */
+
 ::-webkit-scrollbar {
   width: 10px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background-color: theme("colors.hairline");
-  border-radius: 9999px;
+  background: rgba(46, 77, 183, .25);
+  border-radius: 999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background-color: theme("colors.brand.DEFAULT" / 40%);
+  background: rgba(46, 77, 183, .45);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(91, 140, 255, .3);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(91, 140, 255, .5);
+}
+
+/* -------------------------------- */
+/* Images */
+/* -------------------------------- */
+
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* -------------------------------- */
+/* Pannellum (360 tour viewer) */
+/* -------------------------------- */
+
+/* The compass is purely decorative in pannellum's own CSS — clicking it to
+   reset the view is wired in PanoramaViewer.tsx; this just signals it's
+   interactive. */
+.pnlm-compass {
+  cursor: pointer;
+}
+
+/* Hotspot entrance animation — applied via a plain class name (not a
+   Tailwind utility) since the hotspot markup is injected as a raw HTML
+   string at runtime by pannellum, not compiled through Tailwind's JIT. */
+@keyframes tourHotspotIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.tour-hotspot-enter {
+  animation: tourHotspotIn 280ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-hotspot-enter {
+    animation: none;
+  }
+
+  /* Decorative pulse rings (hotspot halo, minimap current-position dot) —
+     purely ambient motion, not conveying state, so reduced-motion drops it
+     globally rather than patching each usage. Loading spinners
+     (animate-spin) and skeleton shimmer (animate-pulse) are left alone:
+     those communicate real in-progress state, which reduced-motion guidance
+     (WCAG 2.3.3) treats differently from decorative effects. */
+  .animate-ping {
+    animation: none;
+  }
 }

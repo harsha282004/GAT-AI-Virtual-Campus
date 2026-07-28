@@ -29,7 +29,7 @@ export function CurrentLocationSelect() {
             const node = sortedNodes.find((n) => n.id === id);
             if (node) setCurrentLocation(node.id, node.name);
           }}
-          className="w-full rounded-xl border border-hairline bg-white px-4 py-2.5 text-sm text-ink focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+          className="w-full rounded-xl border border-hairline bg-white px-4 py-2.5 text-sm text-ink focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 dark:bg-[#0F172A]"
         >
           <option value="" disabled>
             Select your starting point…
