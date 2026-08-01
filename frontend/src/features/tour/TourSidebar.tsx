@@ -10,7 +10,14 @@ import type { TourPanorama } from "@/types";
 // list (a future building) sort alphabetically after these. Mirrors
 // FloorSelector's ordering so the sidebar and the in-viewer floor tabs
 // never disagree.
-const FLOOR_ORDER = ["Entrance", "Ground Floor", "First Floor", "Second Floor", "Third Floor"];
+const FLOOR_ORDER = [
+  "Entrance",
+  "Ground Floor",
+  "First Floor",
+  "Second Floor",
+  "Third Floor",
+  "Central Quadrangle",
+];
 
 function floorSortIndex(floor: string): number {
   const index = FLOOR_ORDER.indexOf(floor);

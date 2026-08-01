@@ -43,11 +43,15 @@ export function validatePanoramaEngine(engine: PanoramaEngine): PanoramaValidati
       });
     }
 
-    // Symmetric backward walk from tail must reach head.
+    // Symmetric backward walk from tail must reach head — bounded at
+    // list.head for the same reason toArray() bounds at list.tail: a
+    // staircase connection means .previous can now reach into the
+    // preceding floor, which must not be counted as part of this one.
     const backward: typeof nodes = [];
     let cursor = list.tail;
     while (cursor) {
       backward.push(cursor);
+      if (cursor === list.head) break;
       cursor = cursor.previous?.node ?? null;
     }
     if (backward.length !== nodes.length || backward[backward.length - 1] !== list.head) {

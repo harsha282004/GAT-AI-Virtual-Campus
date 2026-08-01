@@ -22,6 +22,7 @@ import type { HotspotNavigationContext, PanoramaViewerHandle, TourMode } from "@
 import { panoramasApi } from "@/api";
 import {
   GUIDED_TOUR_PHASE_ORDER,
+  applyFloorReclassification,
   buildManualTourHotspots,
   buildPanoramaEngine,
   isNodeUsable,
@@ -78,8 +79,14 @@ export default function TourPage() {
 
   // Computed before the loading/error early returns so the hooks below (which
   // must run unconditionally, same order every render) always have a value —
-  // an empty array/id is a harmless no-op for both.
-  const allPanoramas: TourPanorama[] = useMemo(() => panoramas ?? [], [panoramas]);
+  // an empty array/id is a harmless no-op for both. The Central Quadrangle
+  // reclassification runs once here — every consumer below (sidebar,
+  // minimap, preloader, and the engine) shares this single relabeled array,
+  // so none of them need their own awareness of the special case.
+  const allPanoramas: TourPanorama[] = useMemo(
+    () => applyFloorReclassification(panoramas ?? []),
+    [panoramas],
+  );
 
   // Doubly-linked-list scene graph — the permanent replacement for the old
   // flat-array + findIndex navigation. Built from the same, unmodified tour

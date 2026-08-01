@@ -46,11 +46,17 @@ export class PanoramaLinkedList {
     return this.nodesById.size;
   }
 
+  /** Walks this floor's own head-to-tail sequence. Stops at `this.tail`
+   * explicitly rather than wherever `.next` runs out — cross-floor
+   * staircase connections mean a tail's `.next` can point into the
+   * following floor's list, and this list's own array must still mean
+   * "just this floor," not everything reachable beyond it. */
   toArray(): PanoramaNode[] {
     const out: PanoramaNode[] = [];
     let cursor = this.head;
     while (cursor) {
       out.push(cursor);
+      if (cursor === this.tail) break;
       cursor = cursor.next?.node ?? null;
     }
     return out;

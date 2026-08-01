@@ -10,6 +10,40 @@ const FLOOR_CROSS_REF_KEY: Record<string, "groundFloor" | "firstFloor" | "second
   "Third Floor": "thirdFloor",
 };
 
+/** Staircase connections between floor DLLs — each floor's *last* scene
+ * (by sequence) connects forward into the next floor's *first* scene, and
+ * back again, exactly like any other forward/back link within a floor.
+ * Nothing here is hotspot- or calibration-specific: it only ever sets
+ * node.next/node.previous, which the existing hotspot engine already turns
+ * into a Forward/Back arrow positioned from that node's own initial_yaw. */
+const STAIRCASE_FLOOR_CHAIN = ["Ground Floor", "First Floor", "Second Floor", "Third Floor"] as const;
+
+/** Ground Floor's calibrated scene #5 is a standalone courtyard view, not
+ * part of the corridor walk — reclassified to its own single-scene "floor"
+ * so it gets its own DLL (necessarily head===tail, no next/previous) and
+ * its own sidebar entry, while Ground Floor's real sequence closes the gap
+ * around it (scene #4 links directly to #6). The underlying scene object
+ * (image, panoramaId, calibrated yaw/pitch) is carried through unchanged —
+ * only which floor bucket it sorts into changes. */
+const CENTRAL_QUADRANGLE_SOURCE = { floor: "Ground Floor", sequenceIndex: 5 } as const;
+const CENTRAL_QUADRANGLE_LABEL = "Central Quadrangle";
+
+/**
+ * Applies the Central Quadrangle reclassification to a raw scene list.
+ * Called once, up front, on the same array every consumer on the tour page
+ * shares (sidebar, minimap, preloader, and the engine below) — so there is
+ * exactly one place that knows "scene #5 isn't really Ground Floor," not a
+ * separate copy of that knowledge in each consumer.
+ */
+export function applyFloorReclassification(scenes: TourPanorama[]): TourPanorama[] {
+  return scenes.map((scene) =>
+    scene.floor === CENTRAL_QUADRANGLE_SOURCE.floor &&
+    scene.sequenceIndex === CENTRAL_QUADRANGLE_SOURCE.sequenceIndex
+      ? { ...scene, floor: CENTRAL_QUADRANGLE_LABEL }
+      : scene,
+  );
+}
+
 /** Holds one PanoramaLinkedList per floor/route (Entrance, Ground Floor,
  * First Floor, Second Floor, Third Floor today; Annex Route, Back Door
  * Route, Auditorium Entrance Route are supported by the same structure the
@@ -69,7 +103,7 @@ export function buildPanoramaEngine(scenes: TourPanorama[]): PanoramaEngine {
     const list = new PanoramaLinkedList(floorName);
 
     let previousScene: TourPanorama | null = null;
-    for (const scene of ordered) {
+    ordered.forEach((scene, index) => {
       const node = new PanoramaNode({
         sceneId: scene.id,
         panoramaId: scene.panoramaId,
@@ -79,7 +113,10 @@ export function buildPanoramaEngine(scenes: TourPanorama[]): PanoramaEngine {
         room: scene.room,
         imagePath: scene.image,
         previewImagePath: scene.previewImage ?? null,
-        sequenceIndex: scene.sequenceIndex ?? null,
+        // 1-based position in *this floor's own* (possibly gapped, after
+        // Central Quadrangle reclassification) sequence — not the raw
+        // stored sequence_index — so "Scene X of Y" never shows a gap.
+        sequenceIndex: index + 1,
         yaw: scene.yaw,
         pitch: scene.pitch,
         hfov: scene.hfov,
@@ -107,7 +144,7 @@ export function buildPanoramaEngine(scenes: TourPanorama[]): PanoramaEngine {
       }
 
       previousScene = scene;
-    }
+    });
 
     engine._registerFloor(list);
   }
@@ -150,6 +187,34 @@ export function buildPanoramaEngine(scenes: TourPanorama[]): PanoramaEngine {
       const floorKey = FLOOR_CROSS_REF_KEY[target.floor];
       if (floorKey) node.crossReferences[floorKey] = target;
     }
+  }
+
+  // Third pass: staircase connections between floors. Each floor's tail
+  // (its last scene) links forward into the next floor's head (its first
+  // scene) exactly like an ordinary same-floor link — same PanoramaLink
+  // shape, same entry-orientation rule (always the *target's* own
+  // calibrated yaw/pitch), so Manual Tour, Guided Tour and the hotspot
+  // engine all cross the boundary with no awareness that anything special
+  // happened. Only next/previous pointers are touched; each floor's own
+  // PanoramaLinkedList (head/tail/size) is untouched.
+  for (let i = 0; i < STAIRCASE_FLOOR_CHAIN.length - 1; i++) {
+    const lower = engine.getFloor(STAIRCASE_FLOOR_CHAIN[i]);
+    const upper = engine.getFloor(STAIRCASE_FLOOR_CHAIN[i + 1]);
+    if (!lower?.tail || !upper?.head) continue;
+
+    const staircaseDown = lower.tail;
+    const staircaseUp = upper.head;
+
+    staircaseDown.next = {
+      node: staircaseUp,
+      entryYaw: staircaseUp.yaw,
+      entryPitch: staircaseUp.pitch,
+    };
+    staircaseUp.previous = {
+      node: staircaseDown,
+      entryYaw: staircaseDown.yaw + 180,
+      entryPitch: staircaseDown.pitch,
+    };
   }
 
   return engine;
