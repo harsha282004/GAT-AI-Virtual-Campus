@@ -76,11 +76,12 @@ export default function TourPage() {
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [placingCrossFloor, setPlacingCrossFloor] = useState(false);
   const [pickedCoords, setPickedCoords] = useState<{ yaw: number; pitch: number } | null>(null);
-  // Set when a marker in the "every hotspot, project-wide" authoring overlay
-  // is clicked (see PanoramaViewer's editorCrossFloorHotspots prop) — unlike
-  // pickedCoords/placingCrossFloor this is intentionally NOT tied to
-  // currentId, since the clicked hotspot may belong to a different scene
-  // than the one currently open.
+  // Set when a marker in the authoring overlay is clicked (see
+  // PanoramaViewer's editorCrossFloorHotspots prop) — PanoramaViewer only
+  // ever renders a hotspot on scenes named in its own visible_from_node_ids,
+  // so a click here always refers to a hotspot visible from the CURRENT
+  // scene (it may also be visible from others — see visible_from_node_ids
+  // on the full hotspot DTO, which the edit form reads separately).
   const [editingHotspotId, setEditingHotspotId] = useState<number | null>(null);
   // Set only when navigating by walking through a hotspot/Next/Previous —
   // Street View style "keep facing the direction of travel". Sidebar/
@@ -124,23 +125,6 @@ export default function TourPage() {
   const isEditorMode =
     mode === "manual" && process.env.NEXT_PUBLIC_ENABLE_CROSS_FLOOR_PLACEMENT === "true";
 
-  // Every cross-floor hotspot in the project, reshaped for PanoramaViewer's
-  // authoring overlay (string scene ids to match TourPanorama.id). Recomputed
-  // whenever the underlying list changes so add/delete/update reflect with
-  // no page refresh — see useCrossFloorHotspots()/refetchCrossFloorHotspots.
-  const authoringHotspots: AuthoringCrossFloorHotspot[] = useMemo(
-    () =>
-      (crossFloorHotspots ?? []).map((h) => ({
-        id: h.id,
-        sourceSceneId: String(h.source_node_id),
-        targetSceneId: String(h.target_node_id),
-        yaw: h.yaw,
-        pitch: h.pitch,
-        label: h.label,
-      })),
-    [crossFloorHotspots],
-  );
-
   const currentNode = currentId ? engine.getNode(currentId) : undefined;
   // Before the very first navigation, currentId is still null — fall back
   // to the engine's own first node (never the raw allPanoramas[0] object
@@ -153,6 +137,24 @@ export default function TourPage() {
   // never had, like cross-floor hotspots.
   const currentNodeOrFallback =
     currentNode ?? (allPanoramas[0] ? engine.getNode(allPanoramas[0].id) : undefined);
+
+  // Dev-only authoring overlay data: the engine already scoped
+  // node.crossFloorHotspots down to exactly the hotspots whose
+  // visible_from_node_ids names THIS node (see PanoramaEngine's fourth
+  // pass) — so this is just a type adapter, no filtering happens here.
+  // undefined outside editor mode, so PanoramaViewer's normal runtime path
+  // is untouched.
+  const editorCrossFloorHotspots: AuthoringCrossFloorHotspot[] | undefined =
+    isEditorMode && currentNodeOrFallback
+      ? currentNodeOrFallback.crossFloorHotspots.map((link) => ({
+          id: Number(link.id),
+          targetSceneId: link.target.sceneId,
+          yaw: link.yaw,
+          pitch: link.pitch,
+          label: link.label,
+        }))
+      : undefined;
+
   const current = currentNodeOrFallback ? toManualTourPanorama(currentNodeOrFallback) : allPanoramas[0];
   const displayPanorama: TourPanorama = entryOrientation
     ? { ...current, yaw: entryOrientation.yaw, pitch: entryOrientation.pitch }
@@ -278,7 +280,11 @@ export default function TourPage() {
   // Cross-Floor Hotspot placement tool — an admin-only visual layer, kept
   // entirely separate from orientation calibration (never touches
   // initial_yaw/initial_pitch or any Edge/Panorama row).
-  async function handleSaveCrossFloorHotspot(targetSceneId: string, label: string) {
+  async function handleSaveCrossFloorHotspot(
+    targetSceneId: string,
+    label: string,
+    visibleFromSceneIds: string[],
+  ) {
     if (!currentNodeOrFallback || !pickedCoords) return;
     await crossFloorHotspotsApi.create({
       source_node_id: Number(currentNodeOrFallback.sceneId),
@@ -286,6 +292,7 @@ export default function TourPage() {
       yaw: pickedCoords.yaw,
       pitch: pickedCoords.pitch,
       label: label.trim() || null,
+      visible_from_node_ids: visibleFromSceneIds.map(Number),
     });
     setPickedCoords(null);
     await refetchCrossFloorHotspots();
@@ -310,7 +317,12 @@ export default function TourPage() {
   // Reuses the generic PUT /{id} the CRUD router already exposed — no
   // backend change required. source_node_id is intentionally preserved
   // as-is (only destination/label are editable from this form).
-  async function handleUpdateCrossFloorHotspot(id: number, targetSceneId: string, label: string) {
+  async function handleUpdateCrossFloorHotspot(
+    id: number,
+    targetSceneId: string,
+    label: string,
+    visibleFromSceneIds: string[],
+  ) {
     const existing = (crossFloorHotspots ?? []).find((h) => h.id === id);
     if (!existing) return;
     await crossFloorHotspotsApi.update(id, {
@@ -319,6 +331,7 @@ export default function TourPage() {
       yaw: existing.yaw,
       pitch: existing.pitch,
       label: label.trim() || null,
+      visible_from_node_ids: visibleFromSceneIds.map(Number),
     });
     setEditingHotspotId(null);
     await refetchCrossFloorHotspots();
@@ -391,7 +404,7 @@ export default function TourPage() {
           // unchanged; an array (editor mode) swaps in the project-wide
           // authoring overlay instead — see PanoramaViewer's own doc
           // comment on this prop.
-          editorCrossFloorHotspots={isEditorMode ? authoringHotspots : undefined}
+          editorCrossFloorHotspots={editorCrossFloorHotspots}
           onEditCrossFloorHotspot={handleStartEditCrossFloorHotspot}
           className="h-full w-full"
         />

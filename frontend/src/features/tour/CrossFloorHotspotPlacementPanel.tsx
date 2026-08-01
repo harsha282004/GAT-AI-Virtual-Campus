@@ -6,6 +6,8 @@ import { Crosshair, Target, Trash2 } from "lucide-react";
 import { cn } from "@/utils";
 import type { CrossFloorHotspotDto, TourPanorama } from "@/types";
 
+import { VisibleFromScenesSelect } from "./VisibleFromScenesSelect";
+
 interface CrossFloorHotspotPlacementPanelProps {
   sceneId: string;
   allPanoramas: TourPanorama[];
@@ -14,14 +16,19 @@ interface CrossFloorHotspotPlacementPanelProps {
   onTogglePlacing: () => void;
   pickedCoords: { yaw: number; pitch: number } | null;
   onClearPick: () => void;
-  onSave: (targetSceneId: string, label: string) => Promise<void>;
+  onSave: (targetSceneId: string, label: string, visibleFromSceneIds: string[]) => Promise<void>;
   onDelete: (id: number) => Promise<void>;
   /** Set when a marker in the authoring overlay (any scene) was clicked —
    * the ONLY way an edit starts; there is no browsing/list UI in this panel
    * anymore. Drives the edit form below regardless of which scene is open. */
   editingHotspotId: number | null;
   onCancelEdit: () => void;
-  onUpdate: (id: number, targetSceneId: string, label: string) => Promise<void>;
+  onUpdate: (
+    id: number,
+    targetSceneId: string,
+    label: string,
+    visibleFromSceneIds: string[],
+  ) => Promise<void>;
 }
 
 /**
@@ -30,6 +37,12 @@ interface CrossFloorHotspotPlacementPanelProps {
  * form / edit-hotspot form). There is no hotspot list here — creating is
  * "Place" + click the panorama; editing/deleting is "click the marker in
  * the panorama", handled via editingHotspotId being set from outside.
+ *
+ * Both the new-hotspot and edit forms include "Visible From Scenes" — the
+ * ONLY thing that controls where a hotspot renders (see PanoramaEngine's
+ * fourth pass). New hotspots default to just the current scene checked;
+ * nothing is ever auto-added beyond that without the admin explicitly
+ * checking more boxes.
  */
 export function CrossFloorHotspotPlacementPanel({
   sceneId,
@@ -47,6 +60,7 @@ export function CrossFloorHotspotPlacementPanel({
 }: CrossFloorHotspotPlacementPanelProps) {
   const [targetSceneId, setTargetSceneId] = useState("");
   const [label, setLabel] = useState("");
+  const [visibleFromIds, setVisibleFromIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
@@ -60,7 +74,16 @@ export function CrossFloorHotspotPlacementPanel({
     if (!editing) return;
     setTargetSceneId(String(editing.target_node_id));
     setLabel(editing.label ?? "");
+    setVisibleFromIds(editing.visible_from_node_ids.map(String));
   }, [editing]);
+
+  // New-hotspot flow: the moment a spot is picked, default "Visible From"
+  // to just the scene the admin is standing on right now — the one
+  // explicit default this feature has (see the panel's own doc comment);
+  // anything beyond that is a deliberate, manual checkbox.
+  useEffect(() => {
+    if (pickedCoords) setVisibleFromIds([sceneId]);
+  }, [pickedCoords, sceneId]);
 
   const floorGroups = useMemo(() => {
     const excludeId = editing ? String(editing.source_node_id) : sceneId;
@@ -78,9 +101,10 @@ export function CrossFloorHotspotPlacementPanel({
     if (!pickedCoords || !targetSceneId) return;
     setSaving(true);
     try {
-      await onSave(targetSceneId, label);
+      await onSave(targetSceneId, label, visibleFromIds);
       setTargetSceneId("");
       setLabel("");
+      setVisibleFromIds([]);
     } finally {
       setSaving(false);
     }
@@ -90,7 +114,7 @@ export function CrossFloorHotspotPlacementPanel({
     if (!editing || !targetSceneId) return;
     setSaving(true);
     try {
-      await onUpdate(editing.id, targetSceneId, label);
+      await onUpdate(editing.id, targetSceneId, label, visibleFromIds);
     } finally {
       setSaving(false);
     }
@@ -106,7 +130,7 @@ export function CrossFloorHotspotPlacementPanel({
   }
 
   return (
-    <div className="glass flex w-72 flex-col gap-2 rounded-2xl border-2 border-dashed border-sky-400/70 p-3 text-xs shadow-soft">
+    <div className="glass flex w-80 flex-col gap-2 rounded-2xl border-2 border-dashed border-sky-400/70 p-3 text-xs shadow-soft">
       <div className="flex items-center justify-between gap-2">
         <span className="flex items-center gap-1.5 font-semibold uppercase tracking-wide text-sky-600">
           <Target className="h-3.5 w-3.5" />
@@ -159,6 +183,12 @@ export function CrossFloorHotspotPlacementPanel({
             onChange={(event) => setLabel(event.target.value)}
             placeholder="Label (optional)"
             className="w-full rounded-lg border border-hairline bg-white px-2 py-1.5 text-xs dark:bg-[#0F172A]"
+          />
+          <VisibleFromScenesSelect
+            allPanoramas={allPanoramas}
+            excludeSceneId={targetSceneId || undefined}
+            selectedIds={visibleFromIds}
+            onChange={setVisibleFromIds}
           />
           <div className="flex gap-2">
             <button
@@ -221,6 +251,12 @@ export function CrossFloorHotspotPlacementPanel({
             onChange={(event) => setLabel(event.target.value)}
             placeholder="Label (optional)"
             className="w-full rounded-lg border border-hairline bg-white px-2 py-1.5 text-xs dark:bg-[#0F172A]"
+          />
+          <VisibleFromScenesSelect
+            allPanoramas={allPanoramas}
+            excludeSceneId={targetSceneId || undefined}
+            selectedIds={visibleFromIds}
+            onChange={setVisibleFromIds}
           />
           <div className="flex gap-2">
             <button

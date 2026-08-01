@@ -70,20 +70,23 @@ interface PanoramaViewerProps {
    * untouched). */
   placementModeActive?: boolean;
   onPlacementPick?: (yaw: number, pitch: number) => void;
-  /** Dev-only authoring reference overlay: when provided (even as an empty
-   * array), every project-wide cross-floor hotspot renders here — not just
-   * this scene's own — for use as a visual reference while placing new
-   * ones. Replaces (not adds to) the normal per-scene cross_floor entries
-   * from `panorama.hotspots`, so nothing is ever double-rendered. `undefined`
-   * (the default) means normal runtime: only this scene's own hotspots,
-   * exactly as before this feature existed. */
+  /** Dev-only authoring overlay: when provided (even as an empty array),
+   * this is ALREADY this exact panorama's own slice of the visibility-
+   * scoped hotspot list — the caller (page.tsx) reads it straight off the
+   * engine's per-node index (`node.crossFloorHotspots`, built from each
+   * hotspot's `visible_from_node_ids`), so no filtering happens here. A
+   * hotspot only ever renders on a scene explicitly listed in its own
+   * visibility set, never inferred, never global. Replaces (not adds to)
+   * the normal per-scene cross_floor entries from `panorama.hotspots`, so
+   * nothing is ever double-rendered. `undefined` (the default) means normal
+   * runtime: only this scene's own hotspots, exactly as before this feature
+   * existed. */
   editorCrossFloorHotspots?: AuthoringCrossFloorHotspot[];
   onEditCrossFloorHotspot?: (hotspotId: number) => void;
 }
 
 export interface AuthoringCrossFloorHotspot {
   id: number;
-  sourceSceneId: string;
   targetSceneId: string;
   yaw: number;
   pitch: number;
@@ -238,22 +241,24 @@ function buildTooltip(hotspot: TourHotspot, onSelect: (targetId: string) => void
 }
 
 /**
- * Authoring-overlay marker (dev-only): every project-wide cross-floor
- * hotspot, not just this scene's own. Deliberately camouflaged — a small,
- * glassy, near-invisible dot at rest (25-35% opacity, pale blue/white tint,
- * thin white outline, soft shadow, no solid color fill) that only "arrives"
- * on hover (brighten, scale up slightly, soft glow), so it reads as a
- * hidden reference marker rather than a loud icon. Clicking opens
- * edit/delete, never navigates — authoring, not touring.
+ * Authoring-overlay marker (dev-only): a cross-floor hotspot whose
+ * visible_from_node_ids names this exact panorama (see the
+ * editorCrossFloorHotspots prop doc above — the engine already scoped this
+ * list before it got here). Deliberately camouflaged — a small, glassy,
+ * near-invisible dot at rest (25-35% opacity, pale blue/white tint, thin
+ * white outline, soft shadow, no solid color fill) that only "arrives" on
+ * hover (brighten, scale up slightly, soft glow), so it reads as a hidden
+ * reference marker rather than a loud icon. Clicking opens edit/delete,
+ * never navigates — authoring, not touring.
  */
-function buildAuthoringTooltip(hotspot: AuthoringCrossFloorHotspot, isOwnScene: boolean, onEdit: () => void) {
+function buildAuthoringTooltip(hotspot: AuthoringCrossFloorHotspot, onEdit: () => void) {
   return (hotSpotDiv: HTMLElement) => {
     const badgeLabel = hotspot.label ?? `→ scene ${hotspot.targetSceneId}`;
 
     hotSpotDiv.innerHTML = `
       <div class="group relative flex flex-col items-center">
         <div class="pointer-events-none mb-1.5 -translate-y-1 whitespace-nowrap rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg backdrop-blur-sm transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
-          ${badgeLabel}${isOwnScene ? " (this scene)" : ""}
+          ${badgeLabel}
         </div>
         <div class="relative flex h-5 w-5 items-center justify-center rounded-full bg-white/10 opacity-30 shadow-[0_1px_6px_rgba(0,0,0,0.25)] ring-1 ring-white/50 backdrop-blur-md transition-all duration-200 ease-out group-hover:scale-125 group-hover:bg-sky-100/30 group-hover:opacity-100 group-hover:shadow-[0_0_12px_rgba(186,230,253,0.65)] group-hover:ring-white/80">
           <span class="text-white" style="font-size:10px;line-height:1">✎</span>
@@ -509,6 +514,11 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
           const baseHotspots = isEditorOverlayActive
             ? panorama.hotspots.filter((h) => h.type !== "cross_floor")
             : panorama.hotspots;
+          // No filtering needed here: the caller (page.tsx) already hands
+          // us this exact scene's own slice of the visibility-scoped
+          // per-node index the engine builds — see PanoramaEngine's fourth
+          // pass. A hotspot is never rendered on a scene it wasn't
+          // explicitly authored to be visible from.
           const authoringHotspots = editorCrossFloorHotspots ?? [];
           // A count-only key (e.g. "4 hotspots") doesn't change when an
           // existing hotspot is *edited* in place (same count, different
@@ -588,7 +598,6 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
                   );
                 }),
                 ...authoringHotspots.map((hotspot) => {
-                  const isOwnScene = hotspot.sourceSceneId === panorama.id;
                   const handleEditClick = () => onEditCrossFloorHotspot?.(hotspot.id);
                   return (
                     <HotspotMarker
@@ -596,7 +605,7 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
                       type="custom"
                       pitch={safeAngle(hotspot.pitch)}
                       yaw={safeAngle(hotspot.yaw)}
-                      tooltip={buildAuthoringTooltip(hotspot, isOwnScene, handleEditClick)}
+                      tooltip={buildAuthoringTooltip(hotspot, handleEditClick)}
                       handleClick={handleEditClick}
                     />
                   );
