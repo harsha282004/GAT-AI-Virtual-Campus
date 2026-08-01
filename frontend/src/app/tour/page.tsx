@@ -7,7 +7,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ErrorState, PageContainer, Spinner } from "@/components/ui";
 import { cn } from "@/utils";
 import {
-  FloorSelector,
   GuidedTourControls,
   GuidedTourPanel,
   ImmersiveToggle,
@@ -275,18 +274,7 @@ export default function TourPage() {
         >
           <div className="pointer-events-auto flex flex-col items-start gap-2">
             <TourModeToggle mode={mode} onChange={handleModeChange} />
-            {mode === "manual" ? (
-              <>
-                <TourTopBar panorama={current} />
-                <FloorSelector
-                  panoramas={allPanoramas}
-                  currentFloor={current.floor}
-                  onSelectFloor={goToFloor}
-                />
-              </>
-            ) : (
-              <TourTopBar panorama={current} />
-            )}
+            <TourTopBar panorama={current} />
           </div>
           <div className="pointer-events-auto hidden sm:block">
             {mode === "manual" ? (
@@ -348,7 +336,7 @@ export default function TourPage() {
           </div>
         </div>
 
-        {process.env.NODE_ENV === "development" && currentNodeOrFallback && (
+        {process.env.NEXT_PUBLIC_ENABLE_ORIENTATION_CALIBRATION === "true" && currentNodeOrFallback && (
           <div
             className={cn(
               "pointer-events-none absolute bottom-4 left-4 transition-opacity duration-300",

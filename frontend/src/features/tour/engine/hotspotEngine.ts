@@ -19,10 +19,12 @@ export interface ManualTourFloorOption {
 
 /** One Manual Tour hotspot, derived entirely from a PanoramaNode's own
  * links/crossReferences (Sprint 2 Step 1/9) — never a hardcoded array.
- * yaw/pitch/entry* still come from the node's calibrated source imagery
- * data (that positioning is a physical-camera fact, not something a graph
- * pointer can invent) — what's dynamic here is *whether* a hotspot exists
- * and *where it goes*, both driven by the node graph alone. */
+ * Forward/back are placed purely from this node's own calibrated
+ * initial_yaw/initial_pitch (0°/180° from it) — the saved orientation *is*
+ * the reference frame, so these two never read a stored edge yaw. Junction
+ * types (opposite corridor, floor up/down, lift, room) still come from the
+ * real navigation-graph edge data, since their real-world direction can't
+ * be assumed to sit at any fixed offset from forward. */
 export interface ManualTourHotspot {
   kind: ManualTourHotspotKind;
   targetSceneId: string;
@@ -54,34 +56,34 @@ export function buildManualTourHotspots(node: PanoramaNode): ManualTourHotspot[]
   const hotspots: ManualTourHotspot[] = [];
   const refs = node.crossReferences;
 
+  // Forward/back are rebuilt from the calibrated reference alone (this
+  // node's own initial_yaw/initial_pitch) rather than any stored edge yaw —
+  // the calibrated view *is* forward, by definition, so the arrow is always
+  // exactly centered the instant a scene opens; no legacy hotspot data is
+  // read for either of these two. The DLL link itself (node.next/previous)
+  // is still what determines whether the hotspot exists at all.
   if (node.next) {
-    const raw = findRaw(node, "forward", node.next.node.sceneId);
-    if (raw) {
-      hotspots.push({
-        kind: "forward",
-        targetSceneId: node.next.node.sceneId,
-        label: raw.label,
-        yaw: raw.yaw,
-        pitch: raw.pitch,
-        entryYaw: node.next.entryYaw ?? undefined,
-        entryPitch: node.next.entryPitch ?? undefined,
-      });
-    }
+    hotspots.push({
+      kind: "forward",
+      targetSceneId: node.next.node.sceneId,
+      label: "Forward",
+      yaw: node.yaw,
+      pitch: node.pitch,
+      entryYaw: node.next.entryYaw ?? undefined,
+      entryPitch: node.next.entryPitch ?? undefined,
+    });
   }
 
   if (node.previous) {
-    const raw = findRaw(node, "back", node.previous.node.sceneId);
-    if (raw) {
-      hotspots.push({
-        kind: "back",
-        targetSceneId: node.previous.node.sceneId,
-        label: raw.label,
-        yaw: raw.yaw,
-        pitch: raw.pitch,
-        entryYaw: node.previous.entryYaw ?? undefined,
-        entryPitch: node.previous.entryPitch ?? undefined,
-      });
-    }
+    hotspots.push({
+      kind: "back",
+      targetSceneId: node.previous.node.sceneId,
+      label: "Back",
+      yaw: node.yaw + 180,
+      pitch: node.pitch,
+      entryYaw: node.previous.entryYaw ?? undefined,
+      entryPitch: node.previous.entryPitch ?? undefined,
+    });
   }
 
   if (refs.oppositeCorridor) {

@@ -44,11 +44,13 @@ export class PanoramaEngine {
 }
 
 /**
- * Builds the doubly-linked-list engine from the existing, unmodified
- * tour API response (useTourPanoramas -> tourApi.listScenes). Reuses that
- * data verbatim (images, orientation, already-calibrated forward/back entry
- * angles) — it only replaces *how the frontend holds and walks the scene
- * graph*, from a flat array + findIndex to real DLL node links.
+ * Builds the doubly-linked-list engine from the existing, unmodified tour
+ * API response (useTourPanoramas -> tourApi.listScenes). Reuses that data
+ * verbatim (images, each scene's own calibrated initial_yaw/initial_pitch)
+ * — it only replaces *how the frontend holds and walks the scene graph*,
+ * from a flat array + findIndex to real DLL node links whose forward/back
+ * entry orientation is always derived from the target's own calibration,
+ * never a separately-stored edge value.
  */
 export function buildPanoramaEngine(scenes: TourPanorama[]): PanoramaEngine {
   const engine = new PanoramaEngine();
@@ -86,19 +88,19 @@ export function buildPanoramaEngine(scenes: TourPanorama[]): PanoramaEngine {
       });
 
       if (previousScene) {
-        const backHotspot = scene.hotspots.find(
-          (h) => h.type === "back" && h.targetId === previousScene!.id,
-        );
         list.append(
           node,
-          // Walking forward always lands facing this node's own current
-          // resting orientation — reading it live off `scene.yaw/pitch`
-          // (not a separately-stored, and after orientation calibration
-          // potentially stale, edge.entry_yaw) is what makes a saved
-          // recalibration apply to Next/Guided Tour immediately, with no
-          // backend edge writes and no DLL/hotspot-engine changes needed.
+          // Walking forward always lands facing this node's own calibrated
+          // orientation, and walking backward always lands facing exactly
+          // opposite *that* node's own calibrated orientation — both read
+          // live off initial_yaw/initial_pitch (never a separately-stored,
+          // and after recalibration potentially stale, edge.entry_yaw).
+          // This is what makes a saved recalibration apply to Next/
+          // Previous/Guided Tour immediately, with no backend edge writes
+          // and no DLL/hotspot-engine redesign — the saved view is the only
+          // reference either direction ever reads.
           { yaw: scene.yaw, pitch: scene.pitch },
-          { yaw: backHotspot?.entryYaw ?? null, pitch: backHotspot?.entryPitch ?? null },
+          { yaw: previousScene.yaw + 180, pitch: previousScene.pitch },
         );
       } else {
         list.append(node);

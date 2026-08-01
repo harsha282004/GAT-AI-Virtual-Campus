@@ -239,11 +239,24 @@ img {
 /* Pannellum (360 tour viewer) */
 /* -------------------------------- */
 
-/* The compass is purely decorative in pannellum's own CSS — clicking it to
-   reset the view is wired in PanoramaViewer.tsx; this just signals it's
+/* The compass is purely decorative in pannellum's own CSS — press-and-hold
+   to look behind is wired in PanoramaViewer.tsx; this just signals it's
    interactive. */
 .pnlm-compass {
   cursor: pointer;
+}
+
+/* Pannellum's own zoom controls default to top-left (top:0; left:4px),
+   which sits directly under this app's top chrome (mode toggle/breadcrumb)
+   and is effectively unreachable. Floating them at the vertical center of
+   the left edge keeps them clear of every other overlay (top chrome,
+   bottom Manual/Guided Tour bar, minimap/AI Guide panel) — a fixed,
+   always-visible position similar to Google Street View's own zoom rocker. */
+.pnlm-controls-container {
+  top: 50% !important;
+  left: 14px !important;
+  transform: translateY(-50%);
+  z-index: 20;
 }
 
 /* Hotspot entrance animation — applied via a plain class name (not a

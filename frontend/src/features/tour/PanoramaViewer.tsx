@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
-import type { MouseEvent as ReactMouseEvent } from "react";
+import type { SyntheticEvent } from "react";
 
 import { ErrorState, Spinner } from "@/components/ui";
 import { cn } from "@/utils";
@@ -227,6 +227,45 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
       viewerRef.current?.getViewer().lookAt(panorama.pitch, panorama.yaw, panorama.hfov, 800);
     }
 
+    // Hold-to-look-behind on the compass: press and hold rotates smoothly to
+    // exactly opposite the calibrated forward direction; release smoothly
+    // returns to it. Purely a temporary view — never touches saved
+    // orientation, never navigates, nothing is persisted.
+    const lookingBehindRef = useRef(false);
+
+    function startLookBehind() {
+      if (lookingBehindRef.current) return;
+      lookingBehindRef.current = true;
+      viewerRef.current?.getViewer()?.setYaw(panorama.yaw + 180, 500);
+    }
+
+    function endLookBehind() {
+      if (!lookingBehindRef.current) return;
+      lookingBehindRef.current = false;
+      viewerRef.current?.getViewer()?.setYaw(panorama.yaw, 500);
+    }
+
+    // Release can land anywhere (drag off the compass before letting go), so
+    // this listens on window rather than the compass element itself —
+    // otherwise a "hold" could get stuck never returning to center.
+    useEffect(() => {
+      window.addEventListener("mouseup", endLookBehind);
+      window.addEventListener("touchend", endLookBehind);
+      window.addEventListener("touchcancel", endLookBehind);
+      return () => {
+        window.removeEventListener("mouseup", endLookBehind);
+        window.removeEventListener("touchend", endLookBehind);
+        window.removeEventListener("touchcancel", endLookBehind);
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- endLookBehind closes over panorama.yaw directly, re-subscribing per scene is intended
+    }, [panorama.yaw]);
+
+    // A scene change mid-hold (e.g. a keyboard shortcut fired while holding)
+    // must not leave the next scene thinking it's still "looking behind".
+    useEffect(() => {
+      lookingBehindRef.current = false;
+    }, [panorama.id]);
+
     useImperativeHandle(
       ref,
       () => ({
@@ -269,13 +308,13 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
     }
 
     // Pannellum's compass is a purely visual heading indicator with no
-    // built-in interactivity — clicking it to reset the view is our own
+    // built-in interactivity — press-and-hold to look behind is our own
     // addition. Delegated on the wrapper (rather than queried/attached via
     // an effect) since the compass DOM element is destroyed and recreated
     // by pannellum on every scene change; delegation survives that for free.
-    function handleWrapperClick(event: ReactMouseEvent<HTMLDivElement>) {
+    function handleWrapperPressStart(event: SyntheticEvent<HTMLDivElement>) {
       if ((event.target as HTMLElement).closest(".pnlm-compass")) {
-        resetView();
+        startLookBehind();
       }
     }
 
@@ -283,11 +322,16 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
     // mutates the DOM directly instead of setState — a per-frame React
     // re-render of the whole tour page would fight the "60fps, no jank"
     // requirement it exists to serve.
+    //
+    // Heading is shown relative to this scene's calibrated initial_yaw —
+    // "local north" — rather than pannellum's raw absolute yaw, so the
+    // compass always reads 0° at exactly the saved/calibrated view.
     function handleRender() {
       const viewer = viewerRef.current?.getViewer();
       const badge = headingBadgeRef.current;
       if (!viewer || !badge) return;
-      const heading = Math.round((((-viewer.getYaw() % 360) + 360) % 360) / 1);
+      const relativeYaw = viewer.getYaw() - panorama.yaw;
+      const heading = Math.round(((-relativeYaw % 360) + 360) % 360);
       badge.textContent = `${heading}°`;
     }
 
@@ -319,7 +363,8 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
     return (
       <div
         className={cn("relative overflow-hidden rounded-3xl bg-[#16213E]", className)}
-        onClick={handleWrapperClick}
+        onMouseDown={handleWrapperPressStart}
+        onTouchStart={handleWrapperPressStart}
       >
         {!loaded && !loadError && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#16213E]/90">
