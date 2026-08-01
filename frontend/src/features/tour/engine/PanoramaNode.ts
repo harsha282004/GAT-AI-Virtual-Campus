@@ -33,6 +33,19 @@ export interface PanoramaLink {
   entryPitch: number | null;
 }
 
+/** A hand-placed visual sightline hotspot — "from here, at (yaw, pitch),
+ * you can physically see `target`". Entirely separate from the DLL
+ * (next/previous) and from crossReferences (which are graph-derived, e.g.
+ * stairs edges); this is purely an admin-authored visual layer, sourced
+ * from the cross-floor-hotspots API, never from calibrated hotspot data. */
+export interface CrossFloorLink {
+  id: string;
+  target: PanoramaNode;
+  yaw: number;
+  pitch: number;
+  label: string | null;
+}
+
 export interface PanoramaNodeInit {
   sceneId: string;
   /** The underlying Panorama row's own id — target for the orientation
@@ -83,6 +96,9 @@ export class PanoramaNode {
   previous: PanoramaLink | null = null;
   next: PanoramaLink | null = null;
   readonly crossReferences: PanoramaCrossReferences = {};
+  /** Populated by PanoramaEngine from the cross-floor-hotspots API — empty
+   * until a human places one via the dev-only placement tool. */
+  readonly crossFloorHotspots: CrossFloorLink[] = [];
 
   constructor(init: PanoramaNodeInit) {
     this.sceneId = init.sceneId;

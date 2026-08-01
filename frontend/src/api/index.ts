@@ -1,5 +1,6 @@
 export * from "./buildings";
 export * from "./client";
+export * from "./crossFloorHotspots";
 export * from "./documents";
 export * from "./floors";
 export * from "./navigation";

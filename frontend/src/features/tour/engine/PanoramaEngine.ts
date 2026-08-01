@@ -1,4 +1,4 @@
-import type { TourPanorama } from "@/types";
+import type { CrossFloorHotspotDto, TourPanorama } from "@/types";
 
 import { PanoramaLinkedList } from "./PanoramaLinkedList";
 import { PanoramaNode } from "./PanoramaNode";
@@ -85,8 +85,16 @@ export class PanoramaEngine {
  * from a flat array + findIndex to real DLL node links whose forward/back
  * entry orientation is always derived from the target's own calibration,
  * never a separately-stored edge value.
+ *
+ * `crossFloorHotspots` is the separate, hand-placed sightline dataset
+ * (cross-floor-hotspots API) — optional and empty by default so every other
+ * caller (validation, synthetic tests) can keep building an engine with
+ * just scene data, exactly as before.
  */
-export function buildPanoramaEngine(scenes: TourPanorama[]): PanoramaEngine {
+export function buildPanoramaEngine(
+  scenes: TourPanorama[],
+  crossFloorHotspots: CrossFloorHotspotDto[] = [],
+): PanoramaEngine {
   const engine = new PanoramaEngine();
 
   const byFloor = new Map<string, TourPanorama[]>();
@@ -215,6 +223,25 @@ export function buildPanoramaEngine(scenes: TourPanorama[]): PanoramaEngine {
       entryYaw: staircaseDown.yaw + 180,
       entryPitch: staircaseDown.pitch,
     };
+  }
+
+  // Fourth pass: hand-placed cross-floor sightline hotspots. Entirely
+  // additive and one-directional (source -> target only, unlike next/
+  // previous) — a row with an unresolvable node id is skipped rather than
+  // thrown, since this dataset is edited live via the placement tool and
+  // must never be able to break the tour if a node is ever renumbered.
+  for (const row of crossFloorHotspots) {
+    const source = engine.getNode(String(row.source_node_id));
+    const target = engine.getNode(String(row.target_node_id));
+    if (!source || !target) continue;
+
+    source.crossFloorHotspots.push({
+      id: String(row.id),
+      target,
+      yaw: row.yaw,
+      pitch: row.pitch,
+      label: row.label,
+    });
   }
 
   return engine;

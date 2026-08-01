@@ -10,7 +10,8 @@ export type ManualTourHotspotKind =
   | "floor_down"
   | "lift"
   | "enter_room"
-  | "return_to_corridor";
+  | "return_to_corridor"
+  | "cross_floor";
 
 export interface ManualTourFloorOption {
   sceneId: string;
@@ -184,6 +185,21 @@ export function buildManualTourHotspots(node: PanoramaNode): ManualTourHotspot[]
     }
   }
 
+  // Cross-floor visual sightlines — a hand-placed layer, entirely separate
+  // from the DLL and from crossReferences (Step 8: "does not modify DLL").
+  // A teleport: no entryYaw/entryPitch override, so the destination opens
+  // facing its own calibrated resting view, then Next/Previous continue
+  // normally from exactly that scene, same as any sidebar/minimap jump.
+  for (const link of node.crossFloorHotspots) {
+    hotspots.push({
+      kind: "cross_floor",
+      targetSceneId: link.target.sceneId,
+      label: link.label ?? `Go to ${link.target.floor}`,
+      yaw: link.yaw,
+      pitch: link.pitch,
+    });
+  }
+
   return hotspots;
 }
 
@@ -196,6 +212,7 @@ const KIND_TO_DIRECTION: Record<ManualTourHotspotKind, HotspotDirection> = {
   lift: "elevator",
   enter_room: "enter_room",
   return_to_corridor: "exit_room",
+  cross_floor: "cross_floor",
 };
 
 function toTourHotspot(hotspot: ManualTourHotspot): TourHotspot {

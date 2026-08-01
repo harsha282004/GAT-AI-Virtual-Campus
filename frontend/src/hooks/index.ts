@@ -1,4 +1,5 @@
 export * from "./useBuildings";
+export * from "./useCrossFloorHotspots";
 export * from "./useDocuments";
 export * from "./useFloors";
 export * from "./useGuidedTour";

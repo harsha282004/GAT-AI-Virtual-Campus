@@ -1,3 +1,4 @@
+export * from "./CrossFloorHotspotPlacementPanel";
 export * from "./FloorSelector";
 export * from "./GuidedTourControls";
 export * from "./GuidedTourPanel";

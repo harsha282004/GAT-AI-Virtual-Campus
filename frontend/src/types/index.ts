@@ -1,6 +1,7 @@
 export * from "./building";
 export * from "./campus";
 export * from "./chat";
+export * from "./crossFloorHotspot";
 export * from "./document";
 export * from "./edge";
 export * from "./floor";

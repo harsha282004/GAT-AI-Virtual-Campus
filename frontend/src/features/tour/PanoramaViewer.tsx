@@ -64,6 +64,12 @@ interface PanoramaViewerProps {
    * hotspots stay visible but stop responding, so a stray click can't fight
    * the automatic walk sequence. Defaults to true (Manual Tour, unchanged). */
   interactionsEnabled?: boolean;
+  /** Dev-only cross-floor hotspot placement tool: while true, a click
+   * anywhere on the panorama reports the (yaw, pitch) under the cursor
+   * instead of dragging/navigating. Defaults to false (production path
+   * untouched). */
+  placementModeActive?: boolean;
+  onPlacementPick?: (yaw: number, pitch: number) => void;
 }
 
 // Street View-style floating chevron, reused (rotated) for the four
@@ -90,6 +96,10 @@ const HOTSPOT_META: Record<HotspotDirection, { icon: string }> = {
   elevator: { icon: '<span style="font-size:16px;line-height:1">⬍</span>' },
   enter_room: { icon: '<span style="font-size:16px;line-height:1">⏎</span>' },
   exit_room: { icon: '<span style="font-size:16px;line-height:1">⏏</span>' },
+  // Deliberately the plainest glyph of the set — a cross-floor sightline
+  // hotspot must read as subtle/"looks inactive" by default (Step 6), never
+  // competing visually with the Forward/Back arrows that drive the walk.
+  cross_floor: { icon: '<span style="font-size:14px;line-height:1">↗</span>' },
 };
 
 // pannellum-react falls back to a default of 10 whenever a hotspot's pitch/yaw
@@ -138,25 +148,38 @@ function buildTooltip(hotspot: TourHotspot, onSelect: (targetId: string) => void
     const reducedMotion = prefersReducedMotion();
     const floorOptions = hotspot.type === "elevator" ? hotspot.floorOptions : undefined;
     const hasFloorMenu = !!floorOptions && floorOptions.length > 1;
+    // Cross-floor sightline hotspots stay deliberately subtle at rest —
+    // smaller, dimmer, no entrance ping/shadow — and only fully "arrive"
+    // on hover (Step 6: default "looks inactive", hover "brighten,
+    // increase opacity, small glow, scale slightly larger").
+    const isCrossFloor = hotspot.type === "cross_floor";
 
     const badgeLabel = hasFloorMenu ? "Select Floor" : hotspot.label;
+
+    const badgeSizeClass = isCrossFloor ? "h-6 w-6" : "h-9 w-9";
+    const badgeRestClass = isCrossFloor
+      ? "bg-white/10 opacity-55 shadow-none ring-1 ring-white/30"
+      : "bg-white/25 shadow-[0_4px_14px_rgba(0,0,0,0.35)] ring-1 ring-white/60";
+    const badgeHoverClass = isCrossFloor
+      ? "group-hover:scale-125 group-hover:opacity-100 group-hover:bg-sky-500/60 group-hover:shadow-[0_0_14px_rgba(56,142,255,0.75)] group-hover:ring-sky-200"
+      : "group-hover:scale-125 group-hover:bg-sky-500/70 group-hover:shadow-[0_0_18px_rgba(56,142,255,0.85)] group-hover:ring-sky-200";
 
     hotSpotDiv.innerHTML = `
       <div class="group relative flex flex-col items-center">
         <div class="pointer-events-none mb-1.5 -translate-y-1 whitespace-nowrap rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg backdrop-blur-sm transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
           ${badgeLabel}
         </div>
-        <div class="relative flex items-center justify-center${reducedMotion ? "" : " tour-hotspot-enter"}">
+        <div class="relative flex items-center justify-center${reducedMotion || isCrossFloor ? "" : " tour-hotspot-enter"}">
           ${
-            reducedMotion
+            reducedMotion || isCrossFloor
               ? ""
               : `<span class="pointer-events-none absolute inline-flex h-10 w-10 animate-ping rounded-full bg-white/30 opacity-25"></span>`
           }
           <span class="tour-hotspot-ripple pointer-events-none absolute inline-flex h-9 w-9 rounded-full bg-sky-300/70"></span>
-          <div class="relative flex h-9 w-9 items-center justify-center rounded-full bg-white/25 text-white shadow-[0_4px_14px_rgba(0,0,0,0.35)] ring-1 ring-white/60 backdrop-blur-md transition-all duration-200 ease-out group-hover:scale-125 group-hover:bg-sky-500/70 group-hover:shadow-[0_0_18px_rgba(56,142,255,0.85)] group-hover:ring-sky-200">
+          <div class="relative flex ${badgeSizeClass} items-center justify-center rounded-full ${badgeRestClass} text-white backdrop-blur-md transition-all duration-200 ease-out ${badgeHoverClass}">
             ${meta.icon}
           </div>
-          <div class="absolute -bottom-2 left-1/2 h-2 w-8 -translate-x-1/2 rounded-full bg-black/30 blur-[3px]"></div>
+          ${isCrossFloor ? "" : '<div class="absolute -bottom-2 left-1/2 h-2 w-8 -translate-x-1/2 rounded-full bg-black/30 blur-[3px]"></div>'}
         </div>
         ${
           hasFloorMenu
@@ -198,7 +221,15 @@ function buildTooltip(hotspot: TourHotspot, onSelect: (targetId: string) => void
 
 export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerProps>(
   function PanoramaViewer(
-    { panorama, onHotspotClick, autoRotate = false, className, interactionsEnabled = true },
+    {
+      panorama,
+      onHotspotClick,
+      autoRotate = false,
+      className,
+      interactionsEnabled = true,
+      placementModeActive = false,
+      onPlacementPick,
+    },
     ref,
   ) {
     const viewerRef = useRef<PannellumClass | null>(null);
@@ -307,6 +338,20 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
       setRetryToken((token) => token + 1);
     }
 
+    // Cross-floor hotspot placement tool: a click while active reports
+    // exactly the (yaw, pitch) under the cursor via pannellum's own
+    // mouseEventToCoords — the same projection math the viewer itself uses,
+    // so a placed hotspot always matches what the admin actually clicked.
+    function handlePlacementClick(event: SyntheticEvent<HTMLDivElement>) {
+      if (!placementModeActive || !onPlacementPick) return;
+      const viewer = viewerRef.current?.getViewer();
+      if (!viewer) return;
+      const nativeEvent = event.nativeEvent;
+      if (!(nativeEvent instanceof MouseEvent)) return;
+      const [pitch, yaw] = viewer.mouseEventToCoords(nativeEvent);
+      onPlacementPick(yaw, pitch);
+    }
+
     // Pannellum's compass is a purely visual heading indicator with no
     // built-in interactivity — press-and-hold to look behind is our own
     // addition. Delegated on the wrapper (rather than queried/attached via
@@ -402,7 +447,15 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
 
         {!loadError && (
           <Pannellum
-            key={`${panorama.id}-${retryToken}`}
+            // pannellum-react's own componentDidUpdate only rebuilds its
+            // internal hotSpots array when children.length changes, and even
+            // then doesn't reliably add the new hotspot's DOM to an
+            // already-mounted scene (verified live — a cross-floor hotspot
+            // added to the *current* scene never appeared until forced to
+            // remount). Including the hotspot count in the key forces a
+            // clean remount whenever the set actually changes, which is the
+            // only reliable way to guarantee hotspots are never stale.
+            key={`${panorama.id}-${retryToken}-${panorama.hotspots.length}`}
             ref={setViewerRef}
             width="100%"
             height="100%"
@@ -466,6 +519,17 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
           >
             0°
           </span>
+        )}
+
+        {/* Cross-floor hotspot placement tool only — a transparent full-cover
+            hit target so a click reports coordinates instead of dragging the
+            view or hitting an existing hotspot underneath. */}
+        {placementModeActive && (
+          <div
+            className="absolute inset-0 z-40 cursor-crosshair"
+            onClick={handlePlacementClick}
+            title="Click where the other floor is visible"
+          />
         )}
       </div>
     );

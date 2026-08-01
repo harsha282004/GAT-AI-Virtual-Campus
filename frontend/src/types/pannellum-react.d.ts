@@ -25,6 +25,9 @@ declare module "pannellum-react" {
     stopAutoRotate(): void;
     toggleFullscreen(): void;
     destroy(): void;
+    /** [pitch, yaw] under a mouse/touch event — the cross-floor hotspot
+     * placement tool's only source of "where did the admin click". */
+    mouseEventToCoords(event: MouseEvent | TouchEvent): [number, number];
   }
 
   export interface PannellumProps {

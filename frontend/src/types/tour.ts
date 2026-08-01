@@ -10,7 +10,8 @@ export type HotspotDirection =
   | "downstairs"
   | "elevator"
   | "enter_room"
-  | "exit_room";
+  | "exit_room"
+  | "cross_floor";
 
 export interface TourHotspot {
   type: HotspotDirection;
