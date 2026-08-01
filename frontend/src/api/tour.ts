@@ -53,6 +53,7 @@ function mapHotspot(dto: TourSceneDto["hotspots"][number]): TourHotspot {
 export function sceneToTourPanorama(scene: TourSceneDto): TourPanorama {
   return {
     id: String(scene.node_id),
+    panoramaId: scene.panorama_id,
     name: scene.name,
     building: scene.building_name,
     floor: scene.floor_name,

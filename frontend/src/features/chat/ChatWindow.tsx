@@ -1,6 +1,7 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { Building2, GraduationCap, MapPinned, Trash2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { useChatStore } from "@/store";
@@ -12,6 +13,12 @@ import { TypingIndicator } from "./TypingIndicator";
 
 const NOT_CONNECTED_REPLY =
   "Backend integration coming in AI Phase. In the meantime, try Indoor Navigation or the Virtual Tour from the menu above.";
+
+const QUICK_PROMPTS = [
+  { icon: GraduationCap, label: "How do admissions work?" },
+  { icon: Building2, label: "What departments does GAT offer?" },
+  { icon: MapPinned, label: "Where is the library?" },
+];
 
 let messageCounter = 0;
 function nextId(prefix: string) {
@@ -53,6 +60,8 @@ export function ChatWindow() {
     }, 900);
   }
 
+  const showQuickPrompts = messages.length <= 1 && !isAssistantTyping;
+
   return (
     <div className="flex h-[calc(100vh-11rem)] flex-col overflow-hidden rounded-3xl border border-hairline bg-white shadow-soft dark:bg-[#0F172A] dark:shadow-black/30">
       <div className="flex items-center justify-between border-b border-hairline px-6 py-4">
@@ -75,6 +84,27 @@ export function ChatWindow() {
           <ChatMessageBubble key={message.id} message={message} />
         ))}
         {isAssistantTyping && <TypingIndicator />}
+
+        {showQuickPrompts && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            className="flex flex-wrap gap-2 pl-11"
+          >
+            {QUICK_PROMPTS.map((prompt) => (
+              <button
+                key={prompt.label}
+                type="button"
+                onClick={() => handleSend(prompt.label)}
+                className="flex items-center gap-2 rounded-full border border-hairline bg-white px-4 py-2 text-xs font-medium text-ink/75 transition-colors hover:border-brand hover:text-brand dark:bg-[#0F172A]"
+              >
+                <prompt.icon className="h-3.5 w-3.5" />
+                {prompt.label}
+              </button>
+            ))}
+          </motion.div>
+        )}
       </div>
 
       <div className="border-t border-hairline p-4">

@@ -5,6 +5,7 @@ export type HotspotDirection =
   | "back"
   | "left"
   | "right"
+  | "opposite"
   | "upstairs"
   | "downstairs"
   | "elevator"
@@ -24,10 +25,16 @@ export interface TourHotspot {
    * resting yaw/pitch" — neither applies. */
   entryYaw?: number;
   entryPitch?: number;
+  /** "elevator" hotspots only — every floor reachable from here, for a
+   * Select-Floor UI (Sprint 2 Step 8). Undefined for every other type. */
+  floorOptions?: { sceneId: string; label: string }[];
 }
 
 export interface TourPanorama {
   id: string;
+  /** The underlying Panorama row's own id — distinct from `id` (which is the
+   * node id) — needed to call PUT /panoramas/{panoramaId}/orientation. */
+  panoramaId: number;
   name: string;
   building: string;
   floor: string;
@@ -58,6 +65,7 @@ export interface TourSceneHotspotDto {
 
 export interface TourSceneDto {
   node_id: number;
+  panorama_id: number;
   name: string;
   building_id: number;
   building_name: string;

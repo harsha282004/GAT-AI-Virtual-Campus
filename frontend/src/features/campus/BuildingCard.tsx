@@ -22,7 +22,8 @@ export function BuildingCard({ building, floorCount, index }: BuildingCardProps)
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.4, delay: index * 0.05 }}
-      whileHover={{ y: -6 }}
+      whileHover={{ y: -6, rotateX: 2, rotateY: -2 }}
+      style={{ perspective: 1000 }}
     >
       <Link
         href={`/campus/${building.id}`}

@@ -1,4 +1,6 @@
-import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Twitter } from "lucide-react";
+"use client";
+
+import { ArrowUp, Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Twitter } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -30,8 +32,19 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#16213E] text-white/75">
-      <div className="container-page grid grid-cols-1 gap-10 px-6 py-16 sm:px-10 lg:grid-cols-4 lg:px-16">
+    <footer className="relative bg-[#16213E] text-white/75">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#5B8CFF]/60 to-transparent" />
+
+      <button
+        type="button"
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        aria-label="Back to top"
+        className="group absolute -top-6 left-1/2 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-brand-gradient text-white shadow-glow transition-transform duration-300 hover:-translate-y-1"
+      >
+        <ArrowUp className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-0.5" />
+      </button>
+
+      <div className="container-page grid grid-cols-1 gap-10 px-6 pb-16 pt-20 sm:px-10 lg:grid-cols-4 lg:px-16">
         <div>
           <div className="mb-4 flex items-center gap-2.5">
             <Image
@@ -70,7 +83,10 @@ export function Footer() {
           <ul className="space-y-2.5 text-sm">
             {QUICK_LINKS.map((link) => (
               <li key={link.href}>
-                <Link href={link.href} className="text-white/65 transition-colors hover:text-white">
+                <Link
+                  href={link.href}
+                  className="inline-block text-white/65 transition-all duration-200 hover:translate-x-1 hover:text-white"
+                >
                   {link.label}
                 </Link>
               </li>

@@ -1,6 +1,7 @@
 export * from "./useBuildings";
 export * from "./useDocuments";
 export * from "./useFloors";
+export * from "./useGuidedTour";
 export * from "./useNavigation";
 export * from "./useNodes";
 export * from "./usePanoramaPreloader";

@@ -1,5 +1,6 @@
 export * from "./Button";
 export * from "./Card";
+export * from "./Dialog";
 export * from "./ErrorState";
 export * from "./FeatureCard";
 export * from "./PageContainer";

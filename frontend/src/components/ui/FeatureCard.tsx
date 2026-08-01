@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { CSSProperties, MouseEvent } from "react";
 
 import { cn } from "@/utils";
 
@@ -17,13 +18,13 @@ interface FeatureCardProps {
   index?: number;
 }
 
-const ACCENT_STYLES: Record<FeatureAccent, { bg: string; text: string }> = {
-  purple: { bg: "bg-accent-purple/12", text: "text-accent-purple" },
-  blue: { bg: "bg-brand/10", text: "text-brand" },
-  orange: { bg: "bg-accent-orange/12", text: "text-accent-orange" },
-  green: { bg: "bg-accent-green/12", text: "text-accent-green" },
-  pink: { bg: "bg-accent-pink/12", text: "text-accent-pink" },
-  gold: { bg: "bg-accent-gold/12", text: "text-accent-gold" },
+const ACCENT_STYLES: Record<FeatureAccent, { bg: string; text: string; glow: string }> = {
+  purple: { bg: "bg-accent-purple/12", text: "text-accent-purple", glow: "124,111,235" },
+  blue: { bg: "bg-brand/10", text: "text-brand", glow: "35,68,212" },
+  orange: { bg: "bg-accent-orange/12", text: "text-accent-orange", glow: "245,158,66" },
+  green: { bg: "bg-accent-green/12", text: "text-accent-green", glow: "34,181,115" },
+  pink: { bg: "bg-accent-pink/12", text: "text-accent-pink", glow: "244,114,182" },
+  gold: { bg: "bg-accent-gold/12", text: "text-accent-gold", glow: "212,165,55" },
 };
 
 export function FeatureCard({
@@ -36,6 +37,12 @@ export function FeatureCard({
 }: FeatureCardProps) {
   const styles = ACCENT_STYLES[accent];
 
+  function handleMouseMove(event: MouseEvent<HTMLDivElement>) {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    event.currentTarget.style.setProperty("--spot-x", `${event.clientX - bounds.left}px`);
+    event.currentTarget.style.setProperty("--spot-y", `${event.clientY - bounds.top}px`);
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 28 }}
@@ -43,14 +50,25 @@ export function FeatureCard({
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 0.55, delay: index * 0.08, ease: "easeOut" }}
       whileHover={{ y: -8 }}
+      onMouseMove={handleMouseMove}
+      style={{ "--spot-color": styles.glow } as CSSProperties}
       className={cn(
         "glass group relative overflow-hidden rounded-3xl p-8 shadow-soft transition-shadow duration-300 hover:shadow-glow",
         className,
       )}
     >
       <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        style={{
+          background:
+            "radial-gradient(320px circle at var(--spot-x, 50%) var(--spot-y, 50%), rgba(var(--spot-color), 0.12), transparent 65%)",
+        }}
+      />
+
+      <div
         className={cn(
-          "mb-6 flex h-16 w-16 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110",
+          "relative mb-6 flex h-16 w-16 items-center justify-center rounded-2xl transition-transform duration-300 group-hover:scale-110",
           styles.bg,
           styles.text,
         )}
@@ -58,8 +76,8 @@ export function FeatureCard({
         <Icon className="h-8 w-8" strokeWidth={1.6} />
       </div>
 
-      <h3 className="mb-2.5 font-display text-xl font-semibold text-ink">{title}</h3>
-      <p className="text-sm leading-relaxed text-muted">{description}</p>
+      <h3 className="relative mb-2.5 font-display text-xl font-semibold text-ink">{title}</h3>
+      <p className="relative text-sm leading-relaxed text-muted">{description}</p>
 
       <ArrowUpRight
         className={cn(

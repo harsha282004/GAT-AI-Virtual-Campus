@@ -54,7 +54,10 @@ export function CampusStatistics() {
           className="mx-auto mb-16 max-w-2xl text-center"
         >
           <span className="mb-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/70">
-            <span className="h-px w-6 bg-white/70" />
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
+            </span>
             At a Glance
           </span>
           <h2 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl">

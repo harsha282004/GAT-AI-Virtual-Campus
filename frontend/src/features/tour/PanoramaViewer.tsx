@@ -42,6 +42,12 @@ export interface PanoramaViewerHandle {
   toggleFullscreen: () => void;
   /** Live camera angle right now — used by the minimap's live heading marker. */
   getCurrentView: () => { yaw: number; pitch: number } | null;
+  /** Sprint 3 Guided Tour — smooth eased yaw rotation (reuses pannellum's own
+   * animateTo easing, same mechanism resetView already relies on). Resolves
+   * once the animation completes; resolves immediately if the viewer isn't
+   * mounted (defensive — Step 17, never hang the tour on a torn-down view). */
+  rotateBy: (deltaDeg: number, durationMs: number) => Promise<void>;
+  rotateTo: (yawDeg: number, durationMs: number) => Promise<void>;
 }
 
 export interface HotspotNavigationContext {
@@ -54,6 +60,10 @@ interface PanoramaViewerProps {
   onHotspotClick: (targetId: string, context: HotspotNavigationContext) => void;
   autoRotate?: boolean;
   className?: string;
+  /** false while the Guided Tour (Sprint 3) is driving the camera itself —
+   * hotspots stay visible but stop responding, so a stray click can't fight
+   * the automatic walk sequence. Defaults to true (Manual Tour, unchanged). */
+  interactionsEnabled?: boolean;
 }
 
 // Street View-style floating chevron, reused (rotated) for the four
@@ -66,16 +76,20 @@ function chevronSvg(rotationDeg: number): string {
   </svg>`;
 }
 
-const HOTSPOT_META: Record<HotspotDirection, { bg: string; icon: string }> = {
-  forward: { bg: "bg-brand", icon: chevronSvg(0) },
-  back: { bg: "bg-brand", icon: chevronSvg(180) },
-  left: { bg: "bg-brand", icon: chevronSvg(-90) },
-  right: { bg: "bg-brand", icon: chevronSvg(90) },
-  upstairs: { bg: "bg-accent-green", icon: '<span style="font-size:18px;line-height:1">⤴</span>' },
-  downstairs: { bg: "bg-accent-green", icon: '<span style="font-size:18px;line-height:1">⤵</span>' },
-  elevator: { bg: "bg-accent-green", icon: '<span style="font-size:18px;line-height:1">⬍</span>' },
-  enter_room: { bg: "bg-accent-purple", icon: '<span style="font-size:18px;line-height:1">⏎</span>' },
-  exit_room: { bg: "bg-accent-purple", icon: '<span style="font-size:18px;line-height:1">⏏</span>' },
+// Manual Tour hotspots (Sprint 2) share one professional look — small,
+// semi-transparent white by default, blue glow + scale on hover — and are
+// told apart only by icon glyph, never by badge color.
+const HOTSPOT_META: Record<HotspotDirection, { icon: string }> = {
+  forward: { icon: chevronSvg(0) },
+  back: { icon: chevronSvg(180) },
+  left: { icon: chevronSvg(-90) },
+  right: { icon: chevronSvg(90) },
+  opposite: { icon: '<span style="font-size:15px;line-height:1">⇄</span>' },
+  upstairs: { icon: '<span style="font-size:16px;line-height:1">⤴</span>' },
+  downstairs: { icon: '<span style="font-size:16px;line-height:1">⤵</span>' },
+  elevator: { icon: '<span style="font-size:16px;line-height:1">⬍</span>' },
+  enter_room: { icon: '<span style="font-size:16px;line-height:1">⏎</span>' },
+  exit_room: { icon: '<span style="font-size:16px;line-height:1">⏏</span>' },
 };
 
 // pannellum-react falls back to a default of 10 whenever a hotspot's pitch/yaw
@@ -91,53 +105,102 @@ function prefersReducedMotion(): boolean {
   );
 }
 
+/** Flashes the ripple ring on a badge, per Sprint 2 Step 10's click animation
+ * (removes itself on animationend so it can replay on the next click). */
+function playRipple(container: HTMLElement) {
+  const ripple = container.querySelector(".tour-hotspot-ripple");
+  if (!ripple) return;
+  ripple.classList.remove("is-rippling");
+  // Force reflow so re-adding the class restarts the animation.
+  void (ripple as HTMLElement).offsetWidth;
+  ripple.classList.add("is-rippling");
+  ripple.addEventListener("animationend", () => ripple.classList.remove("is-rippling"), {
+    once: true,
+  });
+}
+
 /**
- * Street View-style floating nav arrow: label hidden until hover, a
- * circular chevron badge with a soft ground shadow beneath it (billboards
- * to face the camera for free — that's pannellum's own hotspot positioning,
- * not something this markup has to do). Also wires up basic a11y (role,
- * label, keyboard activation) and honors prefers-reduced-motion by dropping
- * the pulse/entrance animation, both directly on the DOM node pannellum
+ * Street View-style floating nav badge: label hidden until hover, a small
+ * semi-transparent white circle that glows blue and scales on hover, ripples
+ * on click. Also wires up basic a11y (role, label, keyboard activation) and
+ * honors prefers-reduced-motion, both directly on the DOM node pannellum
  * hands us here since it isn't a React tree.
+ *
+ * `elevator` hotspots with more than one floor option render a small
+ * floor-select list instead of navigating on the badge itself (Sprint 2
+ * Step 8) — each option stops propagation so it doesn't also trigger the
+ * outer badge's own click handler (pannellum attaches one click listener to
+ * the whole hotspot div, so any inner click bubbles into it too).
  */
-function buildTooltip(hotspot: TourHotspot, onActivate: () => void) {
+function buildTooltip(hotspot: TourHotspot, onSelect: (targetId: string) => void) {
   return (hotSpotDiv: HTMLElement) => {
     const meta = HOTSPOT_META[hotspot.type];
     const reducedMotion = prefersReducedMotion();
+    const floorOptions = hotspot.type === "elevator" ? hotspot.floorOptions : undefined;
+    const hasFloorMenu = !!floorOptions && floorOptions.length > 1;
+
+    const badgeLabel = hasFloorMenu ? "Select Floor" : hotspot.label;
 
     hotSpotDiv.innerHTML = `
       <div class="group relative flex flex-col items-center">
         <div class="pointer-events-none mb-1.5 -translate-y-1 whitespace-nowrap rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg backdrop-blur-sm transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
-          ${hotspot.label}
+          ${badgeLabel}
         </div>
         <div class="relative flex items-center justify-center${reducedMotion ? "" : " tour-hotspot-enter"}">
           ${
             reducedMotion
               ? ""
-              : `<span class="pointer-events-none absolute inline-flex h-12 w-12 animate-ping rounded-full ${meta.bg} opacity-25"></span>`
+              : `<span class="pointer-events-none absolute inline-flex h-10 w-10 animate-ping rounded-full bg-white/30 opacity-25"></span>`
           }
-          <div class="relative flex h-11 w-11 items-center justify-center rounded-full ${meta.bg} shadow-[0_6px_16px_rgba(0,0,0,0.4)] ring-2 ring-white/80 transition-transform duration-200 group-hover:scale-110">
+          <span class="tour-hotspot-ripple pointer-events-none absolute inline-flex h-9 w-9 rounded-full bg-sky-300/70"></span>
+          <div class="relative flex h-9 w-9 items-center justify-center rounded-full bg-white/25 text-white shadow-[0_4px_14px_rgba(0,0,0,0.35)] ring-1 ring-white/60 backdrop-blur-md transition-all duration-200 ease-out group-hover:scale-125 group-hover:bg-sky-500/70 group-hover:shadow-[0_0_18px_rgba(56,142,255,0.85)] group-hover:ring-sky-200">
             ${meta.icon}
           </div>
           <div class="absolute -bottom-2 left-1/2 h-2 w-8 -translate-x-1/2 rounded-full bg-black/30 blur-[3px]"></div>
         </div>
+        ${
+          hasFloorMenu
+            ? `<ul class="tour-floor-menu pointer-events-auto absolute top-full mt-2 hidden min-w-[140px] flex-col overflow-hidden rounded-xl bg-black/80 text-xs text-white shadow-xl backdrop-blur-md group-hover:flex">
+                ${floorOptions
+                  .map(
+                    (opt) =>
+                      `<li><button type="button" data-target-id="${opt.sceneId}" class="tour-floor-option block w-full px-3 py-2 text-left transition-colors hover:bg-sky-500/60">${opt.label}</button></li>`,
+                  )
+                  .join("")}
+              </ul>`
+            : ""
+        }
       </div>
     `;
 
+    if (hasFloorMenu) {
+      hotSpotDiv.querySelectorAll<HTMLButtonElement>(".tour-floor-option").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
+          playRipple(hotSpotDiv);
+          onSelect(button.dataset.targetId ?? hotspot.targetId);
+        });
+      });
+    }
+
     hotSpotDiv.setAttribute("role", "button");
-    hotSpotDiv.setAttribute("aria-label", `Go ${hotspot.label}`);
+    hotSpotDiv.setAttribute("aria-label", hasFloorMenu ? "Select floor" : `Go ${hotspot.label}`);
     hotSpotDiv.tabIndex = 0;
     hotSpotDiv.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
+      if ((event.key === "Enter" || event.key === " ") && !hasFloorMenu) {
         event.preventDefault();
-        onActivate();
+        playRipple(hotSpotDiv);
+        onSelect(hotspot.targetId);
       }
     });
   };
 }
 
 export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerProps>(
-  function PanoramaViewer({ panorama, onHotspotClick, autoRotate = false, className }, ref) {
+  function PanoramaViewer(
+    { panorama, onHotspotClick, autoRotate = false, className, interactionsEnabled = true },
+    ref,
+  ) {
     const viewerRef = useRef<PannellumClass | null>(null);
     const [loaded, setLoaded] = useState(false);
     const [loadError, setLoadError] = useState(false);
@@ -176,6 +239,24 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
           if (!viewer) return null;
           return { yaw: viewer.getYaw(), pitch: viewer.getPitch() };
         },
+        rotateTo: (yawDeg, durationMs) =>
+          new Promise<void>((resolve) => {
+            const viewer = viewerRef.current?.getViewer();
+            if (!viewer) {
+              resolve();
+              return;
+            }
+            viewer.setYaw(yawDeg, durationMs, () => resolve());
+          }),
+        rotateBy: (deltaDeg, durationMs) =>
+          new Promise<void>((resolve) => {
+            const viewer = viewerRef.current?.getViewer();
+            if (!viewer) {
+              resolve();
+              return;
+            }
+            viewer.setYaw(viewer.getYaw() + deltaDeg, durationMs, () => resolve());
+          }),
       }),
       // eslint-disable-next-line react-hooks/exhaustive-deps -- resetView closes over panorama.{pitch,yaw,hfov} directly
       [panorama.pitch, panorama.yaw, panorama.hfov],
@@ -292,25 +373,40 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
             draggable
             mouseZoom
             keyboardZoom
+            doubleClickZoom={false}
             autoRotate={autoRotate ? -2 : 0}
             onLoad={() => setLoaded(true)}
             onError={() => setLoadError(true)}
             onRender={handleRender}
           >
             {panorama.hotspots.map((hotspot, index) => {
-              const activate = () =>
-                onHotspotClick(hotspot.targetId, {
+              const navigate = (targetId: string) => {
+                if (!interactionsEnabled) return;
+                onHotspotClick(targetId, {
                   yaw: hotspot.entryYaw,
                   pitch: hotspot.entryPitch,
                 });
+              };
+              // pannellum attaches this as a plain click listener on the
+              // hotspot's outer div, so it fires for a direct badge click —
+              // for a floor-select hotspot that means "jump to the primary
+              // option"; a specific floor menu item stops propagation and
+              // calls navigate itself instead (see buildTooltip).
+              const handlePannellumClick = (event: MouseEvent) => {
+                if (!interactionsEnabled) return;
+                if (event.currentTarget instanceof HTMLElement) {
+                  playRipple(event.currentTarget);
+                }
+                navigate(hotspot.targetId);
+              };
               return (
                 <HotspotMarker
                   key={`${panorama.id}-${index}`}
                   type="custom"
                   pitch={safeAngle(hotspot.pitch)}
                   yaw={safeAngle(hotspot.yaw)}
-                  tooltip={buildTooltip(hotspot, activate)}
-                  handleClick={activate}
+                  tooltip={buildTooltip(hotspot, navigate)}
+                  handleClick={handlePannellumClick}
                 />
               );
             })}

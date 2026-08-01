@@ -264,8 +264,29 @@ img {
   animation: tourHotspotIn 280ms ease-out;
 }
 
+/* Manual Tour hotspot click feedback (Sprint 2) — a brief ripple + fade,
+   toggled by adding .is-rippling on click and removed on animationend. */
+@keyframes tourHotspotRipple {
+  from {
+    opacity: 0.55;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+.tour-hotspot-ripple.is-rippling {
+  animation: tourHotspotRipple 450ms ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tour-hotspot-enter {
+    animation: none;
+  }
+
+  .tour-hotspot-ripple.is-rippling {
     animation: none;
   }
 
