@@ -12,6 +12,13 @@ export const crossFloorHotspotsApi = {
     return data;
   },
 
+  // The generic CRUD router already exposed PUT /{id} from the start (see
+  // backend/app/api/v1/cross_floor_hotspots.py) — this just starts using it.
+  update: async (id: number, payload: CrossFloorHotspotCreatePayload): Promise<CrossFloorHotspotDto> => {
+    const { data } = await apiClient.put<CrossFloorHotspotDto>(`/cross-floor-hotspots/${id}`, payload);
+    return data;
+  },
+
   remove: async (id: number): Promise<void> => {
     await apiClient.delete(`/cross-floor-hotspots/${id}`);
   },

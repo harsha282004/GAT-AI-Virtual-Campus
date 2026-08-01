@@ -70,6 +70,24 @@ interface PanoramaViewerProps {
    * untouched). */
   placementModeActive?: boolean;
   onPlacementPick?: (yaw: number, pitch: number) => void;
+  /** Dev-only authoring reference overlay: when provided (even as an empty
+   * array), every project-wide cross-floor hotspot renders here — not just
+   * this scene's own — for use as a visual reference while placing new
+   * ones. Replaces (not adds to) the normal per-scene cross_floor entries
+   * from `panorama.hotspots`, so nothing is ever double-rendered. `undefined`
+   * (the default) means normal runtime: only this scene's own hotspots,
+   * exactly as before this feature existed. */
+  editorCrossFloorHotspots?: AuthoringCrossFloorHotspot[];
+  onEditCrossFloorHotspot?: (hotspotId: number) => void;
+}
+
+export interface AuthoringCrossFloorHotspot {
+  id: number;
+  sourceSceneId: string;
+  targetSceneId: string;
+  yaw: number;
+  pitch: number;
+  label: string | null;
 }
 
 // Street View-style floating chevron, reused (rotated) for the four
@@ -219,6 +237,41 @@ function buildTooltip(hotspot: TourHotspot, onSelect: (targetId: string) => void
   };
 }
 
+/**
+ * Authoring-overlay marker (dev-only): every project-wide cross-floor
+ * hotspot, not just this scene's own. Deliberately camouflaged — a small,
+ * glassy, near-invisible dot at rest (25-35% opacity, pale blue/white tint,
+ * thin white outline, soft shadow, no solid color fill) that only "arrives"
+ * on hover (brighten, scale up slightly, soft glow), so it reads as a
+ * hidden reference marker rather than a loud icon. Clicking opens
+ * edit/delete, never navigates — authoring, not touring.
+ */
+function buildAuthoringTooltip(hotspot: AuthoringCrossFloorHotspot, isOwnScene: boolean, onEdit: () => void) {
+  return (hotSpotDiv: HTMLElement) => {
+    const badgeLabel = hotspot.label ?? `→ scene ${hotspot.targetSceneId}`;
+
+    hotSpotDiv.innerHTML = `
+      <div class="group relative flex flex-col items-center">
+        <div class="pointer-events-none mb-1.5 -translate-y-1 whitespace-nowrap rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg backdrop-blur-sm transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
+          ${badgeLabel}${isOwnScene ? " (this scene)" : ""}
+        </div>
+        <div class="relative flex h-5 w-5 items-center justify-center rounded-full bg-white/10 opacity-30 shadow-[0_1px_6px_rgba(0,0,0,0.25)] ring-1 ring-white/50 backdrop-blur-md transition-all duration-200 ease-out group-hover:scale-125 group-hover:bg-sky-100/30 group-hover:opacity-100 group-hover:shadow-[0_0_12px_rgba(186,230,253,0.65)] group-hover:ring-white/80">
+          <span class="text-white" style="font-size:10px;line-height:1">✎</span>
+        </div>
+      </div>
+    `;
+    hotSpotDiv.setAttribute("role", "button");
+    hotSpotDiv.setAttribute("aria-label", `Edit cross-floor hotspot: ${badgeLabel}`);
+    hotSpotDiv.tabIndex = 0;
+    hotSpotDiv.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        onEdit();
+      }
+    });
+  };
+}
+
 export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerProps>(
   function PanoramaViewer(
     {
@@ -229,9 +282,12 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
       interactionsEnabled = true,
       placementModeActive = false,
       onPlacementPick,
+      editorCrossFloorHotspots,
+      onEditCrossFloorHotspot,
     },
     ref,
   ) {
+    const isEditorOverlayActive = editorCrossFloorHotspots !== undefined;
     const viewerRef = useRef<PannellumClass | null>(null);
     const [loaded, setLoaded] = useState(false);
     const [loadError, setLoadError] = useState(false);
@@ -445,71 +501,110 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
           }}
         />
 
-        {!loadError && (
-          <Pannellum
-            // pannellum-react's own componentDidUpdate only rebuilds its
-            // internal hotSpots array when children.length changes, and even
-            // then doesn't reliably add the new hotspot's DOM to an
-            // already-mounted scene (verified live — a cross-floor hotspot
-            // added to the *current* scene never appeared until forced to
-            // remount). Including the hotspot count in the key forces a
-            // clean remount whenever the set actually changes, which is the
-            // only reliable way to guarantee hotspots are never stale.
-            key={`${panorama.id}-${retryToken}-${panorama.hotspots.length}`}
-            ref={setViewerRef}
-            width="100%"
-            height="100%"
-            image={panorama.image}
-            preview={panorama.previewImage ?? undefined}
-            yaw={panorama.yaw}
-            pitch={panorama.pitch}
-            hfov={panorama.hfov}
-            autoLoad
-            compass
-            showZoomCtrl
-            showFullscreenCtrl={false}
-            draggable
-            mouseZoom
-            keyboardZoom
-            doubleClickZoom={false}
-            autoRotate={autoRotate ? -2 : 0}
-            onLoad={() => setLoaded(true)}
-            onError={() => setLoadError(true)}
-            onRender={handleRender}
-          >
-            {panorama.hotspots.map((hotspot, index) => {
-              const navigate = (targetId: string) => {
-                if (!interactionsEnabled) return;
-                onHotspotClick(targetId, {
-                  yaw: hotspot.entryYaw,
-                  pitch: hotspot.entryPitch,
-                });
-              };
-              // pannellum attaches this as a plain click listener on the
-              // hotspot's outer div, so it fires for a direct badge click —
-              // for a floor-select hotspot that means "jump to the primary
-              // option"; a specific floor menu item stops propagation and
-              // calls navigate itself instead (see buildTooltip).
-              const handlePannellumClick = (event: MouseEvent) => {
-                if (!interactionsEnabled) return;
-                if (event.currentTarget instanceof HTMLElement) {
-                  playRipple(event.currentTarget);
-                }
-                navigate(hotspot.targetId);
-              };
-              return (
-                <HotspotMarker
-                  key={`${panorama.id}-${index}`}
-                  type="custom"
-                  pitch={safeAngle(hotspot.pitch)}
-                  yaw={safeAngle(hotspot.yaw)}
-                  tooltip={buildTooltip(hotspot, navigate)}
-                  handleClick={handlePannellumClick}
-                />
-              );
-            })}
-          </Pannellum>
-        )}
+        {!loadError && (() => {
+          // In editor mode this scene's own cross_floor entries are dropped
+          // from the normal list — the authoring overlay below renders
+          // every cross-floor hotspot (including this scene's own, at full
+          // opacity), so nothing is ever rendered twice.
+          const baseHotspots = isEditorOverlayActive
+            ? panorama.hotspots.filter((h) => h.type !== "cross_floor")
+            : panorama.hotspots;
+          const authoringHotspots = editorCrossFloorHotspots ?? [];
+          // A count-only key (e.g. "4 hotspots") doesn't change when an
+          // existing hotspot is *edited* in place (same count, different
+          // label/target) — verified live: the stale DOM tooltip (built
+          // once at mount by pannellum itself, not React) then silently
+          // keeps showing the pre-edit label until something else forces a
+          // remount. Folding each hotspot's own content into the key closes
+          // that gap so update, not just add/delete, remounts immediately.
+          const authoringFingerprint = authoringHotspots
+            .map((h) => `${h.id}:${h.targetSceneId}:${h.label ?? ""}:${h.yaw}:${h.pitch}`)
+            .join("|");
+
+          return (
+            <Pannellum
+              // pannellum-react's own componentDidUpdate only rebuilds its
+              // internal hotSpots array when children.length changes, and
+              // even then doesn't reliably add a new hotspot's DOM to an
+              // already-mounted scene (verified live). Including the total
+              // rendered marker count (and, for the authoring overlay, a
+              // content fingerprint) in the key forces a clean remount
+              // whenever the set actually changes — the only reliable way
+              // to guarantee hotspots (including the authoring overlay,
+              // which can change without panorama.hotspots changing at all)
+              // are never stale.
+              key={`${panorama.id}-${retryToken}-${baseHotspots.length}-${authoringFingerprint}`}
+              ref={setViewerRef}
+              width="100%"
+              height="100%"
+              image={panorama.image}
+              preview={panorama.previewImage ?? undefined}
+              yaw={panorama.yaw}
+              pitch={panorama.pitch}
+              hfov={panorama.hfov}
+              autoLoad
+              compass
+              showZoomCtrl
+              showFullscreenCtrl={false}
+              draggable
+              mouseZoom
+              keyboardZoom
+              doubleClickZoom={false}
+              autoRotate={autoRotate ? -2 : 0}
+              onLoad={() => setLoaded(true)}
+              onError={() => setLoadError(true)}
+              onRender={handleRender}
+            >
+              {[
+                ...baseHotspots.map((hotspot, index) => {
+                  const navigate = (targetId: string) => {
+                    if (!interactionsEnabled) return;
+                    onHotspotClick(targetId, {
+                      yaw: hotspot.entryYaw,
+                      pitch: hotspot.entryPitch,
+                    });
+                  };
+                  // pannellum attaches this as a plain click listener on the
+                  // hotspot's outer div, so it fires for a direct badge click —
+                  // for a floor-select hotspot that means "jump to the primary
+                  // option"; a specific floor menu item stops propagation and
+                  // calls navigate itself instead (see buildTooltip).
+                  const handlePannellumClick = (event: MouseEvent) => {
+                    if (!interactionsEnabled) return;
+                    if (event.currentTarget instanceof HTMLElement) {
+                      playRipple(event.currentTarget);
+                    }
+                    navigate(hotspot.targetId);
+                  };
+                  return (
+                    <HotspotMarker
+                      key={`${panorama.id}-${index}`}
+                      type="custom"
+                      pitch={safeAngle(hotspot.pitch)}
+                      yaw={safeAngle(hotspot.yaw)}
+                      tooltip={buildTooltip(hotspot, navigate)}
+                      handleClick={handlePannellumClick}
+                    />
+                  );
+                }),
+                ...authoringHotspots.map((hotspot) => {
+                  const isOwnScene = hotspot.sourceSceneId === panorama.id;
+                  const handleEditClick = () => onEditCrossFloorHotspot?.(hotspot.id);
+                  return (
+                    <HotspotMarker
+                      key={`authoring-${hotspot.id}`}
+                      type="custom"
+                      pitch={safeAngle(hotspot.pitch)}
+                      yaw={safeAngle(hotspot.yaw)}
+                      tooltip={buildAuthoringTooltip(hotspot, isOwnScene, handleEditClick)}
+                      handleClick={handleEditClick}
+                    />
+                  );
+                }),
+              ]}
+            </Pannellum>
+          );
+        })()}
 
         {!loadError && (
           <span
