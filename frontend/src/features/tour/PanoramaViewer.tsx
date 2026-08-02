@@ -108,11 +108,14 @@ const HOTSPOT_META: Record<HotspotDirection, { icon: string }> = {
   // Deliberately the plainest glyph of the set — a cross-floor sightline
   // hotspot must read as subtle/"looks inactive" by default (Step 6), never
   // competing visually with the Forward/Back arrows that drive the walk.
-  // Its own opacity is independent of the badge's — near-invisible at rest,
-  // full strength on hover, via a class (not inline-only) so
-  // group-hover:opacity-100 can actually override it.
+  // No badge/circle behind it at all — the arrow glyph IS the hotspot, so
+  // every visual property (color-alpha, scale, brightness, shadow) lives
+  // directly on this span, not on some wrapping container. Sized at 24px
+  // (visual) inside a larger 36px invisible hit area (see badgeSizeClass
+  // below) — the arrow itself stays small and clean, but the actual
+  // clickable region is comfortably bigger than what's drawn.
   cross_floor: {
-    icon: '<span class="opacity-20 transition-opacity duration-200 ease-out group-hover:opacity-100" style="font-size:13px;line-height:1">↗</span>',
+    icon: '<span class="inline-block text-white/40 transition-all duration-200 ease-out group-hover:scale-[1.1] group-hover:text-white group-hover:brightness-125 group-hover:drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]" style="font-size:24px;line-height:1">↗</span>',
   },
 };
 
@@ -173,25 +176,26 @@ function buildTooltip(
     const reducedMotion = prefersReducedMotion();
     const floorOptions = hotspot.type === "elevator" ? hotspot.floorOptions : undefined;
     const hasFloorMenu = !!floorOptions && floorOptions.length > 1;
-    // Cross-floor sightline hotspots read as a clear glass/water-droplet
-    // marker resting on the panorama, not a UI button: perfectly sharp (no
-    // backdrop-blur), no flat color fill, just a faint radial highlight
-    // suggesting a droplet's refraction + rim. mix-blend-overlay lets it
-    // adapt to whatever's directly behind it (bright wall or dark corridor)
-    // instead of fighting the scene with a fixed color — hover switches to
-    // normal blending so the reveal is unambiguous regardless of what's
-    // underneath. No blue, no glow, no shadow, ever.
+    // Cross-floor sightline hotspots have NO badge/circle/container at all —
+    // just the bare arrow glyph (styled inside HOTSPOT_META.cross_floor
+    // above), so there is nothing here to give it a background, border,
+    // shadow, or blur. This wrapping div still exists (for layout — sizing
+    // the click target and anchoring the dev-only edit icon's absolute
+    // position) but carries zero visual styling of its own for this type.
+    // Deliberately larger (36px) than the 24px arrow glyph it centers —
+    // an invisible hitbox padding the small icon so it's actually easy to
+    // click, without drawing anything for that extra area.
     const isCrossFloor = hotspot.type === "cross_floor";
     const showEditIcon = isCrossFloor && !!onEditCrossFloor;
 
     const badgeLabel = hasFloorMenu ? "Select Floor" : hotspot.label;
 
-    const badgeSizeClass = isCrossFloor ? "h-[22px] w-[22px]" : "h-9 w-9";
+    const badgeSizeClass = "h-9 w-9";
     const badgeRestClass = isCrossFloor
-      ? "shadow-none ring-1 ring-white/10 mix-blend-overlay bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0.04)_55%,rgba(255,255,255,0.14)_100%)]"
+      ? ""
       : "bg-white/25 shadow-[0_4px_14px_rgba(0,0,0,0.35)] ring-1 ring-white/60";
     const badgeHoverClass = isCrossFloor
-      ? "group-hover:scale-[1.06] group-hover:ring-white/30 group-hover:mix-blend-normal group-hover:bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.5)_0%,rgba(255,255,255,0.22)_55%,rgba(255,255,255,0.35)_100%)]"
+      ? ""
       : "group-hover:scale-125 group-hover:bg-sky-500/70 group-hover:shadow-[0_0_18px_rgba(56,142,255,0.85)] group-hover:ring-sky-200";
     const badgeBlurClass = isCrossFloor ? "" : "backdrop-blur-md";
 
@@ -206,7 +210,11 @@ function buildTooltip(
               ? ""
               : `<span class="pointer-events-none absolute inline-flex h-10 w-10 animate-ping rounded-full bg-white/30 opacity-25"></span>`
           }
-          <span class="tour-hotspot-ripple pointer-events-none absolute inline-flex ${isCrossFloor ? "h-[22px] w-[22px] bg-white/25" : "h-9 w-9 bg-sky-300/70"} rounded-full"></span>
+          ${
+            isCrossFloor
+              ? "" // no ripple flash — no circular element of any kind for this hotspot type
+              : '<span class="tour-hotspot-ripple pointer-events-none absolute inline-flex h-9 w-9 rounded-full bg-sky-300/70"></span>'
+          }
           <div class="relative flex ${badgeSizeClass} items-center justify-center rounded-full ${badgeRestClass} text-white ${badgeBlurClass} transition-all duration-200 ease-out ${badgeHoverClass}">
             ${meta.icon}
           </div>
