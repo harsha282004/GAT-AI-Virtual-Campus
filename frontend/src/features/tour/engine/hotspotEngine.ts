@@ -36,6 +36,8 @@ export interface ManualTourHotspot {
   entryPitch?: number;
   /** "lift" only — every reachable floor from here, for a floor-select UI. */
   floorOptions?: ManualTourFloorOption[];
+  /** "cross_floor" only — the CrossFloorHotspot row's own database id. */
+  id?: string;
 }
 
 function findRaw(
@@ -197,6 +199,7 @@ export function buildManualTourHotspots(node: PanoramaNode): ManualTourHotspot[]
       label: link.label ?? `Go to ${link.target.floor}`,
       yaw: link.yaw,
       pitch: link.pitch,
+      id: link.id,
     });
   }
 
@@ -225,6 +228,7 @@ function toTourHotspot(hotspot: ManualTourHotspot): TourHotspot {
     entryYaw: hotspot.entryYaw,
     entryPitch: hotspot.entryPitch,
     floorOptions: hotspot.floorOptions,
+    hotspotId: hotspot.id !== undefined ? Number(hotspot.id) : undefined,
   };
 }
 

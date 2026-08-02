@@ -89,11 +89,12 @@ export class PanoramaEngine {
  * `crossFloorHotspots` is the separate, hand-placed sightline dataset
  * (cross-floor-hotspots API) — optional and empty by default so every other
  * caller (validation, synthetic tests) can keep building an engine with
- * just scene data, exactly as before. Each row is attached to every node
- * named in its own `visible_from_node_ids` (see the fourth pass below) —
- * this is what makes `node.crossFloorHotspots` the single, already-scoped
- * per-node index that both normal touring (hotspotEngine.ts) and the
- * dev-only authoring overlay (PanoramaViewer) read from.
+ * just scene data, exactly as before. Each hotspot is attached ONLY to its
+ * own `source_node_id` (see the fourth pass below) — the panorama it was
+ * authored on and nowhere else. This is what makes `node.crossFloorHotspots`
+ * the single, already-scoped per-node index that both normal touring
+ * (hotspotEngine.ts) and the dev-only authoring overlay (PanoramaViewer)
+ * read from.
  */
 export function buildPanoramaEngine(
   scenes: TourPanorama[],
@@ -229,38 +230,26 @@ export function buildPanoramaEngine(
     };
   }
 
-  // Fourth pass: hand-placed cross-floor sightline hotspots. One-directional
-  // (-> target only, unlike next/previous) and, critically, NOT global — a
-  // hotspot is attached to every node in its own visible_from_node_ids and
-  // nowhere else, so it appears on exactly the panoramas an admin explicitly
-  // marked as able to see it (e.g. four consecutive scenes along the same
-  // corridor), and disappears the moment the tour crosses into a scene that
-  // wasn't listed. Nothing here infers or widens that set — it is rendered
-  // verbatim from what visible_from_node_ids already says. A row or
-  // visibility entry with an unresolvable node id is skipped rather than
-  // thrown, since this dataset is edited live via the placement tool and
-  // must never be able to break the tour if a node is ever renumbered.
+  // Fourth pass: hand-placed cross-floor sightline hotspots. Attached ONLY
+  // to the exact node it was authored on (source_node_id) — never to any
+  // other node, however similar the viewpoint. No propagation to adjacent
+  // scenes, no same-floor grouping, no inference: a hotspot placed on
+  // Scene 4 renders on Scene 4 and nowhere else, full stop. A row whose
+  // source_node_id is unresolvable is skipped rather than thrown, since
+  // this dataset is edited live via the placement tool and must never be
+  // able to break the tour if a node is ever renumbered.
   for (const row of crossFloorHotspots) {
     const target = engine.getNode(String(row.target_node_id));
-    if (!target) continue;
+    const source = engine.getNode(String(row.source_node_id));
+    if (!target || !source) continue;
 
-    const visibleFromIds = row.visible_from_node_ids.length > 0 ? row.visible_from_node_ids : [row.source_node_id];
-    const seen = new Set<string>();
-    for (const nodeId of visibleFromIds) {
-      const sceneId = String(nodeId);
-      if (seen.has(sceneId)) continue; // defensive: never double-attach if the API ever returns a dup
-      seen.add(sceneId);
-      const visibleFromNode = engine.getNode(sceneId);
-      if (!visibleFromNode) continue;
-
-      visibleFromNode.crossFloorHotspots.push({
-        id: String(row.id),
-        target,
-        yaw: row.yaw,
-        pitch: row.pitch,
-        label: row.label,
-      });
-    }
+    source.crossFloorHotspots.push({
+      id: String(row.id),
+      target,
+      yaw: row.yaw,
+      pitch: row.pitch,
+      label: row.label,
+    });
   }
 
   return engine;

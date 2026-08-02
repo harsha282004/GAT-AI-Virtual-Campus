@@ -10,4 +10,3 @@ export * from "./TourControls";
 export * from "./TourModeToggle";
 export * from "./TourSidebar";
 export * from "./TourTopBar";
-export * from "./VisibleFromScenesSelect";

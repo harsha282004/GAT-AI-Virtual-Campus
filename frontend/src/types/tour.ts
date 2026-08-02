@@ -29,6 +29,10 @@ export interface TourHotspot {
   /** "elevator" hotspots only — every floor reachable from here, for a
    * Select-Floor UI (Sprint 2 Step 8). Undefined for every other type. */
   floorOptions?: { sceneId: string; label: string }[];
+  /** "cross_floor" only — the CrossFloorHotspot row's own database id, so
+   * the dev-only edit affordance on the marker knows exactly which row to
+   * open for editing. Undefined for every other type. */
+  hotspotId?: number;
 }
 
 export interface TourPanorama {

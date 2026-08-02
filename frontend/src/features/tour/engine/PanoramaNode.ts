@@ -98,8 +98,9 @@ export class PanoramaNode {
   readonly crossReferences: PanoramaCrossReferences = {};
   /** Populated by PanoramaEngine from the cross-floor-hotspots API — empty
    * until a human places one via the dev-only placement tool. Only ever
-   * contains hotspots whose visible_from_node_ids explicitly names THIS
-   * node — never every hotspot in the project, never inferred neighbors. */
+   * contains hotspots whose source_node_id IS this exact node — never every
+   * hotspot in the project, never propagated to neighboring/same-floor
+   * scenes, never inferred. */
   readonly crossFloorHotspots: CrossFloorLink[] = [];
 
   constructor(init: PanoramaNodeInit) {

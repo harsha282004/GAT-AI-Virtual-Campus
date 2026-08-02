@@ -70,27 +70,15 @@ interface PanoramaViewerProps {
    * untouched). */
   placementModeActive?: boolean;
   onPlacementPick?: (yaw: number, pitch: number) => void;
-  /** Dev-only authoring overlay: when provided (even as an empty array),
-   * this is ALREADY this exact panorama's own slice of the visibility-
-   * scoped hotspot list — the caller (page.tsx) reads it straight off the
-   * engine's per-node index (`node.crossFloorHotspots`, built from each
-   * hotspot's `visible_from_node_ids`), so no filtering happens here. A
-   * hotspot only ever renders on a scene explicitly listed in its own
-   * visibility set, never inferred, never global. Replaces (not adds to)
-   * the normal per-scene cross_floor entries from `panorama.hotspots`, so
-   * nothing is ever double-rendered. `undefined` (the default) means normal
-   * runtime: only this scene's own hotspots, exactly as before this feature
-   * existed. */
-  editorCrossFloorHotspots?: AuthoringCrossFloorHotspot[];
+  /** Dev-only edit affordance for cross-floor hotspots: when provided, every
+   * `cross_floor` marker gets a small edit icon (visible on hover) alongside
+   * its normal navigable badge — clicking the icon calls this with the
+   * hotspot's own database id instead of navigating; clicking the badge
+   * itself always navigates, exactly like every other hotspot type.
+   * `undefined` (the default) renders cross-floor hotspots as plain
+   * navigable badges with no edit affordance at all — the real end-user
+   * experience. */
   onEditCrossFloorHotspot?: (hotspotId: number) => void;
-}
-
-export interface AuthoringCrossFloorHotspot {
-  id: number;
-  targetSceneId: string;
-  yaw: number;
-  pitch: number;
-  label: string | null;
 }
 
 // Street View-style floating chevron, reused (rotated) for the four
@@ -120,7 +108,12 @@ const HOTSPOT_META: Record<HotspotDirection, { icon: string }> = {
   // Deliberately the plainest glyph of the set — a cross-floor sightline
   // hotspot must read as subtle/"looks inactive" by default (Step 6), never
   // competing visually with the Forward/Back arrows that drive the walk.
-  cross_floor: { icon: '<span style="font-size:14px;line-height:1">↗</span>' },
+  // Its own opacity is independent of the badge's — near-invisible at rest,
+  // full strength on hover, via a class (not inline-only) so
+  // group-hover:opacity-100 can actually override it.
+  cross_floor: {
+    icon: '<span class="opacity-20 transition-opacity duration-200 ease-out group-hover:opacity-100" style="font-size:13px;line-height:1">↗</span>',
+  },
 };
 
 // pannellum-react falls back to a default of 10 whenever a hotspot's pitch/yaw
@@ -162,28 +155,45 @@ function playRipple(container: HTMLElement) {
  * Step 8) — each option stops propagation so it doesn't also trigger the
  * outer badge's own click handler (pannellum attaches one click listener to
  * the whole hotspot div, so any inner click bubbles into it too).
+ *
+ * `onEditCrossFloor` (cross_floor hotspots only, dev-only): an optional
+ * small edit icon rendered alongside the badge, visible on hover, that
+ * stops propagation so clicking it opens edit instead of navigating — the
+ * badge itself always navigates, in every mode, exactly like every other
+ * hotspot type. `undefined` renders no edit icon at all (the real
+ * end-user experience).
  */
-function buildTooltip(hotspot: TourHotspot, onSelect: (targetId: string) => void) {
+function buildTooltip(
+  hotspot: TourHotspot,
+  onSelect: (targetId: string) => void,
+  onEditCrossFloor?: () => void,
+) {
   return (hotSpotDiv: HTMLElement) => {
     const meta = HOTSPOT_META[hotspot.type];
     const reducedMotion = prefersReducedMotion();
     const floorOptions = hotspot.type === "elevator" ? hotspot.floorOptions : undefined;
     const hasFloorMenu = !!floorOptions && floorOptions.length > 1;
-    // Cross-floor sightline hotspots stay deliberately subtle at rest —
-    // smaller, dimmer, no entrance ping/shadow — and only fully "arrive"
-    // on hover (Step 6: default "looks inactive", hover "brighten,
-    // increase opacity, small glow, scale slightly larger").
+    // Cross-floor sightline hotspots read as a clear glass/water-droplet
+    // marker resting on the panorama, not a UI button: perfectly sharp (no
+    // backdrop-blur), no flat color fill, just a faint radial highlight
+    // suggesting a droplet's refraction + rim. mix-blend-overlay lets it
+    // adapt to whatever's directly behind it (bright wall or dark corridor)
+    // instead of fighting the scene with a fixed color — hover switches to
+    // normal blending so the reveal is unambiguous regardless of what's
+    // underneath. No blue, no glow, no shadow, ever.
     const isCrossFloor = hotspot.type === "cross_floor";
+    const showEditIcon = isCrossFloor && !!onEditCrossFloor;
 
     const badgeLabel = hasFloorMenu ? "Select Floor" : hotspot.label;
 
-    const badgeSizeClass = isCrossFloor ? "h-6 w-6" : "h-9 w-9";
+    const badgeSizeClass = isCrossFloor ? "h-[22px] w-[22px]" : "h-9 w-9";
     const badgeRestClass = isCrossFloor
-      ? "bg-white/10 opacity-55 shadow-none ring-1 ring-white/30"
+      ? "shadow-none ring-1 ring-white/10 mix-blend-overlay bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0.04)_55%,rgba(255,255,255,0.14)_100%)]"
       : "bg-white/25 shadow-[0_4px_14px_rgba(0,0,0,0.35)] ring-1 ring-white/60";
     const badgeHoverClass = isCrossFloor
-      ? "group-hover:scale-125 group-hover:opacity-100 group-hover:bg-sky-500/60 group-hover:shadow-[0_0_14px_rgba(56,142,255,0.75)] group-hover:ring-sky-200"
+      ? "group-hover:scale-[1.06] group-hover:ring-white/30 group-hover:mix-blend-normal group-hover:bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.5)_0%,rgba(255,255,255,0.22)_55%,rgba(255,255,255,0.35)_100%)]"
       : "group-hover:scale-125 group-hover:bg-sky-500/70 group-hover:shadow-[0_0_18px_rgba(56,142,255,0.85)] group-hover:ring-sky-200";
+    const badgeBlurClass = isCrossFloor ? "" : "backdrop-blur-md";
 
     hotSpotDiv.innerHTML = `
       <div class="group relative flex flex-col items-center">
@@ -196,11 +206,18 @@ function buildTooltip(hotspot: TourHotspot, onSelect: (targetId: string) => void
               ? ""
               : `<span class="pointer-events-none absolute inline-flex h-10 w-10 animate-ping rounded-full bg-white/30 opacity-25"></span>`
           }
-          <span class="tour-hotspot-ripple pointer-events-none absolute inline-flex h-9 w-9 rounded-full bg-sky-300/70"></span>
-          <div class="relative flex ${badgeSizeClass} items-center justify-center rounded-full ${badgeRestClass} text-white backdrop-blur-md transition-all duration-200 ease-out ${badgeHoverClass}">
+          <span class="tour-hotspot-ripple pointer-events-none absolute inline-flex ${isCrossFloor ? "h-[22px] w-[22px] bg-white/25" : "h-9 w-9 bg-sky-300/70"} rounded-full"></span>
+          <div class="relative flex ${badgeSizeClass} items-center justify-center rounded-full ${badgeRestClass} text-white ${badgeBlurClass} transition-all duration-200 ease-out ${badgeHoverClass}">
             ${meta.icon}
           </div>
           ${isCrossFloor ? "" : '<div class="absolute -bottom-2 left-1/2 h-2 w-8 -translate-x-1/2 rounded-full bg-black/30 blur-[3px]"></div>'}
+          ${
+            showEditIcon
+              ? `<button type="button" class="tour-cross-floor-edit pointer-events-auto absolute -top-1 -right-1 z-10 flex h-4 w-4 items-center justify-center rounded-full bg-black/70 text-white opacity-0 shadow-md ring-1 ring-white/40 transition-opacity duration-150 ease-out group-hover:opacity-100 hover:bg-sky-500" aria-label="Edit cross-floor hotspot" title="Edit hotspot">
+                  <span style="font-size:8px;line-height:1">✎</span>
+                </button>`
+              : ""
+          }
         </div>
         ${
           hasFloorMenu
@@ -227,6 +244,18 @@ function buildTooltip(hotspot: TourHotspot, onSelect: (targetId: string) => void
       });
     }
 
+    // No separate click listener on .tour-cross-floor-edit itself: pannellum
+    // (see libpannellum.js's createHotSpot) registers hotSpotDiv's own click
+    // listener with a truthy string `'false'` as addEventListener's third
+    // argument, which JS coerces to `useCapture: true`. That capture-phase
+    // listener on this ANCESTOR div necessarily fires before any bubble- or
+    // target-phase listener on a descendant like this button ever runs, so
+    // stopPropagation() called from the button would always be too late —
+    // navigate() would already have fired. Routing the decision inside the
+    // single click handler passed via handleClick (see PanoramaViewer's
+    // handlePannellumClick, which checks event.target) is the only correct
+    // fix; see that function's own comment for the full explanation.
+
     hotSpotDiv.setAttribute("role", "button");
     hotSpotDiv.setAttribute("aria-label", hasFloorMenu ? "Select floor" : `Go ${hotspot.label}`);
     hotSpotDiv.tabIndex = 0;
@@ -235,43 +264,6 @@ function buildTooltip(hotspot: TourHotspot, onSelect: (targetId: string) => void
         event.preventDefault();
         playRipple(hotSpotDiv);
         onSelect(hotspot.targetId);
-      }
-    });
-  };
-}
-
-/**
- * Authoring-overlay marker (dev-only): a cross-floor hotspot whose
- * visible_from_node_ids names this exact panorama (see the
- * editorCrossFloorHotspots prop doc above — the engine already scoped this
- * list before it got here). Deliberately camouflaged — a small, glassy,
- * near-invisible dot at rest (25-35% opacity, pale blue/white tint, thin
- * white outline, soft shadow, no solid color fill) that only "arrives" on
- * hover (brighten, scale up slightly, soft glow), so it reads as a hidden
- * reference marker rather than a loud icon. Clicking opens edit/delete,
- * never navigates — authoring, not touring.
- */
-function buildAuthoringTooltip(hotspot: AuthoringCrossFloorHotspot, onEdit: () => void) {
-  return (hotSpotDiv: HTMLElement) => {
-    const badgeLabel = hotspot.label ?? `→ scene ${hotspot.targetSceneId}`;
-
-    hotSpotDiv.innerHTML = `
-      <div class="group relative flex flex-col items-center">
-        <div class="pointer-events-none mb-1.5 -translate-y-1 whitespace-nowrap rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-medium text-white opacity-0 shadow-lg backdrop-blur-sm transition-all duration-200 group-hover:translate-y-0 group-hover:opacity-100">
-          ${badgeLabel}
-        </div>
-        <div class="relative flex h-5 w-5 items-center justify-center rounded-full bg-white/10 opacity-30 shadow-[0_1px_6px_rgba(0,0,0,0.25)] ring-1 ring-white/50 backdrop-blur-md transition-all duration-200 ease-out group-hover:scale-125 group-hover:bg-sky-100/30 group-hover:opacity-100 group-hover:shadow-[0_0_12px_rgba(186,230,253,0.65)] group-hover:ring-white/80">
-          <span class="text-white" style="font-size:10px;line-height:1">✎</span>
-        </div>
-      </div>
-    `;
-    hotSpotDiv.setAttribute("role", "button");
-    hotSpotDiv.setAttribute("aria-label", `Edit cross-floor hotspot: ${badgeLabel}`);
-    hotSpotDiv.tabIndex = 0;
-    hotSpotDiv.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        onEdit();
       }
     });
   };
@@ -287,12 +279,10 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
       interactionsEnabled = true,
       placementModeActive = false,
       onPlacementPick,
-      editorCrossFloorHotspots,
       onEditCrossFloorHotspot,
     },
     ref,
   ) {
-    const isEditorOverlayActive = editorCrossFloorHotspots !== undefined;
     const viewerRef = useRef<PannellumClass | null>(null);
     const [loaded, setLoaded] = useState(false);
     const [loadError, setLoadError] = useState(false);
@@ -304,15 +294,23 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
       setLoaded(false);
       setLoadError(false);
       setVeilVisible(true);
+      // Fallback: hide the veil regardless after a short grace window, so a
+      // delayed or missing onLoad (large image, slow network, decode stall)
+      // can never leave the panorama stuck behind a blur/haze indefinitely.
+      // Re-armed fresh on every scene change (cleanup cancels a still-
+      // pending timer from the previous scene if navigation is rapid).
+      const fallback = setTimeout(() => setVeilVisible(false), 400);
+      return () => clearTimeout(fallback);
     }, [panorama.id]);
 
-    // Lift the transition veil once the new scene has actually painted, plus
-    // a small grace window so even an instant (cache-warm) load still reads
-    // as a deliberate transition rather than a flicker.
+    // Lift the transition veil the instant the new scene actually reports
+    // loaded — no artificial grace delay beyond the CSS fade itself, so it
+    // never lingers past what loading actually took. Deliberately depends
+    // only on `loaded` (not panorama.id) so this never fires using a stale
+    // pre-reset value in the same effects pass as the effect above.
     useEffect(() => {
       if (!loaded) return;
-      const timer = setTimeout(() => setVeilVisible(false), 120);
-      return () => clearTimeout(timer);
+      setVeilVisible(false);
     }, [loaded]);
 
     function resetView() {
@@ -489,37 +487,34 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
           </div>
         )}
 
-        {/* Scene-transition veil: fades to a blurred preview of the destination
-            rather than an instant hard cut, and back out once it has painted —
-            deliberately not a live dual-canvas crossfade (2x GPU/WebGL context
-            cost for marginal gain here) but reads the same to the eye. */}
+        {/* Scene-transition veil: fades to a lightly-blurred preview of the
+            destination rather than an instant hard cut, and back out the
+            moment it has painted — deliberately not a live dual-canvas
+            crossfade (2x GPU/WebGL context cost for marginal gain here) but
+            reads the same to the eye. Brief and light on purpose: no
+            brightness reduction (the panorama itself is never darkened) and
+            only a 2px blur, so this never reads as a low-quality or washed-
+            out render — just a fast, smooth hand-off. */}
         <div
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute inset-0 z-30 bg-cover bg-center transition-opacity duration-300 ease-out",
+            "pointer-events-none absolute inset-0 z-30 bg-cover bg-center transition-opacity duration-150 ease-out",
             veilVisible ? "opacity-100" : "opacity-0",
           )}
           style={{
             backgroundImage: panorama.previewImage ? `url(${panorama.previewImage})` : undefined,
             backgroundColor: "#16213E",
-            filter: "blur(6px) brightness(0.7)",
+            filter: "blur(2px)",
           }}
         />
 
         {!loadError && (() => {
-          // In editor mode this scene's own cross_floor entries are dropped
-          // from the normal list — the authoring overlay below renders
-          // every cross-floor hotspot (including this scene's own, at full
-          // opacity), so nothing is ever rendered twice.
-          const baseHotspots = isEditorOverlayActive
-            ? panorama.hotspots.filter((h) => h.type !== "cross_floor")
-            : panorama.hotspots;
-          // No filtering needed here: the caller (page.tsx) already hands
-          // us this exact scene's own slice of the visibility-scoped
-          // per-node index the engine builds — see PanoramaEngine's fourth
-          // pass. A hotspot is never rendered on a scene it wasn't
-          // explicitly authored to be visible from.
-          const authoringHotspots = editorCrossFloorHotspots ?? [];
+          // Every hotspot renders through this one path, in every mode —
+          // cross-floor included. Clicking the badge always navigates; the
+          // small edit icon buildTooltip renders alongside a cross_floor
+          // badge (only when onEditCrossFloorHotspot is provided) is the
+          // sole way to start editing, never the badge click itself.
+          const baseHotspots = panorama.hotspots;
           // A count-only key (e.g. "4 hotspots") doesn't change when an
           // existing hotspot is *edited* in place (same count, different
           // label/target) — verified live: the stale DOM tooltip (built
@@ -527,8 +522,8 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
           // keeps showing the pre-edit label until something else forces a
           // remount. Folding each hotspot's own content into the key closes
           // that gap so update, not just add/delete, remounts immediately.
-          const authoringFingerprint = authoringHotspots
-            .map((h) => `${h.id}:${h.targetSceneId}:${h.label ?? ""}:${h.yaw}:${h.pitch}`)
+          const hotspotFingerprint = baseHotspots
+            .map((h) => `${h.targetId}:${h.label}:${h.yaw}:${h.pitch}`)
             .join("|");
 
           return (
@@ -536,14 +531,13 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
               // pannellum-react's own componentDidUpdate only rebuilds its
               // internal hotSpots array when children.length changes, and
               // even then doesn't reliably add a new hotspot's DOM to an
-              // already-mounted scene (verified live). Including the total
-              // rendered marker count (and, for the authoring overlay, a
-              // content fingerprint) in the key forces a clean remount
-              // whenever the set actually changes — the only reliable way
-              // to guarantee hotspots (including the authoring overlay,
-              // which can change without panorama.hotspots changing at all)
-              // are never stale.
-              key={`${panorama.id}-${retryToken}-${baseHotspots.length}-${authoringFingerprint}`}
+              // already-mounted scene (verified live). Including a content
+              // fingerprint in the key forces a clean remount whenever the
+              // set actually changes — the only reliable way to guarantee
+              // hotspots (including an in-place edit, which can change a
+              // hotspot's content without changing panorama.hotspots.length
+              // at all) are never stale.
+              key={`${panorama.id}-${retryToken}-${baseHotspots.length}-${hotspotFingerprint}`}
               ref={setViewerRef}
               width="100%"
               height="100%"
@@ -565,52 +559,54 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
               onError={() => setLoadError(true)}
               onRender={handleRender}
             >
-              {[
-                ...baseHotspots.map((hotspot, index) => {
-                  const navigate = (targetId: string) => {
-                    if (!interactionsEnabled) return;
-                    onHotspotClick(targetId, {
-                      yaw: hotspot.entryYaw,
-                      pitch: hotspot.entryPitch,
-                    });
-                  };
-                  // pannellum attaches this as a plain click listener on the
-                  // hotspot's outer div, so it fires for a direct badge click —
-                  // for a floor-select hotspot that means "jump to the primary
-                  // option"; a specific floor menu item stops propagation and
-                  // calls navigate itself instead (see buildTooltip).
-                  const handlePannellumClick = (event: MouseEvent) => {
-                    if (!interactionsEnabled) return;
-                    if (event.currentTarget instanceof HTMLElement) {
-                      playRipple(event.currentTarget);
-                    }
-                    navigate(hotspot.targetId);
-                  };
-                  return (
-                    <HotspotMarker
-                      key={`${panorama.id}-${index}`}
-                      type="custom"
-                      pitch={safeAngle(hotspot.pitch)}
-                      yaw={safeAngle(hotspot.yaw)}
-                      tooltip={buildTooltip(hotspot, navigate)}
-                      handleClick={handlePannellumClick}
-                    />
-                  );
-                }),
-                ...authoringHotspots.map((hotspot) => {
-                  const handleEditClick = () => onEditCrossFloorHotspot?.(hotspot.id);
-                  return (
-                    <HotspotMarker
-                      key={`authoring-${hotspot.id}`}
-                      type="custom"
-                      pitch={safeAngle(hotspot.pitch)}
-                      yaw={safeAngle(hotspot.yaw)}
-                      tooltip={buildAuthoringTooltip(hotspot, handleEditClick)}
-                      handleClick={handleEditClick}
-                    />
-                  );
-                }),
-              ]}
+              {baseHotspots.map((hotspot, index) => {
+                const navigate = (targetId: string) => {
+                  if (!interactionsEnabled) return;
+                  onHotspotClick(targetId, {
+                    yaw: hotspot.entryYaw,
+                    pitch: hotspot.entryPitch,
+                  });
+                };
+                const onEditCrossFloor =
+                  hotspot.type === "cross_floor" &&
+                  onEditCrossFloorHotspot &&
+                  hotspot.hotspotId !== undefined
+                    ? () => onEditCrossFloorHotspot(hotspot.hotspotId as number)
+                    : undefined;
+                // pannellum (see libpannellum.js's createHotSpot) registers
+                // this as a CAPTURE-phase listener on the hotspot's outer
+                // div (a `'false'` string passed as addEventListener's third
+                // arg coerces to useCapture: true) — it always fires before
+                // any listener on a descendant (the floor-menu buttons, the
+                // cross-floor edit icon) regardless of stopPropagation()
+                // called from there, since capture-phase ancestor listeners
+                // run strictly before the target/bubble phase reaches a
+                // descendant. So routing has to happen HERE, by inspecting
+                // event.target, not by relying on descendants to opt out.
+                const handlePannellumClick = (event: MouseEvent) => {
+                  if (!interactionsEnabled) return;
+                  const targetEl = event.target instanceof HTMLElement ? event.target : null;
+                  if (onEditCrossFloor && targetEl?.closest(".tour-cross-floor-edit")) {
+                    onEditCrossFloor();
+                    return;
+                  }
+                  if (targetEl?.closest(".tour-floor-option")) return; // handled by buildTooltip's own listener
+                  if (event.currentTarget instanceof HTMLElement) {
+                    playRipple(event.currentTarget);
+                  }
+                  navigate(hotspot.targetId);
+                };
+                return (
+                  <HotspotMarker
+                    key={`${panorama.id}-${index}`}
+                    type="custom"
+                    pitch={safeAngle(hotspot.pitch)}
+                    yaw={safeAngle(hotspot.yaw)}
+                    tooltip={buildTooltip(hotspot, navigate, onEditCrossFloor)}
+                    handleClick={handlePannellumClick}
+                  />
+                );
+              })}
             </Pannellum>
           );
         })()}
