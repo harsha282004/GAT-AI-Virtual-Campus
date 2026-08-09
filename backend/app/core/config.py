@@ -30,7 +30,9 @@ class Settings(BaseSettings):
     CHROMA_PERSIST_DIR: str = "./data/chroma_db"
     CHROMA_COLLECTION_NAME: str = "gat_kb"
 
-    CORS_ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:3003,http://127.0.0.1:3000,http://127.0.0.1:3003"
+    CORS_ALLOWED_ORIGINS: str = (
+        "http://localhost:3000,http://localhost:3003,http://127.0.0.1:3000,http://127.0.0.1:3003"
+    )
 
     LOG_LEVEL: str = "INFO"
 
