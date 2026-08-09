@@ -1,66 +1,279 @@
-"""Phase 5 — Navigation Agent.
+"""Phase 6 — Navigation Agent (real tool integration).
 
 Handles: building locations, floor locations, room locations, campus
-navigation requests, indoor navigation-related questions.
+navigation/route requests, indoor navigation-related questions.
 
-Two distinct things happen for a navigation query, and they are kept
-deliberately separate:
+Phase 5 shipped this agent with a documented stub (`NavigationAdapter`)
+because its own docstring believed scripts/ai/ could not import
+backend/app/*. That belief was re-checked during Phase 6's audit and found
+to be incorrect: CLAUDE.md only says the running app never imports
+scripts/ (one direction), and scripts/db/seed.py already imports
+backend/app/navigation/pathfinding.py directly via a plain SQLAlchemy
+Session — there is no actual project rule against the reverse direction.
+Phase 6 corrects this: navigation queries are now resolved against the
+REAL backend navigation engine (via campus_tools.py, which wraps
+backend/app/navigation/'s existing functions unmodified — see that
+module's docstring for exactly which functions are called).
 
-1. The existing Phase 2-4 RAG pipeline still runs (via
-   agent_base.run_specialist()), same as every other agent — the official
-   GAT knowledge base does contain some location-flavored text (e.g. the
-   campus address in official PDFs), so a grounded, source-traceable
-   answer is attempted exactly like any other query.
-2. `NavigationAdapter.resolve()` — a clean, documented INTEGRATION POINT
-   for the existing indoor navigation engine (backend/app/navigation/:
-   pathfinding.py, building_search.py, room_search.py, nearby.py — and the
-   /api/v1/navigate-family endpoints built on top of them). This adapter
-   does NOT call, import, wrap, or reimplement any of that code — Phase 5
-   explicitly forbids rewriting A*, the navigation graph, or touching
-   hotspot/panorama navigation. `scripts/ai/` is also, by this project's
-   own established convention (see Phase 1's audit notes and CLAUDE.md's
-   "scripts/ never imported by the running application"), not allowed to
-   import backend/app/* directly. `resolve()` therefore returns a typed
-   "not yet integrated" status and documents exactly what a real
-   integration would call, rather than faking a working connection.
+Two paths, chosen deterministically per query (Phase 6's "tool
+selection" requirement — don't call a tool for every question):
+
+1. TOOL PATH — the query looks like a route request ("how do I get to
+   X", "take me from X to Y") or a bare location request ("where is
+   X"). campus_tools.navigation_tool()/resolve_location() are called; on
+   a confident single match, the tool's own structured data (real turn-by-
+   turn directions, real distances, real building/floor names) becomes the
+   answer directly — the LLM is not involved, so it cannot alter a room
+   number, distance, or route. On an ambiguous match, a clarification
+   listing the real candidates is returned — never a guess. Only on
+   "not found"/error does this path fall through to (2).
+2. RAG PATH — agent_base.run_specialist(), identical to every other
+   agent (Phase 2-4 pipeline, unmodified), for informational
+   navigation-flavored questions the tool layer can't resolve to a single
+   graph node (e.g. "How can I reach the second floor?" with no building
+   named — see docs/RAG_ARCHITECTURE.md's Phase 6 section for why that's
+   an inherent ambiguity, not a bug).
 """
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from agent_base import run_specialist
+from campus_tools import hotspot_lookup, navigation_tool, panorama_lookup, resolve_location
 
 AGENT_NAME = "navigation_agent"
 
+_PANORAMA_FOR_PATTERN = re.compile(r"panorama\s+(?:for|of)\s+(.+)", re.IGNORECASE)
+_PANORAMA_GENERIC_PATTERN = re.compile(
+    r"(?:what|which) panorama should i (?:open|see|view|show)", re.IGNORECASE
+)
 
-class NavigationAdapter:
-    """Future integration point only — see module docstring. Every method
-    here is a documented stub, not a working call into
-    backend/app/navigation/."""
+_FROM_TO_PATTERN = re.compile(r"from\s+(.+?)\s+to\s+(.+)", re.IGNORECASE)
 
-    @staticmethod
-    def resolve(query: str) -> dict[str, Any]:
-        return {
-            "status": "not_yet_integrated",
-            "query": query,
-            "note": (
-                "Phase 5 provides this adapter interface only. A real integration "
-                "would call the existing backend/app/navigation/ pathfinding, "
-                "building_search, or room_search modules (or the deployed "
-                "/api/v1/navigate-family HTTP endpoints) from here — none of that "
-                "code is invoked, modified, or duplicated by this stub."
-            ),
-        }
+_ROUTE_TO_PATTERNS = [
+    re.compile(p, re.IGNORECASE)
+    for p in [
+        r"how (?:do|can) i (?:get|reach) to\s+(.+)",
+        r"how (?:do|can) i reach\s+(.+)",
+        r"take me to\s+(.+)",
+        r"navigate to\s+(.+)",
+        r"route to\s+(.+)",
+        r"directions to\s+(.+)",
+        r"show me the route to\s+(.+)",
+    ]
+]
+
+_WHERE_IS_PATTERN = re.compile(r"where(?:'s| is)\s+(.+)", re.IGNORECASE)
+
+
+def _clean(text: str) -> str:
+    text = text.strip().rstrip("?.! ")
+    text = re.sub(r"^(the|a|an)\s+", "", text.strip(), flags=re.IGNORECASE)
+    return text.strip()
+
+
+def classify_navigation_query(query: str) -> dict[str, Any]:
+    """Deterministic sub-intent classification WITHIN the navigation
+    agent — decides tool-vs-RAG, not which agent to use (that's already
+    been decided by supervisor.py by the time this runs)."""
+    m = _PANORAMA_FOR_PATTERN.search(query)
+    if m:
+        return {"intent": "panorama", "from_text": None, "to_text": _clean(m.group(1))}
+    if _PANORAMA_GENERIC_PATTERN.search(query):
+        return {"intent": "panorama", "from_text": None, "to_text": None}
+
+    m = _FROM_TO_PATTERN.search(query)
+    if m:
+        return {"intent": "route", "from_text": _clean(m.group(1)), "to_text": _clean(m.group(2))}
+
+    for pattern in _ROUTE_TO_PATTERNS:
+        m = pattern.search(query)
+        if m:
+            return {"intent": "route", "from_text": None, "to_text": _clean(m.group(1))}
+
+    m = _WHERE_IS_PATTERN.search(query)
+    if m:
+        return {"intent": "location", "from_text": None, "to_text": _clean(m.group(1))}
+
+    return {"intent": "none", "from_text": None, "to_text": None}
+
+
+def _format_route_answer(tool_result: dict[str, Any]) -> str:
+    lines = list(tool_result["turn_by_turn"])
+    lines.append(
+        f"Total distance: {tool_result['total_distance']:.0f}m "
+        f"(~{tool_result['estimated_walk_time_minutes']:.1f} min walk)."
+    )
+    if not tool_result["is_accessible"]:
+        lines.append("Note: this route is not fully accessible (includes stairs).")
+    return " ".join(lines)
+
+
+def _format_location_answer(detail: dict[str, Any], entity_type: str) -> str:
+    if entity_type == "room":
+        parts = [detail["name"]]
+        if detail.get("room_number"):
+            parts.append(f"({detail['room_number']})")
+        location_bits = [b for b in (detail.get("floor_name"), detail.get("building_name")) if b]
+        if location_bits:
+            parts.append("is located on " + ", ".join(location_bits) + ".")
+        return " ".join(parts)
+    parts = [detail["name"]]
+    if detail.get("code"):
+        parts.append(f"({detail['code']})")
+    parts.append("is one of the campus buildings.")
+    return " ".join(parts)
+
+
+def _format_panorama_answer(tool_result: dict[str, Any]) -> str:
+    panorama = tool_result["panorama"]
+    title = panorama.get("title") or f"scene at node #{panorama['node_id']}"
+    if tool_result["status"] == "panorama_found":
+        return f"The panorama for this location is: {title}."
+    return (
+        f"There's no panorama directly at that location — the nearest one is: "
+        f"{title} ({tool_result['distance']:.0f}m away)."
+    )
+
+
+def _format_clarification(candidates: list[dict[str, Any]]) -> str:
+    names = ", ".join(c["name"] for c in candidates)
+    return (
+        f"That could refer to more than one place on campus: {names}. "
+        "Could you clarify which one you mean?"
+    )
+
+
+def _tool_response(
+    query: str, tool_name: str, tool_result: dict[str, Any], answer: str
+) -> dict[str, Any]:
+    """Mirrors agent_base's Agent Response Contract, but for a
+    tool-resolved (not RAG-generated) answer — confidence is 1.0 because
+    this is a direct, deterministic database lookup, not a probabilistic
+    retrieval score. sources/source_urls stay empty on purpose (no GAT
+    website/PDF was involved); tool_used/tool_result carry the real
+    provenance instead, per Phase 6's source-traceability requirement."""
+    return {
+        "original_query": query,
+        "selected_agent": AGENT_NAME,
+        "retrieved_context": [],
+        "confidence_score": 1.0,
+        "confidence_level": "HIGH",
+        "generation_status": "tool_resolved",
+        "answer": answer,
+        "sources": [],
+        "source_urls": [],
+        "refusal_reason": None,
+        "grounded": True,
+        "tool_used": tool_name,
+        "tool_result": tool_result,
+    }
+
+
+def _clarification_response(
+    query: str, tool_name: str, tool_result: dict[str, Any]
+) -> dict[str, Any]:
+    return {
+        "original_query": query,
+        "selected_agent": AGENT_NAME,
+        "retrieved_context": [],
+        "confidence_score": 1.0,
+        "confidence_level": "HIGH",
+        "generation_status": "clarification_needed",
+        "answer": _format_clarification(tool_result["candidates"]),
+        "sources": [],
+        "source_urls": [],
+        "refusal_reason": "The location query matched more than one real campus location.",
+        "grounded": True,
+        "tool_used": tool_name,
+        "tool_result": tool_result,
+    }
 
 
 def handle(query: str) -> dict[str, Any]:
+    classification = classify_navigation_query(query)
+
+    if classification["intent"] == "panorama":
+        if not classification["to_text"]:
+            # "What panorama should I open next?" with no named location and
+            # no session/current-location concept in this stateless pipeline
+            # (see docs/RAG_ARCHITECTURE.md's Phase 6 limitations) — honestly
+            # reported rather than guessed at.
+            return {
+                "original_query": query,
+                "selected_agent": AGENT_NAME,
+                "retrieved_context": [],
+                "confidence_score": 1.0,
+                "confidence_level": "HIGH",
+                "generation_status": "clarification_needed",
+                "answer": (
+                    "I don't have a way to know your current location in the tour "
+                    'yet — please name a specific place (e.g. "panorama for the '
+                    'library").'
+                ),
+                "sources": [],
+                "source_urls": [],
+                "refusal_reason": (
+                    "No current-location/session context is available to this pipeline."
+                ),
+                "grounded": True,
+                "tool_used": "panorama_lookup",
+                "tool_result": None,
+            }
+
+        tool_result = panorama_lookup(classification["to_text"])
+        if tool_result["status"] in ("panorama_found", "nearest_panorama_found"):
+            tool_result["hotspots"] = hotspot_lookup(tool_result["panorama"]["node_id"])["matches"]
+            return _tool_response(
+                query, "panorama_lookup", tool_result, _format_panorama_answer(tool_result)
+            )
+        if tool_result["status"] == "ambiguous":
+            return _clarification_response(query, "panorama_lookup", tool_result)
+
+        result = run_specialist(AGENT_NAME, query)
+        result["navigation_tool_result"] = tool_result
+        return result
+
+    if classification["intent"] == "route" and classification["to_text"]:
+        tool_result = navigation_tool(classification["to_text"], classification["from_text"])
+        if tool_result["status"] == "route_found":
+            return _tool_response(
+                query, "navigation_tool", tool_result, _format_route_answer(tool_result)
+            )
+        if tool_result["status"] in ("destination_ambiguous", "origin_ambiguous"):
+            return _clarification_response(query, "navigation_tool", tool_result)
+
+        result = run_specialist(AGENT_NAME, query)
+        result["navigation_tool_result"] = tool_result
+        return result
+
+    if classification["intent"] == "location" and classification["to_text"]:
+        tool_result = resolve_location(classification["to_text"])
+        if tool_result["status"] == "resolved":
+            answer = _format_location_answer(tool_result["detail"], tool_result["entity_type"])
+            return _tool_response(query, "campus_lookup", tool_result, answer)
+        if tool_result["status"] == "ambiguous":
+            return _clarification_response(query, "campus_lookup", tool_result)
+
+        result = run_specialist(AGENT_NAME, query)
+        result["navigation_tool_result"] = tool_result
+        return result
+
     result = run_specialist(AGENT_NAME, query)
-    result["navigation_hint"] = NavigationAdapter.resolve(query)
+    result["navigation_tool_result"] = None
     return result
 
 
 if __name__ == "__main__":
-    result = handle("Where is the main building?")
-    print(f"[{result['generation_status']}] {result['answer']}")
-    print(f"navigation_hint: {result['navigation_hint']}")
+    for demo_query in [
+        "Where is the library?",
+        "How do I get to Room 101?",
+        "Where is the auditorium?",
+        "How can I reach the second floor?",
+        "Show me the panorama for the library",
+    ]:
+        result = handle(demo_query)
+        print(f"\n[{demo_query}] -> status={result['generation_status']}")
+        print(f"  answer: {result['answer']}")

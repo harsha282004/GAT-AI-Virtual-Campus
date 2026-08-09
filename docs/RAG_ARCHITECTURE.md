@@ -1,12 +1,16 @@
-# RAG Architecture — Phase 1: Knowledge Acquisition, Phase 2: Hybrid Retrieval, Phase 3: Reranking + Confidence, Phase 4: Grounded LLM Generation, Phase 5: Multi-Agent Architecture
+# RAG Architecture — Phase 1: Knowledge Acquisition, Phase 2: Hybrid Retrieval, Phase 3: Reranking + Confidence, Phase 4: Grounded LLM Generation, Phase 5: Multi-Agent Architecture, Phase 6: Campus Tools + Action Integration
 
 This document covers the data acquisition (Phase 1), hybrid retrieval
 (Phase 2), retrieval reranking + confidence scoring (Phase 3), grounded LLM
-answer generation (Phase 4), and multi-agent supervisor/routing (Phase 5)
-pipeline for the Smart Campus Assistant. It is a separate concern from the
-360° virtual tour / indoor navigation system (`backend/app/navigation/`,
-`frontend/src/features/tour/`) documented in `docs/architecture.md` — none
-of these five phases touch any of that code.
+answer generation (Phase 4), multi-agent supervisor/routing (Phase 5), and
+campus tool/action integration (Phase 6) pipeline for the Smart Campus
+Assistant. Phases 1-5 are a separate concern from the 360° virtual tour /
+indoor navigation system (`backend/app/navigation/`,
+`frontend/src/features/tour/`) documented in `docs/architecture.md` and
+never touch it. **Phase 6 is the first exception**: it reads (never
+writes, never modifies) from the existing `backend/app/navigation/` and
+`backend/app/models/` code via a new read-only adapter layer — see below
+for exactly what that means and why it's safe.
 
 ## Source authority policy
 
@@ -932,11 +936,275 @@ across all 1,488 chunks.
 - A real trained intent classifier (CLAUDE.md's planned LSTM,
   `backend/app/intent_model/`) to replace/augment the rule-based router —
   requires a labelled query->intent dataset that does not currently exist.
-- Wiring `navigation_agent`'s adapter to the actual
-  `backend/app/navigation/` pathfinding modules or `/api/v1/navigate`
-  endpoints once this pipeline is integrated into the FastAPI backend
-  (currently `scripts/ai/` only, per the established
-  scripts/-never-imports-backend convention).
+- ~~Wiring `navigation_agent`'s adapter to the actual `backend/app/
+  navigation/` pathfinding modules~~ — **done in Phase 6**, see below. The
+  "scripts/-never-imports-backend" belief this bullet was based on turned
+  out to be incorrect (Phase 6 re-checked it against CLAUDE.md and
+  existing precedent); this note is left here, struck through, rather
+  than silently deleted, since Phase 5's report at the time honestly
+  reflected what was believed true then.
 - A router confidence score, and Supervisor-level clarifying questions
   for ambiguous queries (mirrors CLAUDE.md's existing description of the
-  eventual backend Supervisor's low-intent-confidence behavior).
+  eventual backend Supervisor's low-intent-confidence behavior) — Phase 6
+  added clarification responses at the navigation-tool level
+  (`clarification_needed`), not yet at the Supervisor/routing level.
+
+---
+
+# Phase 6 — Campus Tools and Action Integration
+
+## Architecture
+
+```
+Supervisor (Phase 5, unmodified)
+    ↓
+Specialist Agent (navigation_agent / facilities_agent, extended this phase)
+    ↓
+Tool selection (deterministic, in-agent — regex classification)
+    ↓                                   ↓
+Tool resolves confidently         Tool doesn't resolve / not a tool query
+    ↓                                   ↓
+campus_tools.py -> REAL backend    Grounded Retrieval / Existing RAG
+(navigation graph, room/building        (Phase 2-4, unmodified)
+ search, panoramas, hotspots)
+    ↓                                   ↓
+Structured, deterministic answer   Generated, source-cited answer
+(no LLM — see "Grounding" below)
+    ↓                                   ↓
+         Agent Response Contract (shared shape, both paths)
+```
+
+Two brand-new files hold all of Phase 6's actual logic:
+
+- **`scripts/ai/campus_db.py`** — the *only* file that touches `sys.path`
+  or imports `backend.app.*`. Mirrors the exact pattern already proven by
+  `scripts/db/seed.py` (`sys.path.insert(backend/)` then `from
+  app.db.session import SessionLocal`) — `SessionLocal` has no FastAPI
+  dependency, so a plain script can open/close a session directly. Every
+  tool call gets a short-lived session via `get_db_session()`.
+- **`scripts/ai/campus_tools.py`** — the tool adapter layer itself: six
+  functions (`campus_lookup`, `room_lookup`, `navigation_tool`,
+  `panorama_lookup`, `hotspot_lookup`, `contact_lookup`), each calling
+  straight into the existing `backend/app/navigation/` functions or
+  `backend/app/models/` ORM classes, converting results to plain JSON-safe
+  dicts. **Zero backend files were modified** — every navigation/DB
+  function this phase uses (`build_graph`, `find_shortest_path`,
+  `format_directions`, `search_rooms`, `search_buildings`,
+  `resolve_building_entrance_node`, `find_nearest_panorama`) is called
+  exactly as `backend/app/api/v1/navigation.py` itself calls them.
+
+## Correcting a Phase 5 misconception
+
+Phase 5's `navigation_agent.py` shipped a stub (`NavigationAdapter`)
+because its docstring claimed "scripts/ai/ ... not allowed to import
+backend/app/* directly" as an established project convention. Phase 6's
+audit (step 1, as instructed) re-checked this claim against the actual
+text of CLAUDE.md and found it does **not** exist there — the only related
+line says the running *application* never imports `scripts/` (one
+direction only). More importantly, `scripts/db/seed.py` already imports
+`backend/app/navigation/pathfinding.py` and multiple `backend/app/models/`
+classes directly, with a plain `SessionLocal()` session, no FastAPI
+involved — a working precedent that predates this phase. The stub was a
+overly cautious misreading, not a real rule. This is now corrected: see
+`navigation_agent.py`'s updated docstring for the full explanation, left
+in place rather than silently erased.
+
+## Available tools — IMPLEMENTED / PARTIALLY IMPLEMENTED / NOT AVAILABLE
+
+| Tool | Status | Wraps |
+|---|---|---|
+| `campus_lookup(query)` | **IMPLEMENTED** | `search_buildings()` (unmodified) + `resolve_building_entrance_node()` |
+| `room_lookup(query)` | **IMPLEMENTED** | `search_rooms()` (unmodified) + a new department-substring fallback (see below) |
+| `navigation_tool(to, from)` | **IMPLEMENTED** | `build_graph()` + `find_shortest_path()` + `format_directions()`, all unmodified — plus new panorama-sequence enrichment |
+| `panorama_lookup(query)` | **IMPLEMENTED** | Direct `Panorama` query + `find_nearest_panorama()` (unmodified) fallback |
+| `hotspot_lookup(node_id)` | **IMPLEMENTED** | Direct `CrossFloorHotspot` query (read-only; placement/styling untouched) |
+| `contact_lookup(query)` | **NOT AVAILABLE** | No structured contact/office table exists anywhere in `backend/app/models/`. Contact questions are already answered better by the existing Phase 1-4 RAG pipeline, which retrieves real phone/email/address text from the actual gat.ac.in PDFs/website — adding a duplicate, lower-quality DB tool here would violate the "reuse, don't duplicate" instruction, not honor it. |
+
+**`room_lookup`'s one small, explicit extension**: `search_rooms()` itself
+only searches `Room.name`/`Room.room_number` (confirmed by reading
+`backend/app/navigation/room_search.py` — it does not search
+`Room.department`). `room_lookup()` retries with an ILIKE match on
+`Room.department` only when the unmodified `search_rooms()` call returns
+nothing. This lives entirely in the new `campus_tools.py` file; no
+existing backend module was changed.
+
+**`_resolve_single_location`'s word-level fallback**: the shared resolver
+used by `navigation_tool`/`panorama_lookup`/`resolve_location` tries the
+full query first (still plain ILIKE against real columns); only if that
+matches nothing does it retry with individual non-generic words (e.g.
+"CSE department" → retry with "CSE" → matches "CSE Block"). This is still
+substring matching against real database fields, not fuzzy/semantic
+search — "resolved" always means an exact database match, never a guess.
+
+## Agent → tool mapping
+
+| Agent | Tool integration |
+|---|---|
+| `navigation_agent` | Full tool-selection logic (see below): route requests → `navigation_tool`; "where is X" → `resolve_location`; "panorama for X" → `panorama_lookup` (+ `hotspot_lookup` enrichment). Falls back to RAG when no tool confidently resolves. |
+| `facilities_agent` | Light, non-invasive: always runs its existing RAG answer (unchanged), and additionally attaches a `resolved_location` field via `resolve_location()` when the query happens to name one specific real entity. Never overrides the RAG answer. |
+| `admission_agent`, `academic_agent`, `general_agent` | **Unchanged from Phase 5** — no backend capability exists for admission/academic structured data or contact records, so there is nothing to wire a tool to; RAG remains correct and sufficient here. |
+
+## Tool selection (navigation_agent's classifier)
+
+`navigation_agent.classify_navigation_query()` is a small, deterministic
+regex classifier — same style/honesty standard as `supervisor.py`'s
+router (Phase 5): explainable, no ML, no fabricated training. It checks,
+in order: panorama phrases (`"panorama for X"`, `"what panorama should I
+open"`) → `"from X to Y"` route phrases → `"how do I get to X"`-style
+route phrases → `"where is X"` location phrases → otherwise, `"none"`
+(pure RAG). Only on a *route* or *location* or *panorama* classification
+does any tool get called at all — a purely informational question like
+"What facilities are available?" never touches `campus_tools.py`.
+
+## Navigation integration — REAL, not a stub
+
+`navigation_tool(to_query, from_query)` resolves both ends of a route (or
+defaults the start to the campus "Main Gate" node — a real seeded node,
+not an invented default) via the shared resolver, then calls the
+unmodified `build_graph()` / `find_shortest_path()` / `format_directions()`
+exactly as `backend/app/api/v1/navigation.py` does, returning real turn-by-
+turn text, real distances, and real accessibility info. Verified against
+the actual seeded database (5 buildings, 11 rooms, 180 nodes, 161
+panoramas): e.g. *"How do I get to Room 101?"* returns an 8-step real
+route, 92m, ~1.3 min, correctly flagged not-fully-accessible (includes
+stairs).
+
+Also resolves which nodes along the path already have a `Panorama` (a new
+`panorama_sequence` field on the route result) — ties navigation and
+panorama lookup together per the spec's example ("Show me the route to
+the auditorium"), using only existing `Panorama` rows, never inventing one.
+
+## Panorama / tour integration — REAL, not a stub
+
+`panorama_lookup(query)` resolves a location, then returns the `Panorama`
+directly on that node if one exists, or the nearest reachable one
+(`find_nearest_panorama()`, unmodified) with its real distance. When
+resolved, `hotspot_lookup(node_id)` additionally attaches any real
+`CrossFloorHotspot` rows authored on that exact node — read-only; no
+hotspot is placed, moved, or restyled by this phase. Verified:
+*"Show me the panorama for the library"* → `Library Entrance`, a real
+`Panorama` row.
+
+**Not implemented**: a session/"current location" concept. *"What
+panorama should I open next?"* (no named location) is honestly reported
+as unresolvable — "next" implies knowing where the user currently is in
+the tour, which this stateless, per-query pipeline has no way to know.
+This is reported as a `clarification_needed` response, not guessed at.
+
+## Grounding — how the LLM is prevented from inventing tool data
+
+When a tool resolves confidently (`route_found`, `resolved`,
+`panorama_found`/`nearest_panorama_found`), **the LLM is not called at
+all** for that response — the answer text is built directly from the
+tool's structured data (`navigation_agent._format_route_answer()` /
+`_format_location_answer()` / `_format_panorama_answer()`, all plain
+string formatting, no generation). This is the strongest possible
+grounding guarantee: a room number, distance, or building name the LLM
+never sees cannot be altered by it. `generation_status: "tool_resolved"`
+marks every such response so callers always know no LLM was involved.
+
+When no tool resolves, the query falls through to the unmodified Phase
+2-4 RAG pipeline — which was already grounded before this phase and
+remains exactly as grounded now (see case F below: a genuinely
+nonexistent room correctly produces an honest "I don't have that
+information" answer, not a fabricated location).
+
+## Confidence / safety
+
+Reused exactly, not reimplemented: RAG-path answers still go through
+Phase 3's `compute_confidence()` and Phase 4's LOW-confidence
+short-circuit, unchanged. Tool-path answers use `confidence_score: 1.0` /
+`"HIGH"` — justified because a successful tool result is a direct,
+deterministic database read (ground truth), not a probabilistic retrieval
+score; there is no "confidence" to compute for "the database contains
+exactly this row." When a tool finds a genuine ambiguity (e.g. "Where is
+the auditorium?" matching both a room *and* a building), the response is
+`generation_status: "clarification_needed"` — a clear clarification
+listing the real candidates, never a guess and never sent through the LLM.
+
+## Source traceability
+
+Every tool-backed response carries `tool_used` (which of the six tools)
+and `tool_result` (the full structured data — resolved entity IDs, node
+IDs, distances, panorama/hotspot records) as its provenance — the
+equivalent of `sources`/`source_urls` for the RAG path, but honestly
+representing that the source is the internal campus database, not a GAT
+website/PDF (`sources`/`source_urls` stay empty on the tool path rather
+than being filled with fabricated citations).
+
+## Test methodology and results
+
+`scripts/ai/test_campus_tools.py` covers all 8 required categories against
+the real backend (real Postgres data, real navigation graph, real
+`llama3.2` for the RAG-path cases) — no mocking:
+
+| Case | Query | Result |
+|---|---|---|
+| A: normal campus question | "What is the admission process?" | `generated` (RAG), HIGH confidence, sourced |
+| B: facility lookup | "What facilities are available on campus?" | `generated` (RAG), HIGH confidence, sourced |
+| C: room lookup | "Where is Room 101?" | `tool_resolved` via `campus_lookup`: "Room 101 (C103) is located on First Floor, CSE Block." |
+| D: navigation request | "How do I get to the CSE Block?" | `tool_resolved` via `navigation_tool`: real 60m route from Main Gate |
+| E: panorama/tour request | "Show me the panorama for the library" | `tool_resolved` via `panorama_lookup`: "Library Entrance" |
+| F: unresolved location | "Take me to Room 204." (doesn't exist) | Tool correctly reports `destination_not_found`; falls through to RAG, which honestly says it has no room-location info rather than inventing one |
+| G: unrelated question | "What is the capital of France?" | `low_confidence_refusal`, LOW confidence — unchanged Phase 3/4 behavior |
+| H: tool failure/unavailable | `contact_lookup("official phone number")` | `not_available`, with an honest explanation — not a crash, not a fabricated answer |
+
+`tool_resolved=3, clarification_needed=0 (in this run), rag_generated=3,
+low_confidence_refusal=1, tool_unavailable_reported=1` — all 8 categories
+behaved as specified. Corpus-wide traceability audit: 1,488 chunks
+checked, 0 issues (Phase 1-5 data untouched).
+
+## Limitations
+
+- No fuzzy/semantic entity matching — `campus_tools.py` uses ILIKE
+  substring matching (plus the word-level fallback described above),
+  inherited as-is from `search_rooms`/`search_buildings`. A query with no
+  literal substring overlap with any real name will not resolve, even if
+  a human would understand it.
+- **A real bug found and fixed during Phase 6 regression testing, worth
+  recording**: the first version of the word-level fallback stripped
+  "building"/"room"/"hall"/etc. as generic filler *before* splitting into
+  individual words, so "the main building" degraded to searching bare
+  "main" — which matched the wrong entity ("Main Auditorium Hall") instead
+  of the real "Main Building". Fixed by adding a middle fallback tier that
+  strips only true filler words ("the"/"a"/"of"/etc.) while keeping the
+  phrase intact, so "main building" is still searched as one phrase and
+  correctly matches `Building.name == "Main Building"`. Left this note in
+  rather than silently fixing it, since it's a concrete example of why the
+  substring-matching approach needs careful testing against real data, not
+  just unit-level reasoning.
+- **Separately (not a bug, a real data-shape limitation)**: even with the
+  above fix, `resolve_location("main building")` returns `no_node` rather
+  than `resolved` — the "Main Building" row exists and is correctly
+  matched, but `resolve_building_entrance_node()` (existing, unmodified)
+  finds no usable entrance node for it in the seeded data, so it has no
+  node ID to route to. Reported honestly as `no_node`, not silently
+  dropped or guessed.
+- No session/"current location" state — panorama "what's next" and
+  "navigate from this location" style queries can't be resolved without
+  an explicit starting point.
+- `navigation_agent`'s regex classifier can miss route/location phrasings
+  it wasn't written for; unmatched phrasings simply fall through to RAG
+  (safe, just less precise than a real NLU layer would be).
+- `facilities_agent`'s tool integration is intentionally light — it
+  enriches, but a genuinely comprehensive facilities-tool integration
+  (e.g. structured facility-type search) was not built, since RAG already
+  answers listing-style facilities questions well and there's no
+  structured "facility" table separate from `Room`/`Building` to query.
+- Frontend chat is still unwired (confirmed in this phase's audit:
+  `frontend/src/features/chat/` sends a hardcoded canned reply, no
+  `/api/v1/chat` call exists) — Phase 6 operates entirely at the
+  `scripts/ai/` level, same as every phase before it.
+
+## What remains for future phases
+
+- Wiring this whole pipeline (Supervisor → agents → tools/RAG) behind an
+  actual `POST /api/v1/chat` FastAPI endpoint, so the frontend chat UI can
+  call it.
+- A real trained intent classifier to replace the deterministic routers
+  (both `supervisor.py`'s agent router and `navigation_agent`'s
+  tool-selection classifier).
+- Session/current-location state, enabling "next panorama"/"navigate from
+  here" style follow-up queries.
+- Extending `room_lookup`/`campus_lookup` beyond substring matching if
+  real usage shows it's too brittle for natural queries.
