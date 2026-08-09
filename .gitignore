@@ -30,6 +30,14 @@ data/chroma_db/
 *.pt
 *.pth
 
+# --- Knowledge base raw data acquisition (scripts/ai/) — large, and
+# regeneratable from the official sources via the collector scripts.
+# data/processed/ (chunks.jsonl) and data/metadata/ (source_manifest.json)
+# are kept tracked: small, and the auditable proof of where knowledge
+# came from. ---
+data/raw/
+data/logs/
+
 # --- Generated tour panoramas (regenerate via scripts/media/build_panoramas.py
 # from the real source photos; too large to track in git) ---
 frontend/public/panoramas/main-building/

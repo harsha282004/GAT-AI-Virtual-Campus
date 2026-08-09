@@ -17,6 +17,17 @@ langchain-community>=0.3
 langchain-ollama>=0.2
 chromadb>=0.5
 ollama>=0.3
+# sentence-transformers: local embedding model (all-MiniLM-L6-v2) for the
+# knowledge base pipeline (scripts/ai/) — no existing dependency serves this.
+sentence-transformers>=3.0
+
+# --- Knowledge base data acquisition (scripts/ai/) ---
+# beautifulsoup4: HTML parsing/cleaning for the official GAT website
+# collector — no existing dependency parses HTML.
+beautifulsoup4>=4.12
+# pypdf: text + per-page extraction for official GAT PDFs — no existing
+# dependency reads PDFs.
+pypdf>=5.0
 
 # --- Utilities ---
 python-dotenv>=1.0
