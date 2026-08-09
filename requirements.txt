@@ -32,6 +32,12 @@ pypdf>=5.0
 # (scripts/ai/hybrid_retrieval.py) — no existing dependency does term-based
 # ranking; ChromaDB only provides dense/semantic search.
 rank_bm25>=0.2
+# scikit-learn: sklearn.svm.SVR reranking infrastructure for the Phase 3
+# reranker (scripts/ai/reranker.py). Already present transitively (pulled in
+# by sentence-transformers), but is now imported directly by application
+# code, so it needs to be declared explicitly rather than relied on as a
+# transitive dependency.
+scikit-learn>=1.5
 
 # --- Utilities ---
 python-dotenv>=1.0
