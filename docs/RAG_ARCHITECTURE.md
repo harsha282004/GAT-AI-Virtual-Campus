@@ -1,10 +1,10 @@
-# RAG Architecture — Phase 1: Knowledge Acquisition
+# RAG Architecture — Phase 1: Knowledge Acquisition, Phase 2: Hybrid Retrieval
 
-This document covers the Phase 1 data acquisition and knowledge base
-pipeline for the Smart Campus Assistant. It is a separate concern from the
-360° virtual tour / indoor navigation system (`backend/app/navigation/`,
-`frontend/src/features/tour/`) documented in `docs/architecture.md` — Phase
-1 touches none of that code.
+This document covers the data acquisition (Phase 1) and hybrid retrieval
+(Phase 2) pipeline for the Smart Campus Assistant. It is a separate concern
+from the 360° virtual tour / indoor navigation system
+(`backend/app/navigation/`, `frontend/src/features/tour/`) documented in
+`docs/architecture.md` — neither phase touches any of that code.
 
 ## Source authority policy
 
@@ -158,8 +158,140 @@ data/
 ## What Phase 1 deliberately does not do
 
 - No LLM-based answer generation (Phase 3).
-- No hybrid/BM25 retrieval (Phase 2).
+- No hybrid/BM25 retrieval (Phase 2, see below).
 - No spatial/navigation data acquisition — that already exists in the
   navigation PostgreSQL schema and is out of scope here.
+- No changes to the 360° tour, panorama viewer, cross-floor hotspots, or
+  any existing navigation code/API.
+
+---
+
+# Phase 2 — Hybrid Retrieval
+
+## Why hybrid retrieval
+
+Dense (embedding-based) retrieval alone finds passages that mean the same
+thing as the query, even without shared vocabulary — good for paraphrased
+or conceptual questions. But it can miss passages that are the exact right
+answer purely because their phrasing drifts semantically from the query,
+and it has no notion of exact term matches (department codes, acronyms
+like "VTU"/"KCET", exact facility names).
+
+Lexical (BM25) retrieval is the opposite: it rewards exact keyword overlap
+regardless of meaning, which is precisely why it's useful for named-entity
+and acronym-heavy campus queries, but on its own it easily surfaces
+keyword-coincidental noise. Confirmed empirically in this codebase's own
+Phase 2 test run: for the query *"Where is the college located?"*, BM25-only
+retrieval's top hit was a Women Empowerment Cell PDF (it shares the word
+"college" and other incidental terms), while dense and hybrid retrieval
+both correctly surfaced the campus address document
+(`documents/12B.pdf`) first. Combining both signals is what makes campus
+Q&A reliable across both phrasing styles.
+
+## Dense semantic retrieval (`hybrid_retrieval.py::HybridRetriever.dense_search`)
+
+Reuses, unchanged: the same `all-MiniLM-L6-v2` model and the same
+persistent ChromaDB `gat_kb` collection built in Phase 1. A query is
+embedded with the same model/normalization used at index time, then
+`collection.query()` returns the nearest chunks by cosine distance;
+`semantic_score = 1 - distance`. No second collection, no re-embedding of
+the corpus.
+
+## BM25 lexical retrieval (`hybrid_retrieval.py::HybridRetriever.bm25_search`)
+
+Built with `rank_bm25.BM25Okapi` over the exact same
+`data/processed/chunks.jsonl` chunks used to build the ChromaDB embeddings
+(loaded via `build_embeddings.load_chunks()` — one shared loader, not a
+second dataset). Tokenization is a simple lowercase alphanumeric
+regex-split (`[a-z0-9]+`) — no stemming or stopword removal, so technical
+terms (department codes, acronyms, numbers) survive intact. The BM25 index
+is built once per process (`HybridRetriever.__init__`) and reused across
+queries.
+
+## Score normalization
+
+Dense (cosine similarity, effectively bounded ~[0, 1]) and BM25 (unbounded,
+corpus- and query-dependent magnitude) scores are not comparable on their
+raw scales. Each method's own top-N candidate set is independently
+min-max normalized to [0, 1] before fusion — normalizing per-method (not
+globally, and not over the union) is what makes a fixed weighted sum
+meaningful across arbitrary queries. If a candidate appears in only one
+method's candidate set, its normalized score for the *other* method is
+explicitly `0.0` (not omitted, not estimated) — an "absent" score has a
+well-defined value distinct from a raw score of `None` ("not computed by
+that method at all").
+
+## Weighted score fusion
+
+```python
+DENSE_WEIGHT = 0.6
+BM25_WEIGHT = 0.4
+
+hybrid_score = DENSE_WEIGHT * normalized_semantic_score + BM25_WEIGHT * normalized_bm25_score
+```
+
+Both weights are module-level constants in `hybrid_retrieval.py` (also
+overridable per-call via `hybrid_search(..., dense_weight=, bm25_weight=)`)
+— retuning the balance never requires touching the fusion logic itself.
+Candidates are the union of each method's top-`candidate_n` (default 20)
+results, keyed by `chunk_id`; the fused list is sorted by `hybrid_score`
+descending and truncated to `top_k` (default 5).
+
+## Top-K selection and result format
+
+`HybridRetriever.hybrid_search(query, top_k=...)` returns a list of dicts:
+
+```json
+{
+  "chunk_id": "...",
+  "text": "...",
+  "source_url": "...",
+  "source_title": "...",
+  "page": null,
+  "semantic_score": 0.502501,
+  "bm25_score": 7.688857,
+  "normalized_semantic_score": 1.0,
+  "normalized_bm25_score": 1.0,
+  "hybrid_score": 1.0
+}
+```
+
+`text`/`source_url`/`source_title`/`page` are read straight from the
+Phase 1 chunk record (`chunks.jsonl`, the same record embedded into
+ChromaDB) — never fabricated. `page` is `null` for website-sourced chunks,
+exactly as Phase 1 stored it.
+
+## Source traceability
+
+`scripts/ai/test_hybrid_retrieval.py` runs a corpus-wide audit
+(`run_traceability_audit`) over all chunks for: missing `source_url`,
+missing/empty `text`, missing `chunk_id`, duplicate `chunk_id`s, and
+missing `source_title`. As of the last Phase 2 test run: **0** issues found
+across all 1,488 chunks. Every hybrid test-query result also carries a
+non-empty `source_url`.
+
+## Retrieval comparison (dense-only vs. BM25-only vs. hybrid)
+
+`scripts/ai/test_hybrid_retrieval.py` runs 6 realistic GAT questions
+through all three retrieval modes and reports the top-3 overlap between
+hybrid and each individual method, using real (not manipulated) retrieval
+output. Observed pattern: hybrid results track dense retrieval's semantic
+relevance closely while pulling in BM25's higher-precision exact-term
+matches when they're actually present (e.g. "What undergraduate programs
+are offered?" — BM25 and dense agree, hybrid's top hit is boosted to
+score 1.0). When BM25 alone drifts toward keyword-coincidental noise
+(compliance/NIRF PDFs matching on generic terms like "facilities" or
+"cell"), hybrid's dense component keeps the top results anchored to
+genuinely relevant chunks — this is the concrete benefit hybrid retrieval
+provides over either method alone for campus queries.
+
+## What Phase 2 deliberately does not do
+
+- No LLM-based answer generation, no Ollama call (Phase 3).
+- No reranking model / cross-encoder / SVM.
+- No confidence scoring or hallucination detection layer.
+- No multi-agent/Supervisor routing.
+- No changes to `data/processed/chunks.jsonl`, `data/chroma_db/`, or any
+  other Phase 1 artifact — Phase 2 only reads them.
 - No changes to the 360° tour, panorama viewer, cross-floor hotspots, or
   any existing navigation code/API.

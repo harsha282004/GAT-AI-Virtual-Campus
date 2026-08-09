@@ -28,6 +28,10 @@ beautifulsoup4>=4.12
 # pypdf: text + per-page extraction for official GAT PDFs — no existing
 # dependency reads PDFs.
 pypdf>=5.0
+# rank_bm25: lexical BM25 keyword retrieval for the Phase 2 hybrid retriever
+# (scripts/ai/hybrid_retrieval.py) — no existing dependency does term-based
+# ranking; ChromaDB only provides dense/semantic search.
+rank_bm25>=0.2
 
 # --- Utilities ---
 python-dotenv>=1.0
