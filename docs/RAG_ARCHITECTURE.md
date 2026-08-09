@@ -1,11 +1,11 @@
-# RAG Architecture — Phase 1: Knowledge Acquisition, Phase 2: Hybrid Retrieval, Phase 3: Reranking + Confidence
+# RAG Architecture — Phase 1: Knowledge Acquisition, Phase 2: Hybrid Retrieval, Phase 3: Reranking + Confidence, Phase 4: Grounded LLM Generation
 
 This document covers the data acquisition (Phase 1), hybrid retrieval
-(Phase 2), and retrieval reranking + confidence scoring (Phase 3) pipeline
-for the Smart Campus Assistant. It is a separate concern from the 360°
-virtual tour / indoor navigation system (`backend/app/navigation/`,
-`frontend/src/features/tour/`) documented in `docs/architecture.md` — none
-of these three phases touch any of that code.
+(Phase 2), retrieval reranking + confidence scoring (Phase 3), and grounded
+LLM answer generation (Phase 4) pipeline for the Smart Campus Assistant. It
+is a separate concern from the 360° virtual tour / indoor navigation system
+(`backend/app/navigation/`, `frontend/src/features/tour/`) documented in
+`docs/architecture.md` — none of these four phases touch any of that code.
 
 ## Source authority policy
 
@@ -486,3 +486,202 @@ failures harder to attribute.
   navigation, or the 3D map.
 - No changes to Phase 1 or Phase 2 code/data — Phase 3 only reads their
   output.
+
+---
+
+# Phase 4 — Grounded LLM Answer Generation
+
+## Architecture
+
+```
+User Question
+    ↓
+Hybrid Retrieval (Phase 2, hybrid_search)
+    ↓
+Reranking (Phase 3, rerank)
+    ↓
+Confidence Scoring (Phase 3, compute_confidence)
+    ↓
+Relevant Context (reranked chunks + confidence)
+    ↓
+LLM (Ollama, via LangChain)                      <- Phase 4, this section
+    ↓
+Grounded Campus Answer + Source/Provenance Info
+```
+
+`scripts/ai/llm_generator.py` is the only new code in this phase. It
+imports and calls `hybrid_retrieval.hybrid_search`, `reranker.rerank`, and
+`confidence.compute_confidence` exactly as Phases 2-3 left them — no
+retrieval, reranking, or confidence logic is duplicated or modified.
+`answer_question(query)` wires the full diagram above end to end;
+`generate_answer(query, retrieved_context, confidence)` is the lower-level
+entry point for callers that already have Phase 2/3 output in hand.
+
+## Ollama integration
+
+LLM calls go through `langchain_ollama.ChatOllama` — per the project's
+approved stack (CLAUDE.md: *"LLM ... called via LangChain — local, no
+external API key"*). No OpenAI call, no other paid/external API, and no
+GAT data is ever sent anywhere but the local Ollama process. `ollama` and
+`langchain-ollama` were already in `requirements.txt` from before this
+phase (added when the stack was first approved) — **no new dependency was
+needed**.
+
+`OLLAMA_BASE_URL`/`OLLAMA_MODEL` reuse the same environment variable names
+`backend/app/core/config.py` already defines, so one `.env` value can
+drive both the future backend and these scripts consistently.
+
+## llama3.2's role
+
+This phase's preferred model is **`llama3.2`** (the module's own default,
+distinct from `backend/app/core/config.py`'s existing `"llama3"` default —
+overridable by either the `OLLAMA_MODEL` env var or `answer_question(...,
+model=...)`). `llm_generator.check_ollama_availability()` probes the local
+Ollama service directly (`ollama.Client(...).list()`) before ever
+attempting generation, and reports one of three states rather than
+guessing or silently substituting a different model:
+
+1. Ollama unreachable at all (`reachable: False`)
+2. Ollama reachable, but `llama3.2` not pulled (`model_available: False`)
+3. Ollama reachable and `llama3.2` available
+
+**As tested in this development environment: state 1.** No Ollama
+installation was found on this machine (no `ollama` binary on PATH, no
+service listening on `:11434`) — see TEST RESULTS below. This is reported
+plainly, not worked around.
+
+## Prompt grounding strategy
+
+A fixed system prompt (`llm_generator.SYSTEM_PROMPT`) instructs the model
+to: answer only from the supplied CONTEXT; never invent GAT facts
+(faculty, phone numbers, departments, fees, timings, locations, rules,
+courses, facilities); state explicitly when the CONTEXT doesn't support a
+confident answer rather than guessing; combine multiple context passages
+carefully without contradiction; and never surface internal details
+(chunk IDs, scores) to the end user. Context passages are numbered and
+labeled with their source title before being handed to the model, so the
+model has provenance available even though the code layer — not the
+model's own text — is what ultimately builds the `sources` field (see
+below).
+
+## Context flow
+
+`_build_context_block()` formats each reranked chunk as `[N] (Source:
+<source_title>)\n<chunk text>` and joins them; `_build_sources()`
+separately extracts `{title, source_url, page}` straight from each
+chunk's own Phase 2/3 metadata. These two are independent — the `sources`
+list returned to the caller is **never** parsed out of the LLM's generated
+text, so a citation cannot appear unless it traces back to an actual
+retrieved chunk (Step 4's "do not fabricate citations" requirement).
+
+## Confidence-aware generation
+
+Reuses Phase 3's `compute_confidence()` output as-is — no new confidence
+math in this phase:
+
+- **HIGH** — normal grounded generation via Ollama.
+- **MEDIUM** — generation proceeds, but `MEDIUM_CONFIDENCE_ADDENDUM` is
+  appended to the system prompt, explicitly telling the model to hedge
+  rather than guess if it isn't sure the context answers the question.
+- **LOW** — the LLM is **not called at all**. `generate_answer()` returns
+  a fixed `LOW_CONFIDENCE_MESSAGE` directly. This is deliberate: low
+  confidence means Phase 3's retrieval-quality signal already indicated
+  the evidence is too weak to trust, so asking the model to "try anyway"
+  would just relocate the risk of an unsupported answer from retrieval
+  into generation rather than removing it. Best-available sources (if any
+  exist) are still returned alongside the refusal, clearly not asserted as
+  the answer.
+
+## Source traceability
+
+Every `generate_answer()`/`answer_question()` result includes a `sources`
+list built solely from retrieved-chunk metadata (`title`, `source_url`,
+`page`), even on refusal/failure paths — so `question -> retrieved chunk
+-> source document -> generated answer` stays inspectable end to end,
+which is the whole point for demonstrating RAG groundedness. Observed in
+testing: 0 results with a missing `source_url` across all 5 test queries
+(see TEST RESULTS).
+
+## Error handling
+
+`generate_answer()` never raises past its own boundary — every failure
+mode returns a typed `generation_status` instead of throwing or returning
+a fabricated answer:
+
+| `generation_status` | Meaning |
+|---|---|
+| `generated` | LLM call succeeded; `answer` is real model output |
+| `low_confidence_refusal` | Confidence was LOW; LLM was never called |
+| `no_context` | Retrieval returned nothing at all |
+| `ollama_unreachable` | Ollama service not reachable (see below — this is the state observed in this dev environment) |
+| `model_unavailable` | Ollama reachable, but the preferred model isn't pulled |
+| `generation_failed` | Ollama reachable and model available, but the actual generation call raised (timeout, malformed response, etc.) |
+
+## Test methodology
+
+`scripts/ai/test_llm_generation.py` runs `answer_question()` end to end
+(no mocking) for: three relevant/institutional questions (A-C), one
+deliberately unrelated question (D — "What is the capital of France?"),
+and one question chosen to plausibly retrieve only thin evidence (E). Case
+F (Ollama-unavailable) is not separately simulated — it's the real,
+observed result of every A/B/C/E call in this environment, reported
+explicitly rather than staged. A corpus-wide traceability audit (reused
+from `test_hybrid_retrieval.py`) runs at the end, unaffected by anything
+in this phase.
+
+### Actual results from the last run
+
+| Case | Confidence | Category | `generation_status` | Grounded |
+|---|---|---|---|---|
+| A: undergraduate programs | 0.6907 | HIGH | `ollama_unreachable` | No (Ollama down) |
+| B: departments | 0.5615 | MEDIUM | `ollama_unreachable` | No (Ollama down) |
+| C: facilities | 0.6747 | HIGH | `ollama_unreachable` | No (Ollama down) |
+| D: capital of France (unrelated) | 0.4687 | LOW | `low_confidence_refusal` | No (correctly refused) |
+| E: hostel mess menu (thin-evidence candidate) | 0.6748 | HIGH | `ollama_unreachable` | No (Ollama down) |
+
+Note case E actually retrieved HIGH confidence (real Hostel Management Cell
+PDFs exist and matched reasonably well) — reported honestly rather than
+replaced with a cherry-picked query that would score LOW, per the "do not
+artificially manipulate results" requirement carried over from Phase 2/3.
+The unrelated question (D) is the one case that didn't need Ollama at all
+to demonstrate safety: confidence scoring alone correctly identified it as
+LOW and the pipeline refused before ever reaching the LLM step.
+
+Traceability: 0 of 5 results had a missing `source_url`; the full-corpus
+audit found 0 issues across all 1,488 chunks.
+
+## Limitations
+
+- **Ollama is not installed in this development environment** — confirmed
+  via `check_ollama_availability()` (`ConnectionError`), no `ollama`
+  binary on PATH, nothing listening on `:11434`. This phase's actual
+  `generated` code path (a real successful LLM call) has therefore **not
+  been exercised end to end** — only every other path has (refusal,
+  unreachable-service handling, source assembly, prompt construction).
+  Installing/running Ollama and pulling `llama3.2` is required before this
+  gap can be closed, and is intentionally left for the project owner to
+  do rather than attempted automatically by this phase's implementation.
+- The MEDIUM-confidence "hedge" instruction is a prompt-level request to
+  the model, not a verified/enforced behavior — nothing currently checks
+  that the model actually complied.
+- No hallucination detector exists; grounding is enforced by prompt
+  instructions and by never showing the model ungrounded content, not by
+  post-hoc fact-checking the model's output against the context.
+- No intent classifier exists yet (unchanged from Phase 3) — confidence's
+  `intent_component` is still the documented retrieval-based fallback, not
+  a real P(intent).
+- No conversation/session history — each `answer_question()` call is
+  independent, matching Phase 1-3's stateless retrieval testing.
+
+## What Phase 4 deliberately does not do
+
+- No fine-tuning or training of llama3.2 — Ollama serves the stock
+  pulled model as-is.
+- No fabricated training/eval datasets.
+- No multi-agent/Supervisor routing, no admissions/academics/facilities/
+  navigation agents.
+- No voice assistant, no frontend/chat UI changes.
+- No changes to PostgreSQL schema, panoramas, cross-floor hotspots,
+  navigation, or the 3D map.
+- No changes to Phase 1-3 code or data — Phase 4 only reads their output.
+- No OpenAI or other paid/external LLM API, ever.
