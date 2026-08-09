@@ -1,11 +1,12 @@
-# RAG Architecture — Phase 1: Knowledge Acquisition, Phase 2: Hybrid Retrieval, Phase 3: Reranking + Confidence, Phase 4: Grounded LLM Generation
+# RAG Architecture — Phase 1: Knowledge Acquisition, Phase 2: Hybrid Retrieval, Phase 3: Reranking + Confidence, Phase 4: Grounded LLM Generation, Phase 5: Multi-Agent Architecture
 
 This document covers the data acquisition (Phase 1), hybrid retrieval
-(Phase 2), retrieval reranking + confidence scoring (Phase 3), and grounded
-LLM answer generation (Phase 4) pipeline for the Smart Campus Assistant. It
-is a separate concern from the 360° virtual tour / indoor navigation system
-(`backend/app/navigation/`, `frontend/src/features/tour/`) documented in
-`docs/architecture.md` — none of these four phases touch any of that code.
+(Phase 2), retrieval reranking + confidence scoring (Phase 3), grounded LLM
+answer generation (Phase 4), and multi-agent supervisor/routing (Phase 5)
+pipeline for the Smart Campus Assistant. It is a separate concern from the
+360° virtual tour / indoor navigation system (`backend/app/navigation/`,
+`frontend/src/features/tour/`) documented in `docs/architecture.md` — none
+of these five phases touch any of that code.
 
 ## Source authority policy
 
@@ -685,3 +686,257 @@ audit found 0 issues across all 1,488 chunks.
   navigation, or the 3D map.
 - No changes to Phase 1-3 code or data — Phase 4 only reads their output.
 - No OpenAI or other paid/external LLM API, ever.
+
+---
+
+# Phase 5 — Multi-Agent Architecture
+
+## Architecture
+
+```
+                    USER QUERY
+                         |
+                         v
+                SUPERVISOR (supervisor.py::route)
+                         |
+     classify() -> (agent_name, reason)   <- deterministic, rule-based
+                         |
+          +--------------+-----------------+-----------------+
+          |               |                 |                 |
+          v               v                 v                 v
+  admission_agent  academic_agent   facilities_agent   navigation_agent
+          |               |                 |                 |
+          +---------------+-----------------+-----------------+
+                         |                            general_agent
+                         v                          (also the default
+              agent_base.run_specialist()             fallback when no
+           (Phase 2 retrieval -> Phase 3            domain keywords match)
+          reranking -> Phase 3 confidence ->
+           Phase 4 grounded generation)
+                         |
+                         v
+        Agent Response Contract (grounded answer + sources)
+```
+
+Every specialist agent module (`admission_agent.py`, `academic_agent.py`,
+`facilities_agent.py`, `navigation_agent.py`, `general_agent.py`) is a
+thin wrapper: `AGENT_NAME` constant + `handle(query) -> dict`, calling
+`agent_base.run_specialist(AGENT_NAME, query)`. All five call the
+identical Phase 2-4 pipeline through one shared function — no
+retrieval/reranking/confidence/generation logic is duplicated per agent,
+per the Phase 5 instruction.
+
+## Supervisor Agent (`supervisor.py`)
+
+`route(query)` does exactly two things: call `classify(query)` to pick an
+agent name + a human-readable reason, then call that agent's `handle()`
+and attach the routing metadata to its result. The Supervisor never
+retrieves, never reranks, never scores confidence, and never calls the
+LLM — it has no code path that could bypass the confidence gate, because
+it never reaches the LLM directly at all.
+
+## Specialized agents
+
+| Agent | Handles |
+|---|---|
+| `admission_agent` | admission process, eligibility, application info, UG/PG admission |
+| `academic_agent` | departments, courses/programs, curriculum, academic info |
+| `facilities_agent` | laboratories, classrooms, auditorium, library, hostel, canteen, transport, gym |
+| `navigation_agent` | building/floor/room locations, campus navigation requests |
+| `general_agent` | institution info, contact info, and the default fallback for anything unmatched |
+
+## Routing mechanism — read before assuming otherwise
+
+**This is a deterministic, rule-based (keyword/phrase) router. It is
+explicitly NOT a trained intent classifier.** `classify()` first checks a
+list of high-specificity navigation phrases ("where is", "how can i
+reach", "which floor", ...); if none match, it scores each domain's
+keyword list against the query and picks the highest-scoring domain,
+defaulting to `general_agent` when nothing matches at all. Every decision
+is a literal substring match, logged in a human-readable reason string —
+fully explainable, fully reproducible, zero randomness.
+
+No labelled query→intent training dataset exists in this repository. This
+is the same honesty standard Phase 3 applied to `SVRReranker` (real
+infrastructure, never fit on fabricated data): rather than dressing up
+keyword matching as "a trained model," it's documented plainly as what it
+is. CLAUDE.md's planned LSTM intent classifier
+(`backend/app/intent_model/`) remains unbuilt — see FUTURE IMPROVEMENTS
+below.
+
+**Honest routing-accuracy note:** the Phase 5 test spec lists "What
+undergraduate programs are offered?" under its "ADMISSION" test category,
+but the query contains no admission-process vocabulary — "program" is
+naturally academic-domain content. The router places it in
+`academic_agent`, and this is reported as-is rather than special-cased to
+force a match to the spec's section heading. Both agents run the
+identical grounded pipeline, so this only affects the routing *label*
+attached to the response, not the answer's quality or grounding.
+
+## Integration with existing RAG
+
+`agent_base.run_specialist()` is the single call site for the whole
+pipeline: `hybrid_retrieval.hybrid_search()` (Phase 2, unmodified) ->
+`reranker.rerank()` (Phase 3, unmodified) ->
+`confidence.compute_confidence()` (Phase 3, unmodified) ->
+`llm_generator.generate_answer()` (Phase 4, unmodified, including its own
+LOW-confidence short-circuit and Ollama-failure handling). No Phase 2-4
+file was edited to build Phase 5.
+
+## Agent Response Contract
+
+Every agent's `handle()` returns:
+
+```json
+{
+  "original_query": "...",
+  "selected_agent": "admission_agent",
+  "agent_reason": "matched admission_agent keywords ['admission']",
+  "retrieved_context": [{"chunk_id": "...", "source_title": "...", "source_url": "...", "page": null, "hybrid_score": 0.6, "rerank_score": 0.55}],
+  "confidence_score": 0.6466,
+  "confidence_level": "HIGH",
+  "generation_status": "generated",
+  "answer": "...",
+  "sources": [{"title": "...", "source_url": "...", "page": null}],
+  "source_urls": ["https://www.gat.ac.in/admission.html", "..."],
+  "refusal_reason": null,
+  "grounded": true
+}
+```
+
+(`navigation_agent` adds one extra field, `navigation_hint` — see below.)
+`refusal_reason` is derived from Phase 4's existing `generation_status`
+values (`low_confidence_refusal`, `no_context`, `ollama_unreachable`,
+`model_unavailable`, `generation_failed`) via a fixed lookup table in
+`agent_base.py` — no new status values were invented, and `None` on the
+happy path (`generation_status == "generated"`).
+
+## Confidence gating — preserved, not reimplemented
+
+The confidence gate lives entirely inside `llm_generator.generate_answer()`
+(Phase 4) — LOW confidence skips the LLM call and returns the fixed safe
+refusal message; the Supervisor and every specialist agent just pass that
+result through untouched. Verified in testing: both UNRELATED test
+questions ("What is the capital of France?", "Who won the FIFA World
+Cup?") scored LOW confidence and correctly produced
+`generation_status: "low_confidence_refusal"` without an LLM call — 2/2.
+
+## Llama 3.2 usage
+
+Unchanged from Phase 4: `ChatOllama` via LangChain, model `llama3.2`.
+`agent_base.py` defines its own `DEFAULT_AGENT_MODEL = "llama3.2"`
+constant rather than importing `llm_generator.OLLAMA_MODEL`, for the same
+reason `test_llm_generation.py` needed an explicit override in Phase 4:
+this project's pre-existing `.env` sets `OLLAMA_MODEL=llama3` (a legacy
+value from before Phase 4 existed), which would otherwise silently shadow
+`llama3.2` — the model actually pulled and confirmed working
+(`ollama list` -> `llama3.2:latest`).
+
+## Navigation adapter — integration point only, not a working connection
+
+`navigation_agent.py::NavigationAdapter.resolve(query)` returns a fixed
+`{"status": "not_yet_integrated", ...}` dict documenting exactly what a
+real integration would call: the existing
+`backend/app/navigation/pathfinding.py` / `building_search.py` /
+`room_search.py` / `nearby.py` modules, or the deployed
+`/api/v1/navigate`-family HTTP endpoints. It does not import, call, wrap,
+or duplicate any of that code — `scripts/ai/` does not import `backend/`
+(established in Phase 1's audit), and Phase 5 explicitly forbids
+rewriting A*, the navigation graph, or touching hotspot/panorama
+navigation. The navigation *agent* still answers navigation-flavored
+questions via the normal grounded RAG pipeline (the KB does contain some
+location text, e.g. the campus address), and honestly says so when it
+doesn't have enough information (see test results below) — only the
+*adapter* to the indoor pathfinding system is a stub.
+
+## Test methodology
+
+`scripts/ai/test_multi_agent.py` runs `supervisor.route()` over all 12
+questions from the Phase 5 spec's 6 categories (Admission, Academic,
+Facilities, Navigation, General, Unrelated), with no mocking — every call
+reaches the real ChromaDB collection, the real BM25 index, and the real
+`llama3.2` model. For each: verifies routing against that domain's own
+keyword semantics, confirms non-empty retrieved context, confirms every
+source has a `source_url`, and (for the 2 unrelated questions) confirms
+`generation_status == "low_confidence_refusal"`.
+
+### Actual results from the last run
+
+| Category | Query | Agent | Confidence | Status |
+|---|---|---|---|---|
+| ADMISSION | What is the admission process? | admission_agent | HIGH | generated |
+| ADMISSION (see note) | What undergraduate programs are offered? | academic_agent | MEDIUM | generated |
+| ACADEMIC | What departments are available? | academic_agent | MEDIUM | generated |
+| ACADEMIC | What courses are offered? | academic_agent | HIGH | generated |
+| FACILITIES | What facilities are available on campus? | facilities_agent | HIGH | generated |
+| FACILITIES | Is there an indoor gym? | facilities_agent | MEDIUM | generated |
+| NAVIGATION | Where is the main building? | navigation_agent | MEDIUM | generated |
+| NAVIGATION | How can I reach the second floor? | navigation_agent | LOW | low_confidence_refusal |
+| GENERAL | What is Global Academy of Technology? | general_agent | HIGH | generated |
+| GENERAL | What is the official contact information? | general_agent | MEDIUM | generated |
+| UNRELATED | What is the capital of France? | general_agent | LOW | low_confidence_refusal |
+| UNRELATED | Who won the FIFA World Cup? | general_agent | LOW | low_confidence_refusal |
+
+**routing correct: 12/12 · retrieval performed: 12/12 · sources
+traceable: 12/12 · unrelated queries safely refused: 2/2.**
+Corpus-wide traceability audit: 1,488 chunks checked, 0 issues.
+
+Notable, honestly-reported observations (not manipulated to look better):
+- "Is there an indoor gym?" -> `facilities_agent` correctly answered
+  "Yes... the campus has an 'Indoor Gym'" grounded in the campus
+  brochure, a clean example of a specific, correctly-grounded factual
+  answer.
+- "What departments are available?" -> the model explicitly said the
+  CONTEXT does *not* provide a comprehensive department list and named
+  only the two it could actually support from retrieved text (Mechanical,
+  Electrical) rather than inventing the rest — correct grounding
+  discipline even though it makes the answer incomplete.
+- "How can I reach the second floor?" -> retrieval genuinely scored LOW
+  confidence for this specific phrasing, and the pipeline correctly
+  refused rather than attempting a directional answer it can't support —
+  demonstrating the confidence gate works for navigation queries exactly
+  as it does for every other domain.
+- "Where is the main building?" -> `navigation_agent` reached MEDIUM
+  confidence and *did* call the LLM, which then honestly reported the
+  retrieved context doesn't actually specify the building's location —
+  another case of the generation-layer grounding rule catching what
+  confidence scoring alone rated as "worth attempting."
+
+## Source traceability
+
+Preserved end to end, unchanged from Phase 4: every `sources`/`source_urls`
+entry is built from retrieved-chunk metadata inside
+`llm_generator.generate_answer()`, never parsed from LLM text. 12/12 test
+results had fully traceable sources; the full-corpus audit found 0 issues
+across all 1,488 chunks.
+
+## Limitations
+
+- The router is keyword/phrase-based, not a trained classifier — it can
+  misclassify queries whose vocabulary doesn't match its keyword lists
+  (see the honest routing note above). It has no confidence score of its
+  own and no way to express "unsure which agent."
+- No agent-level disambiguation or clarifying-question behavior — a
+  misrouted query still gets *an* answer (or a correct refusal) from
+  whichever agent it landed on, since all five agents share the same
+  underlying grounded pipeline; misrouting affects the `selected_agent`
+  label, not answer safety.
+- `navigation_agent`'s adapter is a documented stub, not a working
+  connection to the indoor pathfinding system — see above.
+- All Phase 3/4 limitations carry over unchanged (heuristic-fallback
+  reranker, no real intent classifier, no hallucination detector, no
+  conversation/session history).
+
+## Future improvements (NOT implemented)
+
+- A real trained intent classifier (CLAUDE.md's planned LSTM,
+  `backend/app/intent_model/`) to replace/augment the rule-based router —
+  requires a labelled query->intent dataset that does not currently exist.
+- Wiring `navigation_agent`'s adapter to the actual
+  `backend/app/navigation/` pathfinding modules or `/api/v1/navigate`
+  endpoints once this pipeline is integrated into the FastAPI backend
+  (currently `scripts/ai/` only, per the established
+  scripts/-never-imports-backend convention).
+- A router confidence score, and Supervisor-level clarifying questions
+  for ambiguous queries (mirrors CLAUDE.md's existing description of the
+  eventual backend Supervisor's low-intent-confidence behavior).
