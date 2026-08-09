@@ -41,10 +41,28 @@ export function ChatMessageBubble({ message }: { message: ChatMessage }) {
         <div
           className={cn(
             "rounded-2xl px-4 py-3 text-sm leading-relaxed",
-            isUser ? "rounded-br-sm bg-brand text-white" : "rounded-bl-sm bg-brand/5 text-ink",
+            isUser
+              ? "rounded-br-sm bg-brand text-white"
+              : message.error
+                ? "rounded-bl-sm bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"
+                : "rounded-bl-sm bg-brand/5 text-ink",
           )}
         >
-          <p>{message.content}</p>
+          <p className="whitespace-pre-line">{message.content}</p>
+
+          {message.navigation && (
+            <ol className="mt-2.5 list-decimal space-y-1 pl-4 text-[13px] text-ink/80">
+              {message.navigation.turn_by_turn.map((step, index) => (
+                <li key={index}>{step}</li>
+              ))}
+            </ol>
+          )}
+
+          {message.panorama && (
+            <p className="mt-2 text-[11px] font-medium text-accent-purple">
+              📍 {message.panorama.title ?? `Scene #${message.panorama.node_id}`}
+            </p>
+          )}
 
           {message.sources && message.sources.length > 0 && (
             <div className="mt-2.5 flex flex-wrap gap-1.5">

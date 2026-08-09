@@ -4,15 +4,26 @@ import { motion } from "framer-motion";
 import { Building2, GraduationCap, MapPinned, Trash2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
+import { getApiErrorMessage } from "@/api/client";
+import { useChatSend } from "@/hooks";
 import { useChatStore } from "@/store";
-import type { ChatMessage } from "@/types";
+import type { ChatApiSource, ChatMessage, ChatSource } from "@/types";
 
 import { ChatInput } from "./ChatInput";
 import { ChatMessageBubble } from "./ChatMessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
 
-const NOT_CONNECTED_REPLY =
-  "Backend integration coming in AI Phase. In the meantime, try Indoor Navigation or the Virtual Tour from the menu above.";
+function dedupeSources(sources: ChatApiSource[], selectedAgent: string): ChatSource[] {
+  const seen = new Set<string>();
+  const result: ChatSource[] = [];
+  for (const source of sources) {
+    const label = source.title ?? source.source_url ?? null;
+    if (!label || seen.has(label)) continue;
+    seen.add(label);
+    result.push({ label, domain: selectedAgent });
+  }
+  return result;
+}
 
 const QUICK_PROMPTS = [
   { icon: GraduationCap, label: "How do admissions work?" },
@@ -29,17 +40,25 @@ function nextId(prefix: string) {
 export function ChatWindow() {
   const messages = useChatStore((state) => state.messages);
   const isAssistantTyping = useChatStore((state) => state.isAssistantTyping);
+  const sessionId = useChatStore((state) => state.sessionId);
   const addMessage = useChatStore((state) => state.addMessage);
   const setAssistantTyping = useChatStore((state) => state.setAssistantTyping);
   const clearMessages = useChatStore((state) => state.clearMessages);
+  const setSessionId = useChatStore((state) => state.setSessionId);
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const chatSend = useChatSend();
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, isAssistantTyping]);
 
   function handleSend(content: string) {
+    // Guards against a duplicate in-flight request — ChatInput already
+    // disables itself while isAssistantTyping, this is the belt-and-braces
+    // check at the call site itself.
+    if (isAssistantTyping) return;
+
     const userMessage: ChatMessage = {
       id: nextId("user"),
       role: "user",
@@ -49,15 +68,35 @@ export function ChatWindow() {
     addMessage(userMessage);
     setAssistantTyping(true);
 
-    window.setTimeout(() => {
-      setAssistantTyping(false);
-      addMessage({
-        id: nextId("assistant"),
-        role: "assistant",
-        content: NOT_CONNECTED_REPLY,
-        createdAt: new Date().toISOString(),
-      });
-    }, 900);
+    chatSend.mutate(
+      { message: content, sessionId },
+      {
+        onSuccess: (response) => {
+          setSessionId(response.session_id);
+          addMessage({
+            id: nextId("assistant"),
+            role: "assistant",
+            content: response.answer,
+            createdAt: new Date().toISOString(),
+            sources: dedupeSources(response.sources, response.selected_agent),
+            navigation: response.navigation,
+            panorama: response.panorama,
+          });
+        },
+        onError: (error) => {
+          addMessage({
+            id: nextId("assistant"),
+            role: "assistant",
+            content: getApiErrorMessage(error),
+            createdAt: new Date().toISOString(),
+            error: true,
+          });
+        },
+        onSettled: () => {
+          setAssistantTyping(false);
+        },
+      },
+    );
   }
 
   const showQuickPrompts = messages.length <= 1 && !isAssistantTyping;
@@ -67,7 +106,7 @@ export function ChatWindow() {
       <div className="flex items-center justify-between border-b border-hairline px-6 py-4">
         <div>
           <p className="font-display text-sm font-semibold text-ink">GAT Assistant</p>
-          <p className="text-xs text-muted">Backend integration coming in AI Phase</p>
+          <p className="text-xs text-muted">Ask about admissions, academics, facilities, or navigation</p>
         </div>
         <button
           type="button"

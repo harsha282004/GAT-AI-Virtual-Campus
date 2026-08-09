@@ -54,6 +54,11 @@ NAVIGATION_PHRASES = [
     "directions to",
     "navigate to",
     "how far is",
+    # Phase 7 addition: without these, a query like "Show me the panorama
+    # for the library" was caught by facilities_agent's "library" keyword
+    "panorama",
+    "show me the route",
+    "take me to",
 ]
 
 # Single-domain keyword sets used for scoring once no navigation phrase

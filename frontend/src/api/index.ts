@@ -1,4 +1,5 @@
 export * from "./buildings";
+export * from "./chat";
 export * from "./client";
 export * from "./crossFloorHotspots";
 export * from "./documents";

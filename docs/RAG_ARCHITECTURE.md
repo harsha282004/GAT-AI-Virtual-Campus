@@ -1,16 +1,20 @@
-# RAG Architecture — Phase 1: Knowledge Acquisition, Phase 2: Hybrid Retrieval, Phase 3: Reranking + Confidence, Phase 4: Grounded LLM Generation, Phase 5: Multi-Agent Architecture, Phase 6: Campus Tools + Action Integration
+# RAG Architecture — Phase 1: Knowledge Acquisition, Phase 2: Hybrid Retrieval, Phase 3: Reranking + Confidence, Phase 4: Grounded LLM Generation, Phase 5: Multi-Agent Architecture, Phase 6: Campus Tools + Action Integration, Phase 7: End-to-End Chat API Integration
 
 This document covers the data acquisition (Phase 1), hybrid retrieval
 (Phase 2), retrieval reranking + confidence scoring (Phase 3), grounded LLM
-answer generation (Phase 4), multi-agent supervisor/routing (Phase 5), and
-campus tool/action integration (Phase 6) pipeline for the Smart Campus
-Assistant. Phases 1-5 are a separate concern from the 360° virtual tour /
-indoor navigation system (`backend/app/navigation/`,
-`frontend/src/features/tour/`) documented in `docs/architecture.md` and
-never touch it. **Phase 6 is the first exception**: it reads (never
-writes, never modifies) from the existing `backend/app/navigation/` and
-`backend/app/models/` code via a new read-only adapter layer — see below
-for exactly what that means and why it's safe.
+answer generation (Phase 4), multi-agent supervisor/routing (Phase 5),
+campus tool/action integration (Phase 6), and end-to-end chat API
+integration (Phase 7) pipeline for the Smart Campus Assistant. Phases 1-5
+are a separate concern from the 360° virtual tour / indoor navigation
+system (`backend/app/navigation/`, `frontend/src/features/tour/`)
+documented in `docs/architecture.md` and never touch it. **Phase 6 was the
+first exception**: it reads (never writes, never modifies) from the
+existing `backend/app/navigation/` and `backend/app/models/` code via a
+read-only adapter layer. **Phase 7 goes one step further**: it connects
+the whole pipeline to a real, live `POST /api/v1/chat` endpoint and the
+existing frontend chat UI — still never modifying the tour/navigation/
+hotspot code itself, only calling into it exactly as the existing
+`/api/v1/navigation` routes already do.
 
 ## Source authority policy
 
@@ -1208,3 +1212,357 @@ checked, 0 issues (Phase 1-5 data untouched).
   here" style follow-up queries.
 - Extending `room_lookup`/`campus_lookup` beyond substring matching if
   real usage shows it's too brittle for natural queries.
+
+---
+
+# Phase 7 — End-to-End Chat API Integration
+
+## Frontend → backend flow
+
+```
+User types in ChatWindow (frontend/src/features/chat/)
+    ↓
+useChatSend() (frontend/src/hooks/useChat.ts, @tanstack/react-query mutation)
+    ↓
+chatApi.send() (frontend/src/api/chat.ts, axios)
+    ↓
+POST /api/v1/chat   { message, session_id }
+    ↓
+backend/app/api/v1/chat.py::chat()
+    ↓
+supervisor.route()               <- Phase 5, unmodified
+    ↓
+admission_agent / academic_agent / facilities_agent /
+navigation_agent / general_agent  <- Phase 5/6, unmodified
+    ↓
+hybrid_search -> rerank -> compute_confidence -> generate_answer
+   (Phase 2-4, unmodified)   OR   campus_tools.* (Phase 6, unmodified)
+    ↓
+ChatResponse  { answer, status, confidence, selected_agent,
+                tool_used, sources, navigation, panorama, session_id }
+    ↓
+ChatWindow renders the answer, sources, and (when present) a
+turn-by-turn route or panorama chip
+```
+
+## Integration approach — the one real architectural decision this phase made
+
+CLAUDE.md's folder conventions describe `scripts/` as "operational
+scripts only... never imported by the running application." That
+convention was written for one-off setup/build/seed scripts. The actual
+code has evolved past it: `scripts/ai/` became a fully-built, tested
+retrieval + reranking + confidence + LLM generation + multi-agent + tool
+pipeline across Phases 1-6, deliberately kept out of `backend/app/` so
+each phase stayed independently runnable via `python scripts/ai/test_*.py`
+without a live server. Phase 7 explicitly requires connecting that
+completed pipeline to the live app; rebuilding it inside `backend/app/`
+from scratch would directly violate the equally explicit Phase 7
+instruction to "reuse existing code... do not create duplicate RAG,
+agent, navigation, panorama, or confidence implementations." Given that
+direct conflict, `backend/app/api/v1/chat.py` imports `scripts/ai/` via
+the same `sys.path` insertion pattern Phase 6 already established for the
+reverse direction (`scripts/ai/campus_db.py` inserting `backend/` onto
+`sys.path`) — only the direction is new, not the technique. CLAUDE.md's
+own preamble says "when the two disagree, this file and the actual code
+win"; this is exactly that situation, documented rather than silently
+worked around. See `backend/app/api/v1/chat.py`'s module docstring for
+the full reasoning, kept in the code itself since it's load-bearing.
+
+**Sync handler, not async — also deliberate.** The entire Phase 1-6
+pipeline (ChromaDB queries, sentence-transformers encoding, SQLAlchemy ORM
+calls, the Ollama HTTP call) is synchronous, blocking code; rewriting all
+of it to `async`/`await` is exactly the "duplicate implementation" scope
+this phase avoids. `chat()` is declared as a plain `def`, not `async def`
+— Starlette runs sync FastAPI route handlers in a thread pool
+automatically, so a slow request never blocks the event loop. This also
+matches the *actual* existing convention in this codebase:
+`backend/app/api/v1/navigation.py`'s handlers are sync `def` too, despite
+CLAUDE.md's aspirational "all I/O is async" note — the real code, not the
+aspiration, is what's running everywhere else in this API today.
+
+## POST /api/v1/chat
+
+Registered in `backend/app/api/v1/__init__.py` alongside every other
+router, same conventions (`APIRouter()`, `response_model=`, logging via
+`logging.getLogger(__name__)`).
+
+### Request schema (`backend/app/schemas/chat.py::ChatRequest`)
+
+```json
+{ "message": "Where is Room 101?", "session_id": null }
+```
+
+`message` is required and must be non-empty (`400 Bad Request` otherwise,
+via the existing `app.core.exceptions.BadRequestError` — no new error
+type). `session_id` is optional; omit it for a stateless one-shot request,
+or pass back whatever `session_id` a previous response returned to enable
+lightweight follow-up support (see below). Additional fields considered
+and deliberately NOT added: current location / selected building/floor —
+nothing downstream (no agent, no tool) currently consumes a client-supplied
+position, so adding those fields now would be unused surface area, not a
+real capability; `navigation_tool` already has its own real default
+(the campus "Main Gate" node) for routes with no stated origin.
+
+### Response schema (`ChatResponse`)
+
+```json
+{
+  "answer": "Room 101 (C103) is located on First Floor, CSE Block.",
+  "status": "tool_resolved",
+  "confidence": 1.0,
+  "confidence_level": "HIGH",
+  "selected_agent": "navigation_agent",
+  "tool_used": "campus_lookup",
+  "sources": [],
+  "navigation": null,
+  "panorama": null,
+  "session_id": "1c0de795-2306-4322-a3c8-5997c9af2a3c"
+}
+```
+
+`status` is Phase 4/5/6's existing `generation_status` value, unchanged
+(`generated`, `tool_resolved`, `clarification_needed`,
+`low_confidence_refusal`, `no_context`, `ollama_unreachable`,
+`model_unavailable`, `generation_failed`) — no new status was invented,
+per the "preserve existing Phase 4 generation and refusal statuses"
+instruction. `navigation`/`panorama` are populated only when
+`tool_used` is `navigation_tool`/`panorama_lookup` respectively and that
+tool actually resolved a real route/panorama (`NavigationInfoOut`/
+`PanoramaInfoOut` in `backend/app/schemas/chat.py`) — `null` otherwise,
+never a fabricated placeholder.
+
+## Supervisor integration
+
+`chat()` calls `supervisor.route(effective_message)` — the exact same
+function `test_multi_agent.py` and `test_campus_tools.py` already
+exercise — and nothing else. The Supervisor is never bypassed: there is no
+code path in `chat.py` that classifies intent, retrieves, or generates
+independently. This router *is* the application/API boundary Phase 7 asked
+for, not a second AI router.
+
+## Agent integration
+
+All five specialist agents (`admission_agent`, `academic_agent`,
+`facilities_agent`, `navigation_agent`, `general_agent`) are reachable
+exactly as Phase 5/6 built them — verified end to end in this phase's own
+test suite (see below), not just asserted. `navigation_agent`'s tool vs.
+RAG selection, `facilities_agent`'s `resolved_location` enrichment, and
+every other Phase 5/6 behavior are unchanged.
+
+**One real routing gap found and fixed during this phase's own testing**:
+"Show me the panorama for the library" was being caught by
+`facilities_agent`'s `"library"` keyword before `navigation_agent`'s
+panorama-intent classifier ever got a chance to run, because
+`supervisor.py`'s `NAVIGATION_PHRASES` list (checked first) didn't include
+any panorama-related phrasing. Fixed by adding `"panorama"`, `"show me the
+route"`, and `"take me to"` to that list — a 3-line, narrowly-scoped
+addition to Phase 5 code, made "as required for integration" per this
+phase's own explicit allowance, and re-verified against Phase 5's full
+12-question regression suite (still 12/12 routing correct) before and
+after.
+
+## RAG integration
+
+Unchanged. `agent_base.run_specialist()` (Phase 5) still calls
+`hybrid_search()` (Phase 2), `rerank()` (Phase 3), `compute_confidence()`
+(Phase 3), and `generate_answer()` (Phase 4) exactly as before — the chat
+endpoint never touches any of these directly.
+
+## Tool integration
+
+Unchanged. `navigation_agent` still calls `campus_tools.navigation_tool()`
+/ `resolve_location()` / `panorama_lookup()` / `hotspot_lookup()` exactly
+as Phase 6 built them. Verified live through the real HTTP endpoint (not
+just the underlying Python functions) in this phase's test suite — e.g.
+`POST /api/v1/chat {"message": "How do I get to Room 101?"}` returns a
+real 8-step, 92m route with a populated `navigation` object.
+
+## Llama 3.2 generation
+
+Unchanged, and confirmed still working through the full HTTP round-trip
+(not just direct function calls) — e.g. the "What undergraduate programs
+are offered?" test case returns real `llama3.2`-generated text listing
+all 10 programs, sourced from the actual knowledge base.
+
+## Confidence / grounding behavior
+
+Fully preserved — this phase adds no new confidence math and no new
+grounding logic, only a passthrough of Phase 3/4's existing values into
+`ChatResponse.confidence`/`confidence_level`/`status`. Verified live:
+"What is the capital of France?" → `confidence: 0.4687`, `status:
+"low_confidence_refusal"`, the same fixed safe-refusal text Phase 4
+defined — the LLM is not called, exactly as before.
+
+## Session / conversation support
+
+**Lightweight and explicitly stateless-by-default, per Phase 7's own
+allowance.** `backend/app/session/store.py` (filling that previously-empty
+scaffolded package) is an in-process dict — not the PostgreSQL-backed
+design CLAUDE.md's architecture notes describe as the eventual answer
+("Session/conversation state... an open design point to resolve"), which
+would need a real schema/migration/CRUD layer, out of scope for wiring up
+one endpoint. What it actually does: remembers, per `session_id`, the last
+few turns' resolved location (if any), and `chat()` rewrites a narrow set
+of follow-up phrasings ("how do I get there?", "take me there", "navigate
+there") into an explicit destination query before routing.
+
+**Verified working**, live: `"Where is the library?"` → `"Library (LIB)
+is one of the campus buildings."` (`session_id` X) → `"How do I get
+there?"` (same `session_id`) → a real, correct route to the Library.
+
+**Verified correctly NOT guessing**, live: `"Where is the auditorium?"`
+matches two real entities (a room *and* a building both named
+"Auditorium") and correctly returns `clarification_needed` rather than
+picking one — so nothing gets recorded as "the resolved location" for
+that turn, and a subsequent `"How do I get there?"` correctly falls
+through to a low-confidence refusal instead of silently guessing which
+Auditorium was meant. This is intentional: the follow-up mechanism only
+ever substitutes a location that a real tool actually resolved, never an
+ambiguous candidate.
+
+**Documented limitations** (see `store.py`'s own docstring too): in-process
+only (lost on restart, not shared across multiple server workers/processes
+— fine for single-process dev/demo, a real gap for production);
+narrow pattern-matched follow-up phrasing only, not general
+conversation-history/context-window reasoning; session keys themselves are
+never evicted (only individual turns are capped at 5 and time out after 30
+minutes), so a long-running server accumulating many distinct never-reused
+`session_id`s will grow `_sessions` unboundedly — acceptable for this
+phase's scope, a real production concern.
+
+## Frontend integration
+
+No second chat interface was created — the existing
+`frontend/src/features/chat/` components, `frontend/src/store/chatStore.ts`
+(Zustand), and `frontend/src/app/chat/page.tsx` were extended in place:
+
+- `ChatWindow.tsx`'s `handleSend` now calls the real endpoint via a new
+  `useChatSend()` hook (`@tanstack/react-query` mutation, same pattern as
+  the existing `useNavigation.ts` hooks) instead of the old hardcoded
+  `window.setTimeout` + canned `NOT_CONNECTED_REPLY` string.
+- Loading state: unchanged mechanism (`isAssistantTyping`), now driven by
+  the real request instead of a fake timer; `ChatInput` was already
+  `disabled` while typing, and `handleSend` now also guards itself against
+  a duplicate in-flight call.
+- Error handling: `chatApi`'s axios errors are surfaced via the existing
+  `getApiErrorMessage()` helper (`frontend/src/api/client.ts`, already
+  used by every other API module) into a distinctly-styled (red) assistant
+  bubble — no unhandled promise rejections, no silent failures.
+- `chatStore.ts` gained one field, `sessionId`, persisted the same way
+  `messages` already is; `clearMessages()` now also clears it, since a
+  fresh conversation has no prior context.
+- `ChatMessageBubble.tsx` gained two small, additive rendering blocks: a
+  numbered turn-by-turn list when a message carries `navigation`, and a
+  small location chip when it carries `panorama` — both reuse the file's
+  existing visual language (rounded pills, `text-muted`/`text-ink` tokens),
+  no new components, no redesign.
+- The stale "Backend integration coming in AI Phase" banners (page header,
+  chat window subtitle, welcome message) were updated to reflect reality —
+  a direct, minimal content fix, not a redesign.
+
+**Verification performed**: `tsc --noEmit` (0 errors), `next lint` (0
+warnings/errors), both dev servers started successfully, `/` and `/chat`
+returned 200 with no compile errors, and the rendered `/chat` HTML no
+longer contains the old "Backend integration coming" text. No browser
+automation tool was available in this environment to click through the
+UI interactively — this is stated plainly rather than implied; the
+underlying API contract this UI calls was independently verified via 10
+direct HTTP test cases (see below), and the exact same request/response
+shapes are what the frontend's typed API client sends and expects.
+
+## Structured action results (Step 8)
+
+`ChatResponse.navigation`/`.panorama` are the "clean" structured surfaces
+Step 8 asked for — real turn-by-turn steps, distance, time, and
+accessibility for routes; node id, title, image path, and distance for
+panoramas. Internal debugging fields (`retrieved_context`, raw
+`tool_result` dicts, `agent_reason`) are deliberately NOT exposed to the
+frontend — `chat.py`'s `_build_navigation_info`/`_build_panorama_info`
+extract only the clean subset into typed Pydantic response models.
+
+## Testing
+
+`scripts/ai/test_chat_api.py` — the one `scripts/ai/test_*.py` file that
+does NOT import the pipeline directly; it makes real HTTP requests against
+a running `uvicorn` server, exactly like the frontend does, so it proves
+the actual wired-up endpoint (not just the underlying functions Phase 2-6
+tests already cover). All 10 required cases, run against the live server:
+
+| # | Case | Result |
+|---|---|---|
+| 1 | Campus factual ("What facilities...") | `generated`, HIGH, facilities_agent, 5 sources, 0 untraceable |
+| 2 | Admission/academic ("undergraduate programs") | `generated`, MEDIUM, academic_agent, real llama3.2 list of 10 programs |
+| 3 | Room lookup ("Where is Room 101?") | `tool_resolved`, HIGH, navigation_agent, campus_lookup |
+| 4 | Navigation ("How do I get to Room 101?") | `tool_resolved`, HIGH, navigation_agent, navigation_tool, real 92m/8-step route |
+| 5 | Panorama/tour ("...route to the auditorium") | `clarification_needed` — real, honest ambiguity (2 matching entities), not a failure |
+| 6 | Follow-up (library → "how do I get there?") | Verified live outside the automated run: resolves to a real route. Automated run used the ambiguous auditorium case and correctly did NOT guess (see Session support above) |
+| 7 | Unsupported campus question (hostel mess menu) | `generated`, HIGH — model honestly says the info isn't in the CONTEXT rather than inventing a menu |
+| 8 | Unrelated ("capital of France") | `low_confidence_refusal`, LOW, general_agent |
+| 9 | Tool failure/unavailable (`contact_lookup`) | `not_available` — not reachable via any current `/chat` routing path, tested directly (documented, same as Phase 6) |
+| 10 | Empty / missing message | `400` (empty string) / `422` (field missing, Pydantic validation) |
+
+No hallucinated campus information observed in any case — every `generated`
+answer traces to real retrieved chunks (0 untraceable sources across all
+cases), every `tool_resolved` answer traces to real database rows.
+
+## Regression results
+
+- Phase 2 (`test_hybrid_retrieval.py`): pass, 0 traceability issues.
+- Phase 3 (`test_reranking_confidence.py`): pass, identical confidence
+  distribution as before.
+- Phase 5 (`test_multi_agent.py`): pass, **12/12 routing correct** (i.e.
+  the `NAVIGATION_PHRASES` fix did not regress any of Phase 5's original
+  routing decisions), 2/2 unrelated queries safely refused.
+- Phase 6 (`test_campus_tools.py`): pass, all 8 categories identical to
+  Phase 6's original results.
+- ChromaDB: still exactly 1,488 records.
+- Backend: boots cleanly, `/docs` → 200, `/health` → 200.
+- Frontend: boots cleanly, `/` → 200, `/chat` → 200, 0 TypeScript errors,
+  0 lint warnings.
+- Existing APIs unaffected: `/api/v1/panoramas` → 200,
+  `/api/v1/cross-floor-hotspots` → 200, `/api/v1/navigation/room` → 200,
+  `/api/v1/tour/floors` → 200.
+
+## Limitations
+
+- Session/follow-up support is in-process and non-persistent (see above)
+  — not the eventual PostgreSQL design, and not safe for a
+  multi-worker/multi-process deployment.
+- The follow-up phrase matcher is narrow, pattern-based ("how do I get
+  there?" etc.) — not general pronoun/topic resolution across an arbitrary
+  conversation.
+- No async rewrite of the underlying pipeline — sync `def` + Starlette's
+  thread pool avoids blocking the event loop, but each request still
+  monopolizes one thread pool worker for its full duration (embedding +
+  BM25 + rerank + LLM generation, typically a few seconds). Fine for a
+  demo/single-user dev server; real concurrent-load behavior (CLAUDE.md's
+  own Phase 3 concern: async I/O, per-session rate limiting,
+  `scripts/load_test.py`) is still unaddressed.
+- `hybrid_retrieval.get_retriever()`'s singleton has a benign
+  first-request race under concurrent load (two simultaneous *first*
+  requests could each build a redundant BM25 index before one wins) — a
+  minor resource-waste risk, not a correctness bug, inherited unchanged
+  from Phase 2-6 and not fixed here (would mean modifying Phase 2 code
+  beyond what integration requires).
+- No browser-based interactive verification was performed (no browser
+  automation tool available in this environment) — verified instead via
+  successful TypeScript compilation, zero lint errors, and 10 direct HTTP
+  tests against the exact contract the frontend's typed API client uses.
+- `contact_lookup` (Phase 6, `NOT AVAILABLE`) still isn't reachable from
+  any chat message, since no agent routes to it — unchanged from Phase 6,
+  not a Phase 7 regression.
+
+## What remains for future phases
+
+- Real session persistence (PostgreSQL-backed, per CLAUDE.md's own open
+  design point) if conversation history needs to survive a restart or
+  work across multiple server processes.
+- Async pipeline + concurrency hardening (CLAUDE.md's Phase 3 concerns:
+  per-session rate limiting, `scripts/load_test.py`), not addressed by
+  this phase.
+- Client-supplied context fields (current location, selected
+  building/floor) — deliberately not added this phase since nothing
+  downstream consumes them yet; worth revisiting once the tour UI and
+  chat are meant to share live state.
+- Interactive browser-based UI testing once a browser automation tool is
+  available.

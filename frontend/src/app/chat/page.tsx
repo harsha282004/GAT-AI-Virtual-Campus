@@ -1,5 +1,3 @@
-import { Info } from "lucide-react";
-
 import { PageContainer, SectionTitle } from "@/components/ui";
 import { ChatWindow } from "@/features/chat";
 
@@ -10,14 +8,9 @@ export default function ChatPage() {
         eyebrow="AI Assistant"
         title="Ask the GAT Assistant"
         align="left"
-        subtitle="Try out the chat interface below."
+        subtitle="Ask about admissions, academics, campus facilities, or getting around campus."
         className="mx-0"
       />
-
-      <div className="mb-6 flex items-center gap-2.5 rounded-2xl border border-accent-gold/30 bg-accent-gold/10 px-4 py-3 text-sm text-accent-gold">
-        <Info className="h-4 w-4 shrink-0" />
-        <p>Backend integration coming in AI Phase.</p>
-      </div>
 
       <ChatWindow />
     </PageContainer>
