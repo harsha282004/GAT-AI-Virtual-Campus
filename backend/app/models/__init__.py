@@ -4,6 +4,8 @@ relationship string-reference resolution)."""
 
 from app.models.building import Building
 from app.models.campus import Campus
+from app.models.chat_session import ChatMessageRecord, ChatSession
+from app.models.cross_floor_hotspot import CrossFloorHotspot
 from app.models.document import Document, DocumentDomain
 from app.models.edge import NON_ACCESSIBLE_EDGE_TYPES, Edge, EdgeDirection, EdgeType
 from app.models.floor import Floor
@@ -25,4 +27,7 @@ __all__ = [
     "Panorama",
     "Document",
     "DocumentDomain",
+    "CrossFloorHotspot",
+    "ChatSession",
+    "ChatMessageRecord",
 ]

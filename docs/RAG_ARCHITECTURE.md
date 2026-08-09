@@ -1,19 +1,22 @@
-# RAG Architecture — Phase 1: Knowledge Acquisition, Phase 2: Hybrid Retrieval, Phase 3: Reranking + Confidence, Phase 4: Grounded LLM Generation, Phase 5: Multi-Agent Architecture, Phase 6: Campus Tools + Action Integration, Phase 7: End-to-End Chat API Integration
+# RAG Architecture — Phase 1: Knowledge Acquisition, Phase 2: Hybrid Retrieval, Phase 3: Reranking + Confidence, Phase 4: Grounded LLM Generation, Phase 5: Multi-Agent Architecture, Phase 6: Campus Tools + Action Integration, Phase 7: End-to-End Chat API Integration, Phase 8: Persistent Sessions + Production Hardening
 
 This document covers the data acquisition (Phase 1), hybrid retrieval
 (Phase 2), retrieval reranking + confidence scoring (Phase 3), grounded LLM
 answer generation (Phase 4), multi-agent supervisor/routing (Phase 5),
-campus tool/action integration (Phase 6), and end-to-end chat API
-integration (Phase 7) pipeline for the Smart Campus Assistant. Phases 1-5
-are a separate concern from the 360° virtual tour / indoor navigation
-system (`backend/app/navigation/`, `frontend/src/features/tour/`)
-documented in `docs/architecture.md` and never touch it. **Phase 6 was the
-first exception**: it reads (never writes, never modifies) from the
-existing `backend/app/navigation/` and `backend/app/models/` code via a
-read-only adapter layer. **Phase 7 goes one step further**: it connects
-the whole pipeline to a real, live `POST /api/v1/chat` endpoint and the
-existing frontend chat UI — still never modifying the tour/navigation/
-hotspot code itself, only calling into it exactly as the existing
+campus tool/action integration (Phase 6), end-to-end chat API integration
+(Phase 7), and persistent sessions + production hardening (Phase 8)
+pipeline for the Smart Campus Assistant. Phases 1-5 are a separate concern
+from the 360° virtual tour / indoor navigation system
+(`backend/app/navigation/`, `frontend/src/features/tour/`) documented in
+`docs/architecture.md` and never touch it. **Phase 6 was the first
+exception**: it reads (never writes, never modifies) from the existing
+`backend/app/navigation/` and `backend/app/models/` code via a read-only
+adapter layer. **Phase 7 went one step further**: it connects the whole
+pipeline to a real, live `POST /api/v1/chat` endpoint and the existing
+frontend chat UI. **Phase 8** adds real conversation persistence
+(new `chat_sessions`/`chat_messages` tables) and hardens the endpoint's
+failure handling — still never modifying the tour/navigation/hotspot code
+itself, only calling into it exactly as the existing
 `/api/v1/navigation` routes already do.
 
 ## Source authority policy
@@ -1566,3 +1569,275 @@ cases), every `tool_resolved` answer traces to real database rows.
   chat are meant to share live state.
 - Interactive browser-based UI testing once a browser automation tool is
   available.
+
+---
+
+# Phase 8 — Persistent Sessions and Production Hardening
+
+## Architecture changes
+
+Phase 7's in-process session dict (`backend/app/session/store.py`, a
+module-level `dict[str, list[Turn]]`) is replaced with real PostgreSQL
+persistence, reusing the exact SQLAlchemy/`Session`/`Depends(get_db)`
+infrastructure every other router already uses — no new database
+technology, no new ORM, no new access pattern. The `POST /api/v1/chat`
+request/response contract is unchanged: same fields in, same fields out;
+existing clients sending `{"message", "session_id"}` continue to work
+without modification.
+
+```
+Frontend (unchanged UI, chatStore.ts persists sessionId across refresh)
+    ↓
+POST /api/v1/chat  { message, session_id }
+    ↓
+backend/app/api/v1/chat.py::chat(payload, db: Session = Depends(get_db))
+    ↓
+app.session.store.get_or_create_session(db, session_id)   <- Phase 8: DB-backed
+    ↓
+app.session.store.get_last_location / get_last_exchange   <- read prior turns
+    ↓
+follow-up rewriting (unchanged Phase 7 mechanism + new Phase 8 mechanism)
+    ↓
+supervisor.route()  ->  agent  ->  RAG/tools  ->  confidence  ->  Llama 3.2
+   (Phase 2-6, completely unmodified)
+    ↓
+app.session.store.record_message(db, session, role="user", ...)
+app.session.store.record_message(db, session, role="assistant", ...)
+    ↓
+ChatResponse  (same schema as Phase 7)
+```
+
+## Database / session design
+
+Two new tables (`backend/app/models/chat_session.py`), filling the
+previously-empty `backend/app/session/` package:
+
+```python
+class ChatSession(Base, TimestampMixin):
+    __tablename__ = "chat_sessions"
+    id: int                       # surrogate PK, same convention as every other model
+    session_id: str (unique, indexed)   # the client-facing opaque UUID
+    messages: list[ChatMessageRecord]   # relationship, cascade="all, delete-orphan"
+
+class ChatMessageRecord(Base, TimestampMixin):
+    __tablename__ = "chat_messages"
+    id: int
+    session_id: int (FK -> chat_sessions.id, ondelete="CASCADE", indexed)
+    role: str            # "user" | "assistant"
+    content: str
+    resolved_location: str | None   # set on assistant turns where a Phase 6
+                                     # tool actually resolved a real place —
+                                     # never a guess, same rule as Phase 7
+```
+
+No user/authentication concept — Phase 8 explicitly does not add one, and
+none of Phases 1-7 had one either. `TimestampMixin` (already used by every
+other model) provides `created_at`/`updated_at` for free.
+
+**Migration**: `database/migrations/versions/cabb26ecec65_phase8_chat_sessions.py`,
+generated via `alembic revision --autogenerate` (the project's existing
+migration mechanism — no new tooling introduced), chained from the actual
+head at the time (`a9710ef13505`). No historical migration was modified.
+Verified: `alembic upgrade head` creates both tables and the FK/indexes
+correctly; `alembic downgrade -1` cleanly drops them; re-running `upgrade
+head` restores them — both directions confirmed by direct
+`sqlalchemy.inspect()` introspection of the live database, not just trusting
+the migration ran without error.
+
+## Session lifecycle
+
+`get_or_create_session(db, session_id)`:
+- `session_id` supplied and found → reuse that row.
+- `session_id` supplied but not found (invalid/expired/made up) → **create
+  a new row using that exact id**, rather than rejecting the request. This
+  is the explicit "handle invalid/nonexistent session IDs safely"
+  requirement: the client always gets a working session back, never a 404
+  or 400 just because the id it sent doesn't (yet, or anymore) exist
+  server-side.
+- No `session_id` supplied → create a new row with a fresh UUID (matches
+  Phase 7's original behavior for a first-ever message).
+
+**Bounded history**: `record_message()` calls `_trim_history()` after every
+insert, which deletes the oldest rows for that session beyond
+`MAX_MESSAGES_PER_SESSION = 20` (10 exchanges) — a real `DELETE`, not just
+a query-time limit, so the table itself cannot grow without bound for a
+single long-running conversation. A `CONTEXT_TTL_SECONDS = 30 * 60` window
+additionally means a resolved location or prior exchange older than 30
+minutes is no longer used for follow-up resolution, even if it's still in
+the table — an old, cold conversation shouldn't have its stale context
+silently reused.
+
+**Session isolation**: every read/write is scoped by the integer
+`session.id` foreign key — there is no code path that can read one
+session's `resolved_location`/history while answering a different
+session's follow-up. Verified live (see Testing below): asking about the
+library in session A and the CSE Block in session B, then asking session A
+"how do I get there?", correctly resolves to the Library, never the CSE
+Block.
+
+## Conversation history / follow-up handling
+
+Two distinct, narrow mechanisms — deliberately not a general
+conversation-memory system, matching Phase 7's original scope decision:
+
+1. **Location substitution** (unchanged from Phase 7, now DB-backed):
+   `"how do I get there?"` / `"take me there"` / etc. →
+   `get_last_location()` → rewritten to `"How do I get to <location>?"`
+   before routing. Only fires when a real tool actually resolved a
+   location on a *previous* turn — if that turn was itself ambiguous or
+   unresolved, there is nothing to substitute, and the message is routed
+   as-is (this is the intentional "don't guess" behavior already
+   documented in Phase 7, still true here).
+2. **Topic-continuation prepending** (new in Phase 8): a broader indicator
+   pattern (`it`, `that`, `this`, `one`, `closest`, `nearest`, `also`,
+   `another`, `instead`, ...) triggers `get_last_exchange()` → the
+   *previous user question* (not the answer) is prepended to the current
+   message before routing/retrieval — e.g. `"What facilities are
+   available?"` + `"Which one is closest to the main building?"` →
+   `"What facilities are available? Which one is closest to the main
+   building?"`. This re-embeds the missing topic ("facilities") into the
+   retrieval query without inventing any new information — the retriever
+   and confidence gate still operate on real retrieved content, and
+   Llama 3.2 still only sees the same grounded CONTEXT + the (now
+   topically complete) question.
+
+**Verified live** that this does NOT fabricate: asking "What facilities
+are available?" then "Which one is closest to the main building?" in the
+same session produced a real, grounded answer — and separately, when the
+retrieved context didn't support a proximity claim, the model explicitly
+said so ("the CONTEXT does not provide specific information about... I am
+unable to determine which facility is closest") rather than inventing a
+distance. Confidence gating and grounding rules from Phase 3/4 are
+untouched — the follow-up mechanism only changes what text is routed *into*
+the exact same unmodified pipeline.
+
+## Failure handling (hardening)
+
+- **Database failures during session bookkeeping are non-fatal to the
+  chat request.** `get_or_create_session`, `_resolve_followup_message`,
+  and the two `record_message` calls are each wrapped in their own
+  `try/except SQLAlchemyError`, logged via `logger.warning(...,
+  exc_info=True)`, and the request continues — falling back to Phase 7's
+  original stateless behavior (a locally generated, non-persisted
+  `session_id`) rather than failing the whole request. A user still gets
+  a fully grounded answer even if session storage is briefly unavailable;
+  they only lose follow-up continuity for that one exchange.
+- **Any other/unexpected exception** (not explicitly caught here) is
+  still handled safely by the existing app-wide handlers already
+  registered in `app.core.exceptions` (`SQLAlchemyError` → 503 generic
+  message, any `Exception` → 500 generic message) — reused as-is, not
+  duplicated.
+- **LLM/Ollama failures**: unchanged from Phase 4 — `generate_answer()`
+  already returns typed statuses (`ollama_unreachable`, `model_unavailable`,
+  `generation_failed`) rather than raising; Phase 8 adds nothing here and
+  breaks nothing here.
+- **Timeouts**: Ollama calls already carry Phase 4's
+  `client_kwargs={"timeout": REQUEST_TIMEOUT_S}` (60s); no additional
+  request-level timeout was added, since the existing sync-handler +
+  thread-pool model plus that per-call timeout already bounds the worst
+  case without introducing new complexity.
+- **No stack traces or internals leak to the client**: verified directly
+  (see Testing below) — error response bodies for both a validation
+  failure (empty message) and a missing-field failure contain no
+  `Traceback`, `DATABASE_URL`, connection string, `SECRET_KEY`, or
+  password text. `ChatResponse` never includes a raw exception message
+  in any field a client can see (confirmed by re-reading
+  `_build_navigation_info`/`_build_panorama_info`/`_build_sources`: they
+  only ever extract known-safe fields from a *successful* tool result,
+  never an error string).
+- **Request validation**: unchanged from Phase 7 — empty `message` → 400
+  via the existing `BadRequestError`; a missing `message` field → 422 via
+  Pydantic's own validation, before this router's code even runs.
+
+## Security considerations
+
+- No new environment variables, secrets, or credentials were introduced.
+- No authentication/login was added, per Phase 8's explicit instruction —
+  `session_id` is an opaque, unguessable-in-practice UUID, not a
+  credential; anyone who knows a specific session_id could in principle
+  continue that conversation (no worse than Phase 7's in-memory
+  equivalent, and consistent with this project having no auth system at
+  any layer yet).
+- Chat message content is stored as plain `Text` in Postgres — no new PII
+  handling beyond what a user chooses to type; no different from how any
+  other user-supplied text already flows through this system.
+
+## Tests performed
+
+`scripts/ai/test_chat_persistence.py` — 14 cases (A-N), against the real
+running backend and real Postgres (no mocking):
+
+| Case | What it proves | Result |
+|---|---|---|
+| A: new session | `POST` with no `session_id` returns a real one | PASS |
+| B: reused session | Same `session_id` reused; DB row confirmed via direct query | PASS |
+| C: follow-up context | "facilities" → "which one is closest" resolves coherently, no fabrication detected | PASS |
+| D: persistence precondition | Messages are real rows in `chat_messages`/`chat_sessions`, not in-memory | PASS |
+| E: invalid session | A never-seen `session_id` is accepted and a session silently created | PASS |
+| F: session isolation | Session A's follow-up never leaks Session B's location | PASS |
+| G: relevant campus question | "undergraduate programs" → `generated` | PASS |
+| H: unrelated/low-confidence | "capital of France" → `low_confidence_refusal` | PASS |
+| I: navigation/tool | "How do I get to Room 101?" → `navigation_tool`, real route | PASS |
+| J: panorama/tool | "panorama for the library" → `panorama_lookup`, real panorama | PASS |
+| K: Llama 3.2 generation | Case G's answer is real generated text (>40 chars, `status=generated`) | PASS |
+| L: source traceability | Every source in case G has a `source_url` | PASS |
+| M: API error handling | Empty/missing message → 400/422, no leaked internals | PASS |
+| N: frontend build | `npm run type-check` + `npm run lint`, both exit 0 | PASS |
+
+**14/14 passed.**
+
+**Case D honesty note**: this script does not itself stop/restart the
+backend it's talking to (that would kill the test run). The actual
+backend-restart survival requirement was verified manually and directly
+during this phase's development, outside the automated suite: a session's
+messages were created via real HTTP requests, the backend process was
+then fully killed (`taskkill`) and a fresh `uvicorn` process started, and
+a location-based follow-up ("How do I get there?") against that exact
+pre-restart `session_id` was then answered correctly — a real ~52m route
+to the Library — using history reloaded from Postgres by the new process.
+This is stated plainly rather than folded silently into "14/14 automated
+passes," per the instruction not to fabricate or hide how a result was
+obtained. No browser was used for any of this testing (all via `curl`/
+`httpx` against the real HTTP API); Case N's browser-adjacent claim is
+limited to what it actually is — a successful compiler/linter run, not a
+UI interaction.
+
+## Regression results
+
+- Phase 2 (`test_hybrid_retrieval.py`): pass, 0 traceability issues.
+- Phase 3 (`test_reranking_confidence.py`): pass, identical confidence
+  distribution.
+- Phase 5 (`test_multi_agent.py`): pass, 12/12 routing correct, 2/2
+  unrelated safely refused — unaffected by the chat.py/session rewrite.
+- Phase 6 (`test_campus_tools.py`): pass, all categories identical.
+- Phase 7 (`test_chat_api.py`): pass, all 10 cases identical to Phase 7's
+  original results — the API contract genuinely did not change.
+- ChromaDB: still exactly 1,488 records.
+- Backend: boots cleanly, `/docs` → 200, `/health` → 200.
+- Frontend: `npm run type-check` → 0 errors, `npm run lint` → 0 warnings.
+- Existing APIs unaffected: `/api/v1/panoramas` → 200,
+  `/api/v1/cross-floor-hotspots` → 200, `/api/v1/navigation/room` → 200.
+
+## Remaining limitations
+
+- The topic-continuation follow-up (Case C's mechanism) is a fixed
+  indicator-word heuristic, not true coreference resolution — it can
+  still miss follow-ups phrased without any of those words, or
+  over-trigger on a message that happens to contain one of them but isn't
+  actually a follow-up (harmless in that case: the prepended prior
+  question just adds mild, usually-relevant noise to the retrieval query).
+- `hybrid_retrieval.get_retriever()`'s in-process singleton (Phase 2,
+  unmodified) still has the same benign first-request race under
+  concurrent load noted in Phase 7 — not addressed here, would mean
+  touching Phase 2 code beyond what Phase 8's integration requires.
+- No multi-worker/multi-process deployment testing was performed — the
+  DB-backed store is *designed* to be safe across multiple processes
+  (unlike Phase 7's in-memory dict), but only single-process operation was
+  actually exercised in this phase's tests.
+- No async rewrite of the underlying pipeline (unchanged from Phase 7) —
+  still sync `def` + Starlette's thread pool; real concurrent-load/rate-
+  limiting hardening (CLAUDE.md's own Phase 3 concern) remains future work.
+- `contact_lookup` (Phase 6, `NOT AVAILABLE`) is still not reachable from
+  any chat message — unchanged, not a Phase 8 regression.
+- No interactive browser-based UI testing was performed (same reason as
+  Phase 7: no browser automation tool available in this environment).

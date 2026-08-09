@@ -15,10 +15,13 @@ interface ChatState {
   messages: ChatMessage[];
   isAssistantTyping: boolean;
   voiceEnabled: boolean;
-  /** Backend-issued session_id (Phase 7) — replayed on each request so the
-   * backend's lightweight in-process follow-up memory (e.g. "how do I get
-   * there?") can resolve against the previous turn. Cleared with the
-   * conversation since a fresh conversation has no prior context. */
+  /** Backend-issued session_id, replayed on each request so the backend's
+   * PostgreSQL-backed conversation history (Phase 8; in-process in Phase 7)
+   * can resolve follow-ups (e.g. "how do I get there?") against previous
+   * turns. Persisted via this store's zustand `persist` middleware like
+   * every other field here, so it — and the conversation it points to —
+   * survives a page refresh. Cleared with the conversation since a fresh
+   * conversation has no prior context. */
   sessionId: string | null;
   addMessage: (message: ChatMessage) => void;
   setAssistantTyping: (value: boolean) => void;
