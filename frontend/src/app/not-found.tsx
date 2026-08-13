@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Building2, Compass, Home, MapIcon, MessageSquare, Navigation as NavigationIcon, PlayCircle } from "lucide-react";
+import { Building2, Compass, Home, MapIcon, MessageSquare, PlayCircle } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui";
@@ -9,7 +9,6 @@ import { Button } from "@/components/ui";
 const SUGGESTED_ROUTES = [
   { label: "Campus Overview", href: "/campus", icon: Building2 },
   { label: "Virtual Tour", href: "/tour", icon: PlayCircle },
-  { label: "Indoor Navigation", href: "/navigation", icon: NavigationIcon },
   { label: "3D Campus Map", href: "/map", icon: MapIcon },
 ];
 

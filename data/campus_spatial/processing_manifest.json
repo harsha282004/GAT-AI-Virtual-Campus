@@ -1,0 +1,133 @@
+{
+  "total_primary_panoramas": 178,
+  "total_preview_thumbnails": 156,
+  "total_files_on_disk": 334,
+  "status_counts": {
+    "COMPLETED": 178,
+    "PENDING": 0,
+    "FAILED": 0,
+    "REVIEW_REQUIRED": 3
+  },
+  "by_area": {
+    "Admin": {
+      "COMPLETED": 3,
+      "PENDING": 0,
+      "total": 3
+    },
+    "BlockA": {
+      "COMPLETED": 5,
+      "PENDING": 0,
+      "total": 5
+    },
+    "BlockB": {
+      "COMPLETED": 2,
+      "PENDING": 0,
+      "total": 2
+    },
+    "Cafeteria": {
+      "COMPLETED": 1,
+      "PENDING": 0,
+      "total": 1
+    },
+    "Classrooms": {
+      "COMPLETED": 3,
+      "PENDING": 0,
+      "total": 3
+    },
+    "Labs": {
+      "COMPLETED": 3,
+      "PENDING": 0,
+      "total": 3
+    },
+    "Library": {
+      "COMPLETED": 3,
+      "PENDING": 0,
+      "total": 3
+    },
+    "entrance": {
+      "COMPLETED": 23,
+      "PENDING": 0,
+      "total": 23
+    },
+    "first-floor": {
+      "COMPLETED": 34,
+      "PENDING": 0,
+      "total": 34
+    },
+    "ground-floor": {
+      "COMPLETED": 34,
+      "PENDING": 0,
+      "total": 34
+    },
+    "second-floor": {
+      "COMPLETED": 31,
+      "PENDING": 0,
+      "total": 31
+    },
+    "third-floor": {
+      "COMPLETED": 34,
+      "PENDING": 0,
+      "total": 34
+    },
+    "MainGate": {
+      "COMPLETED": 2,
+      "PENDING": 0,
+      "total": 2
+    }
+  },
+  "rooms_verified": [
+    "103A",
+    "105",
+    "106",
+    "108",
+    "109A",
+    "110A",
+    "110B",
+    "112",
+    "113",
+    "201",
+    "202",
+    "203",
+    "203A",
+    "204",
+    "205",
+    "207",
+    "208",
+    "210",
+    "211A",
+    "212",
+    "213",
+    "302",
+    "303",
+    "304",
+    "305",
+    "306",
+    "307",
+    "309",
+    "310",
+    "311",
+    "312",
+    "314",
+    "315",
+    "316",
+    "317",
+    "318",
+    "400",
+    "401",
+    "402",
+    "403",
+    "404",
+    "405",
+    "406",
+    "411",
+    "412",
+    "417",
+    "417B",
+    "418",
+    "418A",
+    "419",
+    "419B"
+  ],
+  "entities_verified": 93,
+  "entities_needing_review": 3
+}

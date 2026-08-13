@@ -89,4 +89,6 @@ def run_specialist(
         "source_urls": source_urls,
         "refusal_reason": _REFUSAL_REASONS.get(generation["generation_status"]),
         "grounded": generation["grounded"],
+        "model": generation.get("model"),
+        "rerank_mode": reranked[0]["rerank_mode"] if reranked else None,
     }

@@ -1,0 +1,2128 @@
+[
+  {
+    "panorama_id": null,
+    "url": "/panoramas/Admin/admin-entrance.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "admin-entrance",
+      "name": "Admin Block Entrance",
+      "building": "Admin Block",
+      "floor": "Ground Floor",
+      "room": "Entrance",
+      "image": "/panoramas/Admin/admin-entrance.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "back",
+          "label": "Central Pathway",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "central-pathway"
+        },
+        {
+          "type": "enter_room",
+          "label": "Reception",
+          "yaw": 0,
+          "pitch": 0,
+          "targetId": "reception"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/Admin/principal-office.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "principal-office",
+      "name": "Principal Office",
+      "building": "Admin Block",
+      "floor": "Ground Floor",
+      "room": "Principal Office",
+      "image": "/panoramas/Admin/principal-office.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "exit_room",
+          "label": "Reception",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "reception"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/Admin/reception.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "reception",
+      "name": "Reception",
+      "building": "Admin Block",
+      "floor": "Ground Floor",
+      "room": "Reception",
+      "image": "/panoramas/Admin/reception.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "exit_room",
+          "label": "Admin Block Entrance",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "admin-entrance"
+        },
+        {
+          "type": "enter_room",
+          "label": "Principal Office",
+          "yaw": 0,
+          "pitch": 0,
+          "targetId": "principal-office"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/BlockA/blockA-corridor-first.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "blockA-corridor-first",
+      "name": "Block A First Floor Corridor",
+      "building": "Block A",
+      "floor": "First Floor",
+      "room": "Corridor",
+      "image": "/panoramas/BlockA/blockA-corridor-first.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "downstairs",
+          "label": "Ground Corridor",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "blockA-corridor-ground"
+        },
+        {
+          "type": "enter_room",
+          "label": "Classroom 201",
+          "yaw": 0,
+          "pitch": 0,
+          "targetId": "classroom-201"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/BlockA/blockA-corridor-ground.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "blockA-corridor-ground",
+      "name": "Block A Ground Corridor",
+      "building": "Block A",
+      "floor": "Ground Floor",
+      "room": "Corridor",
+      "image": "/panoramas/BlockA/blockA-corridor-ground.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "back",
+          "label": "Block A Entrance",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "blockA-entrance"
+        },
+        {
+          "type": "enter_room",
+          "label": "Classroom 101",
+          "yaw": -45,
+          "pitch": 0,
+          "targetId": "classroom-101"
+        },
+        {
+          "type": "upstairs",
+          "label": "First Floor",
+          "yaw": 90,
+          "pitch": 0,
+          "targetId": "blockA-corridor-first"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/BlockA/blockA-entrance.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "blockA-entrance",
+      "name": "Block A Entrance",
+      "building": "Block A",
+      "floor": "Ground Floor",
+      "room": "Entrance",
+      "image": "/panoramas/BlockA/blockA-entrance.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "back",
+          "label": "Central Pathway",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "central-pathway"
+        },
+        {
+          "type": "forward",
+          "label": "Ground Corridor",
+          "yaw": 0,
+          "pitch": 0,
+          "targetId": "blockA-corridor-ground"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/BlockA/classroom-101.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "classroom-101",
+      "name": "Classroom 101",
+      "building": "Block A",
+      "floor": "Ground Floor",
+      "room": "Classroom 101",
+      "image": "/panoramas/BlockA/classroom-101.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "exit_room",
+          "label": "Ground Corridor",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "blockA-corridor-ground"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/BlockA/classroom-201.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "classroom-201",
+      "name": "Classroom 201",
+      "building": "Block A",
+      "floor": "First Floor",
+      "room": "Classroom 201",
+      "image": "/panoramas/BlockA/classroom-201.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "exit_room",
+          "label": "First Floor Corridor",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "blockA-corridor-first"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/BlockB/blockB-entrance.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "blockB-entrance",
+      "name": "Block B Entrance",
+      "building": "Block B",
+      "floor": "Ground Floor",
+      "room": "Entrance",
+      "image": "/panoramas/BlockB/blockB-entrance.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "back",
+          "label": "Central Pathway",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "central-pathway"
+        },
+        {
+          "type": "enter_room",
+          "label": "Seminar Hall",
+          "yaw": 0,
+          "pitch": 0,
+          "targetId": "seminar-hall"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/BlockB/seminar-hall.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "seminar-hall",
+      "name": "Seminar Hall",
+      "building": "Block B",
+      "floor": "Ground Floor",
+      "room": "Seminar Hall",
+      "image": "/panoramas/BlockB/seminar-hall.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "exit_room",
+          "label": "Block B Entrance",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "blockB-entrance"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/Cafeteria/cafeteria.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "cafeteria",
+      "name": "Cafeteria",
+      "building": "Cafeteria",
+      "floor": "Ground Floor",
+      "room": "Dining Area",
+      "image": "/panoramas/Cafeteria/cafeteria.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "back",
+          "label": "Central Pathway",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "central-pathway"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/Classrooms/classrooms-entrance.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "classrooms-entrance",
+      "name": "Classrooms Entrance",
+      "building": "Classrooms",
+      "floor": "Ground Floor",
+      "room": "Entrance",
+      "image": "/panoramas/Classrooms/classrooms-entrance.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "back",
+          "label": "Central Pathway",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "central-pathway"
+        },
+        {
+          "type": "enter_room",
+          "label": "Room 101",
+          "yaw": 0,
+          "pitch": 0,
+          "targetId": "room-101"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/Classrooms/room-101.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "room-101",
+      "name": "Room 101",
+      "building": "Classrooms",
+      "floor": "Ground Floor",
+      "room": "Room 101",
+      "image": "/panoramas/Classrooms/room-101.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "exit_room",
+          "label": "Classrooms Entrance",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "classrooms-entrance"
+        },
+        {
+          "type": "forward",
+          "label": "Room 102",
+          "yaw": 0,
+          "pitch": 0,
+          "targetId": "room-102"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/Classrooms/room-102.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "room-102",
+      "name": "Room 102",
+      "building": "Classrooms",
+      "floor": "Ground Floor",
+      "room": "Room 102",
+      "image": "/panoramas/Classrooms/room-102.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "back",
+          "label": "Room 101",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "room-101"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/Labs/computer-lab.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "computer-lab",
+      "name": "Computer Lab",
+      "building": "Labs",
+      "floor": "Ground Floor",
+      "room": "Computer Lab",
+      "image": "/panoramas/Labs/computer-lab.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "exit_room",
+          "label": "Labs Entrance",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "labs-entrance"
+        },
+        {
+          "type": "forward",
+          "label": "Electronics Lab",
+          "yaw": 0,
+          "pitch": 0,
+          "targetId": "electronics-lab"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/Labs/electronics-lab.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "electronics-lab",
+      "name": "Electronics Lab",
+      "building": "Labs",
+      "floor": "Ground Floor",
+      "room": "Electronics Lab",
+      "image": "/panoramas/Labs/electronics-lab.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "back",
+          "label": "Computer Lab",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "computer-lab"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/Labs/labs-entrance.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "labs-entrance",
+      "name": "Labs Entrance",
+      "building": "Labs",
+      "floor": "Ground Floor",
+      "room": "Entrance",
+      "image": "/panoramas/Labs/labs-entrance.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "back",
+          "label": "Central Pathway",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "central-pathway"
+        },
+        {
+          "type": "enter_room",
+          "label": "Computer Lab",
+          "yaw": 0,
+          "pitch": 0,
+          "targetId": "computer-lab"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/Library/library-entrance.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "library-entrance",
+      "name": "Library Entrance",
+      "building": "Library",
+      "floor": "Ground Floor",
+      "room": "Entrance",
+      "image": "/panoramas/Library/library-entrance.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "back",
+          "label": "Central Pathway",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "central-pathway"
+        },
+        {
+          "type": "forward",
+          "label": "Reading Hall",
+          "yaw": 0,
+          "pitch": 0,
+          "targetId": "reading-hall"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/Library/reading-hall.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "reading-hall",
+      "name": "Reading Hall",
+      "building": "Library",
+      "floor": "Ground Floor",
+      "room": "Reading Hall",
+      "image": "/panoramas/Library/reading-hall.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "back",
+          "label": "Library Entrance",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "library-entrance"
+        },
+        {
+          "type": "enter_room",
+          "label": "Reference Section",
+          "yaw": 0,
+          "pitch": 0,
+          "targetId": "reference-section"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/Library/reference-section.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "reference-section",
+      "name": "Reference Section",
+      "building": "Library",
+      "floor": "Ground Floor",
+      "room": "Reference Section",
+      "image": "/panoramas/Library/reference-section.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "exit_room",
+          "label": "Reading Hall",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "reading-hall"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 6,
+    "url": "/panoramas/main-building/entrance/01.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 7,
+    "url": "/panoramas/main-building/entrance/02.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 8,
+    "url": "/panoramas/main-building/entrance/03.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 9,
+    "url": "/panoramas/main-building/entrance/04.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 10,
+    "url": "/panoramas/main-building/entrance/05.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 11,
+    "url": "/panoramas/main-building/entrance/06.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 12,
+    "url": "/panoramas/main-building/entrance/07.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 13,
+    "url": "/panoramas/main-building/entrance/08.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 14,
+    "url": "/panoramas/main-building/entrance/09.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 15,
+    "url": "/panoramas/main-building/entrance/10.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 16,
+    "url": "/panoramas/main-building/entrance/11.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 17,
+    "url": "/panoramas/main-building/entrance/12.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 18,
+    "url": "/panoramas/main-building/entrance/13.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 19,
+    "url": "/panoramas/main-building/entrance/14.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 20,
+    "url": "/panoramas/main-building/entrance/15.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 21,
+    "url": "/panoramas/main-building/entrance/16.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 22,
+    "url": "/panoramas/main-building/entrance/17.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 23,
+    "url": "/panoramas/main-building/entrance/18.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 24,
+    "url": "/panoramas/main-building/entrance/19.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 25,
+    "url": "/panoramas/main-building/entrance/20.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 26,
+    "url": "/panoramas/main-building/entrance/21.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 27,
+    "url": "/panoramas/main-building/entrance/22.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 28,
+    "url": "/panoramas/main-building/entrance/23.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 196,
+    "url": "/panoramas/main-building/first-floor/01.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "DEPT_CSE_FIRST_FLOOR",
+      "DEPT_ISE_FIRST_FLOOR",
+      "LAB_ISE_FIRST_FLOOR",
+      "FACILITY_TOILET_GENTS_FIRST_FLOOR",
+      "ROOM_202",
+      "ROOM_203",
+      "ROOM_203A",
+      "ROOM_213"
+    ]
+  },
+  {
+    "panorama_id": 197,
+    "url": "/panoramas/main-building/first-floor/02.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_203A"
+    ]
+  },
+  {
+    "panorama_id": 198,
+    "url": "/panoramas/main-building/first-floor/03.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 199,
+    "url": "/panoramas/main-building/first-floor/04.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_203_LH"
+    ]
+  },
+  {
+    "panorama_id": 200,
+    "url": "/panoramas/main-building/first-floor/05.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_201",
+      "DEPT_CSE_FIRST_FLOOR_HOD"
+    ]
+  },
+  {
+    "panorama_id": 201,
+    "url": "/panoramas/main-building/first-floor/06.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 202,
+    "url": "/panoramas/main-building/first-floor/07.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 203,
+    "url": "/panoramas/main-building/first-floor/08.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 204,
+    "url": "/panoramas/main-building/first-floor/09.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 205,
+    "url": "/panoramas/main-building/first-floor/10.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "DEPT_ISE_FIRST_FLOOR_HOD"
+    ]
+  },
+  {
+    "panorama_id": 206,
+    "url": "/panoramas/main-building/first-floor/11.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_212"
+    ]
+  },
+  {
+    "panorama_id": 207,
+    "url": "/panoramas/main-building/first-floor/12.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 208,
+    "url": "/panoramas/main-building/first-floor/13.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_211A"
+    ]
+  },
+  {
+    "panorama_id": 209,
+    "url": "/panoramas/main-building/first-floor/14.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "FACILITY_BOYS_REST_ROOM"
+    ]
+  },
+  {
+    "panorama_id": 210,
+    "url": "/panoramas/main-building/first-floor/15.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "DEPT_ISE_FIRST_FLOOR_DIRECTORY",
+      "FACILITY_PHYSICAL_EDUCATION_DIRECTOR",
+      "FACILITY_STAFF_ROOM_CSE_FIRST_FLOOR",
+      "FACILITY_TOILET_GENTS_FIRST_FLOOR_2",
+      "ROOM_207",
+      "ROOM_208"
+    ]
+  },
+  {
+    "panorama_id": 211,
+    "url": "/panoramas/main-building/first-floor/16.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 212,
+    "url": "/panoramas/main-building/first-floor/17.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 213,
+    "url": "/panoramas/main-building/first-floor/18.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 214,
+    "url": "/panoramas/main-building/first-floor/19.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 215,
+    "url": "/panoramas/main-building/first-floor/20.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 216,
+    "url": "/panoramas/main-building/first-floor/21.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 217,
+    "url": "/panoramas/main-building/first-floor/22.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 218,
+    "url": "/panoramas/main-building/first-floor/23.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_210"
+    ]
+  },
+  {
+    "panorama_id": 219,
+    "url": "/panoramas/main-building/first-floor/24.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 220,
+    "url": "/panoramas/main-building/first-floor/25.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "LAB_IVAN_SUTHERLAND"
+    ]
+  },
+  {
+    "panorama_id": 221,
+    "url": "/panoramas/main-building/first-floor/26.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 222,
+    "url": "/panoramas/main-building/first-floor/27.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 223,
+    "url": "/panoramas/main-building/first-floor/28.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 224,
+    "url": "/panoramas/main-building/first-floor/29.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 225,
+    "url": "/panoramas/main-building/first-floor/30.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "LAB_EDSGER_DIJKSTRA"
+    ]
+  },
+  {
+    "panorama_id": 226,
+    "url": "/panoramas/main-building/first-floor/31.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_205"
+    ]
+  },
+  {
+    "panorama_id": 227,
+    "url": "/panoramas/main-building/first-floor/32.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_204",
+      "DEPT_AIML_FIRST_FLOOR"
+    ]
+  },
+  {
+    "panorama_id": 228,
+    "url": "/panoramas/main-building/first-floor/33.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 229,
+    "url": "/panoramas/main-building/first-floor/34.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 162,
+    "url": "/panoramas/main-building/ground-floor/gf_01.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 163,
+    "url": "/panoramas/main-building/ground-floor/gf_02.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 164,
+    "url": "/panoramas/main-building/ground-floor/gf_03.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 165,
+    "url": "/panoramas/main-building/ground-floor/gf_04.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_113",
+      "FACILITY_ADMINISTRATIVE_OFFICE",
+      "FACILITY_PRINCIPAL_OFFICE",
+      "FACILITY_SECRETARY_OFFICE",
+      "DEPT_CHEMISTRY_GROUND_FLOOR_ADMIN_WING",
+      "FACILITY_TOILET_GENTS_GROUND_FLOOR"
+    ]
+  },
+  {
+    "panorama_id": 166,
+    "url": "/panoramas/main-building/ground-floor/gf_05.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 167,
+    "url": "/panoramas/main-building/ground-floor/gf_06.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 168,
+    "url": "/panoramas/main-building/ground-floor/gf_07.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 169,
+    "url": "/panoramas/main-building/ground-floor/gf_08.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_103A"
+    ]
+  },
+  {
+    "panorama_id": 170,
+    "url": "/panoramas/main-building/ground-floor/gf_09.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 171,
+    "url": "/panoramas/main-building/ground-floor/gf_10.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 172,
+    "url": "/panoramas/main-building/ground-floor/gf_11.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 173,
+    "url": "/panoramas/main-building/ground-floor/gf_12.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 174,
+    "url": "/panoramas/main-building/ground-floor/gf_13.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 175,
+    "url": "/panoramas/main-building/ground-floor/gf_14.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "FACILITY_ADMISSION_DEPARTMENT"
+    ]
+  },
+  {
+    "panorama_id": 176,
+    "url": "/panoramas/main-building/ground-floor/gf_15.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_112",
+      "LAB_CHEMISTRY_GF"
+    ]
+  },
+  {
+    "panorama_id": 177,
+    "url": "/panoramas/main-building/ground-floor/gf_16.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 178,
+    "url": "/panoramas/main-building/ground-floor/gf_17.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "LAB_CHEMISTRY_LAB1_GROUND"
+    ]
+  },
+  {
+    "panorama_id": 179,
+    "url": "/panoramas/main-building/ground-floor/gf_18.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 180,
+    "url": "/panoramas/main-building/ground-floor/gf_19.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 181,
+    "url": "/panoramas/main-building/ground-floor/gf_20.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 182,
+    "url": "/panoramas/main-building/ground-floor/gf_21.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_110B"
+    ]
+  },
+  {
+    "panorama_id": 183,
+    "url": "/panoramas/main-building/ground-floor/gf_22.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 184,
+    "url": "/panoramas/main-building/ground-floor/gf_23.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 185,
+    "url": "/panoramas/main-building/ground-floor/gf_24.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_110A"
+    ]
+  },
+  {
+    "panorama_id": 186,
+    "url": "/panoramas/main-building/ground-floor/gf_25.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_109A"
+    ]
+  },
+  {
+    "panorama_id": 187,
+    "url": "/panoramas/main-building/ground-floor/gf_26.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 188,
+    "url": "/panoramas/main-building/ground-floor/gf_27.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 189,
+    "url": "/panoramas/main-building/ground-floor/gf_28.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_108"
+    ]
+  },
+  {
+    "panorama_id": 190,
+    "url": "/panoramas/main-building/ground-floor/gf_29.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "DEPT_AIML_GROUND_FLOOR"
+    ]
+  },
+  {
+    "panorama_id": 191,
+    "url": "/panoramas/main-building/ground-floor/gf_30.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 192,
+    "url": "/panoramas/main-building/ground-floor/gf_31.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "FACILITY_SERVER_ROOM"
+    ]
+  },
+  {
+    "panorama_id": 193,
+    "url": "/panoramas/main-building/ground-floor/gf_32.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 194,
+    "url": "/panoramas/main-building/ground-floor/gf_33.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_106"
+    ]
+  },
+  {
+    "panorama_id": 195,
+    "url": "/panoramas/main-building/ground-floor/gf_34.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_105"
+    ]
+  },
+  {
+    "panorama_id": 230,
+    "url": "/panoramas/main-building/second-floor/01.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "DEPT_EEE_SECOND_FLOOR",
+      "DEPT_ECE_SECOND_FLOOR",
+      "LAB_MEASUREMENTS_CONTROL_SYSTEMS",
+      "LAB_POWER_SYSTEM_SIMULATION",
+      "FACILITY_TOILET_GENTS_SECOND_FLOOR",
+      "ROOM_302",
+      "ROOM_316",
+      "ROOM_317",
+      "ROOM_318"
+    ]
+  },
+  {
+    "panorama_id": 231,
+    "url": "/panoramas/main-building/second-floor/02.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_304"
+    ]
+  },
+  {
+    "panorama_id": 232,
+    "url": "/panoramas/main-building/second-floor/03.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_303"
+    ]
+  },
+  {
+    "panorama_id": 233,
+    "url": "/panoramas/main-building/second-floor/04.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 234,
+    "url": "/panoramas/main-building/second-floor/05.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 235,
+    "url": "/panoramas/main-building/second-floor/06.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 236,
+    "url": "/panoramas/main-building/second-floor/07.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 237,
+    "url": "/panoramas/main-building/second-floor/08.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 238,
+    "url": "/panoramas/main-building/second-floor/09.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_317"
+    ]
+  },
+  {
+    "panorama_id": 239,
+    "url": "/panoramas/main-building/second-floor/10.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 240,
+    "url": "/panoramas/main-building/second-floor/11.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_316"
+    ]
+  },
+  {
+    "panorama_id": 241,
+    "url": "/panoramas/main-building/second-floor/12.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 242,
+    "url": "/panoramas/main-building/second-floor/13.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "FACILITY_NEF_TRUST_OFFICE",
+      "FACILITY_TOILET_LADIES_SECOND_FLOOR",
+      "ROOM_306",
+      "ROOM_307",
+      "ROOM_309",
+      "ROOM_311",
+      "ROOM_312",
+      "ROOM_314",
+      "ROOM_315"
+    ]
+  },
+  {
+    "panorama_id": 243,
+    "url": "/panoramas/main-building/second-floor/14.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 244,
+    "url": "/panoramas/main-building/second-floor/15.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 245,
+    "url": "/panoramas/main-building/second-floor/16.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 246,
+    "url": "/panoramas/main-building/second-floor/17.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 247,
+    "url": "/panoramas/main-building/second-floor/18.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 248,
+    "url": "/panoramas/main-building/second-floor/19.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_315"
+    ]
+  },
+  {
+    "panorama_id": 249,
+    "url": "/panoramas/main-building/second-floor/20.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 250,
+    "url": "/panoramas/main-building/second-floor/21.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_314"
+    ]
+  },
+  {
+    "panorama_id": 251,
+    "url": "/panoramas/main-building/second-floor/22.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 252,
+    "url": "/panoramas/main-building/second-floor/23.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 253,
+    "url": "/panoramas/main-building/second-floor/24.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 254,
+    "url": "/panoramas/main-building/second-floor/25.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_310",
+      "DEPT_CSE_SECOND_FLOOR"
+    ]
+  },
+  {
+    "panorama_id": 255,
+    "url": "/panoramas/main-building/second-floor/26.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 256,
+    "url": "/panoramas/main-building/second-floor/27.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 257,
+    "url": "/panoramas/main-building/second-floor/28.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 258,
+    "url": "/panoramas/main-building/second-floor/29.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_305"
+    ]
+  },
+  {
+    "panorama_id": 259,
+    "url": "/panoramas/main-building/second-floor/30.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 260,
+    "url": "/panoramas/main-building/second-floor/31.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 261,
+    "url": "/panoramas/main-building/third-floor/01.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 262,
+    "url": "/panoramas/main-building/third-floor/02.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_404"
+    ]
+  },
+  {
+    "panorama_id": 263,
+    "url": "/panoramas/main-building/third-floor/03.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 264,
+    "url": "/panoramas/main-building/third-floor/04.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_403"
+    ]
+  },
+  {
+    "panorama_id": 265,
+    "url": "/panoramas/main-building/third-floor/05.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 266,
+    "url": "/panoramas/main-building/third-floor/06.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_419B"
+    ]
+  },
+  {
+    "panorama_id": 267,
+    "url": "/panoramas/main-building/third-floor/07 (2).jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 268,
+    "url": "/panoramas/main-building/third-floor/08.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_419"
+    ]
+  },
+  {
+    "panorama_id": 269,
+    "url": "/panoramas/main-building/third-floor/09.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 270,
+    "url": "/panoramas/main-building/third-floor/10.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 271,
+    "url": "/panoramas/main-building/third-floor/11.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 272,
+    "url": "/panoramas/main-building/third-floor/12.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_417B",
+      "DEPT_ECE_THIRD_FLOOR"
+    ]
+  },
+  {
+    "panorama_id": 273,
+    "url": "/panoramas/main-building/third-floor/13.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_417"
+    ]
+  },
+  {
+    "panorama_id": 274,
+    "url": "/panoramas/main-building/third-floor/14.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 275,
+    "url": "/panoramas/main-building/third-floor/15.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_405"
+    ]
+  },
+  {
+    "panorama_id": 276,
+    "url": "/panoramas/main-building/third-floor/16.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 277,
+    "url": "/panoramas/main-building/third-floor/17.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 278,
+    "url": "/panoramas/main-building/third-floor/18.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "DEPT_ECE_ISE_THIRD_FLOOR_DIRECTORY",
+      "FACILITY_TRAINING_PLACEMENT_CELL_THIRD_FLOOR",
+      "FACILITY_TOILET_GENTS_THIRD_FLOOR",
+      "FACILITY_TOILET_LADIES_THIRD_FLOOR",
+      "ROOM_401",
+      "ROOM_402",
+      "ROOM_406",
+      "ROOM_418",
+      "ROOM_418A",
+      "ROOM_411"
+    ]
+  },
+  {
+    "panorama_id": 279,
+    "url": "/panoramas/main-building/third-floor/19.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 280,
+    "url": "/panoramas/main-building/third-floor/20.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 281,
+    "url": "/panoramas/main-building/third-floor/21.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 282,
+    "url": "/panoramas/main-building/third-floor/22.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 283,
+    "url": "/panoramas/main-building/third-floor/23.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 284,
+    "url": "/panoramas/main-building/third-floor/24.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_412"
+    ]
+  },
+  {
+    "panorama_id": 285,
+    "url": "/panoramas/main-building/third-floor/25.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 286,
+    "url": "/panoramas/main-building/third-floor/26.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 287,
+    "url": "/panoramas/main-building/third-floor/27.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 288,
+    "url": "/panoramas/main-building/third-floor/28.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 289,
+    "url": "/panoramas/main-building/third-floor/29.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 290,
+    "url": "/panoramas/main-building/third-floor/30.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 291,
+    "url": "/panoramas/main-building/third-floor/31.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "ROOM_400"
+    ]
+  },
+  {
+    "panorama_id": 292,
+    "url": "/panoramas/main-building/third-floor/32.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session",
+    "legacy_metadata": null,
+    "verified_entities": [
+      "DEPT_AIDS_THIRD_FLOOR",
+      "ROOM_409_TENTATIVE"
+    ]
+  },
+  {
+    "panorama_id": 293,
+    "url": "/panoramas/main-building/third-floor/33.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": 294,
+    "url": "/panoramas/main-building/third-floor/34.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "visual_inspection_this_session (no signage in frame)",
+    "legacy_metadata": null,
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/MainGate/central-pathway.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "central-pathway",
+      "name": "Central Pathway",
+      "building": "Main Gate",
+      "floor": "Ground",
+      "room": null,
+      "image": "/panoramas/MainGate/central-pathway.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "back",
+          "label": "Main Gate",
+          "yaw": 180,
+          "pitch": 0,
+          "targetId": "main-gate"
+        },
+        {
+          "type": "forward",
+          "label": "Admin Block",
+          "yaw": 0,
+          "pitch": 0,
+          "targetId": "admin-entrance"
+        },
+        {
+          "type": "left",
+          "label": "Library",
+          "yaw": -60,
+          "pitch": 0,
+          "targetId": "library-entrance"
+        },
+        {
+          "type": "right",
+          "label": "Block A",
+          "yaw": 60,
+          "pitch": 0,
+          "targetId": "blockA-entrance"
+        },
+        {
+          "type": "forward",
+          "label": "Block B",
+          "yaw": 30,
+          "pitch": 0,
+          "targetId": "blockB-entrance"
+        },
+        {
+          "type": "left",
+          "label": "Cafeteria",
+          "yaw": -120,
+          "pitch": 0,
+          "targetId": "cafeteria"
+        },
+        {
+          "type": "right",
+          "label": "Labs",
+          "yaw": 120,
+          "pitch": 0,
+          "targetId": "labs-entrance"
+        },
+        {
+          "type": "forward",
+          "label": "Classrooms",
+          "yaw": -30,
+          "pitch": 0,
+          "targetId": "classrooms-entrance"
+        }
+      ]
+    },
+    "verified_entities": []
+  },
+  {
+    "panorama_id": null,
+    "url": "/panoramas/MainGate/main-gate.jpg",
+    "status": "COMPLETED",
+    "evidence_source": "existing_project_metadata (panoramas.json)",
+    "legacy_metadata": {
+      "id": "main-gate",
+      "name": "Main Gate",
+      "building": "Main Gate",
+      "floor": "Ground",
+      "room": null,
+      "image": "/panoramas/MainGate/main-gate.jpg",
+      "yaw": 0,
+      "pitch": 0,
+      "hfov": 110,
+      "hotspots": [
+        {
+          "type": "forward",
+          "label": "Central Pathway",
+          "yaw": 0,
+          "pitch": 0,
+          "targetId": "central-pathway"
+        }
+      ]
+    },
+    "verified_entities": []
+  }
+]

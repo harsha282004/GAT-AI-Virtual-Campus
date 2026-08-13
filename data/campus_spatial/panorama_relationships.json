@@ -1,0 +1,1232 @@
+[
+  {
+    "panorama_file": "main-building/entrance/01.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": null,
+    "same_floor_next": "main-building/entrance/02.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/02.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/01.jpg",
+    "same_floor_next": "main-building/entrance/03.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/03.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/02.jpg",
+    "same_floor_next": "main-building/entrance/04.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/04.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/03.jpg",
+    "same_floor_next": "main-building/entrance/05.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/05.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/04.jpg",
+    "same_floor_next": "main-building/entrance/06.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/06.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/05.jpg",
+    "same_floor_next": "main-building/entrance/07.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/07.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/06.jpg",
+    "same_floor_next": "main-building/entrance/08.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/08.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/07.jpg",
+    "same_floor_next": "main-building/entrance/09.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/09.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/08.jpg",
+    "same_floor_next": "main-building/entrance/10.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/10.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/09.jpg",
+    "same_floor_next": "main-building/entrance/11.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/11.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/10.jpg",
+    "same_floor_next": "main-building/entrance/12.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/12.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/11.jpg",
+    "same_floor_next": "main-building/entrance/13.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/13.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/12.jpg",
+    "same_floor_next": "main-building/entrance/14.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/14.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/13.jpg",
+    "same_floor_next": "main-building/entrance/15.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/15.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/14.jpg",
+    "same_floor_next": "main-building/entrance/16.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/16.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/15.jpg",
+    "same_floor_next": "main-building/entrance/17.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/17.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/16.jpg",
+    "same_floor_next": "main-building/entrance/18.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/18.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/17.jpg",
+    "same_floor_next": "main-building/entrance/19.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/19.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/18.jpg",
+    "same_floor_next": "main-building/entrance/20.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/20.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/19.jpg",
+    "same_floor_next": "main-building/entrance/21.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/21.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/20.jpg",
+    "same_floor_next": "main-building/entrance/22.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/22.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/21.jpg",
+    "same_floor_next": "main-building/entrance/23.jpg"
+  },
+  {
+    "panorama_file": "main-building/entrance/23.jpg",
+    "floor_slug": "entrance",
+    "same_floor_previous": "main-building/entrance/22.jpg",
+    "same_floor_next": null
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_01.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": null,
+    "same_floor_next": "main-building/ground-floor/gf_02.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_02.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_01.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_03.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_03.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_02.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_04.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_04.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_03.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_05.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_05.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_04.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_06.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_06.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_05.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_07.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_07.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_06.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_08.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_08.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_07.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_09.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_09.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_08.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_10.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_10.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_09.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_11.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_11.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_10.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_12.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_12.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_11.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_13.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_13.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_12.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_14.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_14.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_13.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_15.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_15.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_14.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_16.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_16.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_15.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_17.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_17.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_16.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_18.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_18.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_17.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_19.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_19.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_18.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_20.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_20.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_19.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_21.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_21.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_20.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_22.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_22.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_21.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_23.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_23.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_22.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_24.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_24.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_23.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_25.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_25.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_24.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_26.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_26.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_25.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_27.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_27.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_26.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_28.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_28.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_27.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_29.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_29.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_28.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_30.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_30.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_29.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_31.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_31.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_30.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_32.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_32.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_31.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_33.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_33.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_32.jpg",
+    "same_floor_next": "main-building/ground-floor/gf_34.jpg"
+  },
+  {
+    "panorama_file": "main-building/ground-floor/gf_34.jpg",
+    "floor_slug": "ground-floor",
+    "same_floor_previous": "main-building/ground-floor/gf_33.jpg",
+    "same_floor_next": null
+  },
+  {
+    "panorama_file": "main-building/first-floor/01.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": null,
+    "same_floor_next": "main-building/first-floor/02.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/02.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/01.jpg",
+    "same_floor_next": "main-building/first-floor/03.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/03.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/02.jpg",
+    "same_floor_next": "main-building/first-floor/04.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/04.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/03.jpg",
+    "same_floor_next": "main-building/first-floor/05.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/05.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/04.jpg",
+    "same_floor_next": "main-building/first-floor/06.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/06.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/05.jpg",
+    "same_floor_next": "main-building/first-floor/07.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/07.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/06.jpg",
+    "same_floor_next": "main-building/first-floor/08.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/08.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/07.jpg",
+    "same_floor_next": "main-building/first-floor/09.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/09.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/08.jpg",
+    "same_floor_next": "main-building/first-floor/10.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/10.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/09.jpg",
+    "same_floor_next": "main-building/first-floor/11.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/11.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/10.jpg",
+    "same_floor_next": "main-building/first-floor/12.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/12.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/11.jpg",
+    "same_floor_next": "main-building/first-floor/13.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/13.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/12.jpg",
+    "same_floor_next": "main-building/first-floor/14.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/14.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/13.jpg",
+    "same_floor_next": "main-building/first-floor/15.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/15.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/14.jpg",
+    "same_floor_next": "main-building/first-floor/16.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/16.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/15.jpg",
+    "same_floor_next": "main-building/first-floor/17.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/17.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/16.jpg",
+    "same_floor_next": "main-building/first-floor/18.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/18.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/17.jpg",
+    "same_floor_next": "main-building/first-floor/19.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/19.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/18.jpg",
+    "same_floor_next": "main-building/first-floor/20.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/20.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/19.jpg",
+    "same_floor_next": "main-building/first-floor/21.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/21.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/20.jpg",
+    "same_floor_next": "main-building/first-floor/22.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/22.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/21.jpg",
+    "same_floor_next": "main-building/first-floor/23.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/23.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/22.jpg",
+    "same_floor_next": "main-building/first-floor/24.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/24.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/23.jpg",
+    "same_floor_next": "main-building/first-floor/25.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/25.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/24.jpg",
+    "same_floor_next": "main-building/first-floor/26.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/26.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/25.jpg",
+    "same_floor_next": "main-building/first-floor/27.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/27.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/26.jpg",
+    "same_floor_next": "main-building/first-floor/28.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/28.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/27.jpg",
+    "same_floor_next": "main-building/first-floor/29.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/29.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/28.jpg",
+    "same_floor_next": "main-building/first-floor/30.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/30.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/29.jpg",
+    "same_floor_next": "main-building/first-floor/31.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/31.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/30.jpg",
+    "same_floor_next": "main-building/first-floor/32.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/32.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/31.jpg",
+    "same_floor_next": "main-building/first-floor/33.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/33.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/32.jpg",
+    "same_floor_next": "main-building/first-floor/34.jpg"
+  },
+  {
+    "panorama_file": "main-building/first-floor/34.jpg",
+    "floor_slug": "first-floor",
+    "same_floor_previous": "main-building/first-floor/33.jpg",
+    "same_floor_next": null
+  },
+  {
+    "panorama_file": "main-building/second-floor/01.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": null,
+    "same_floor_next": "main-building/second-floor/02.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/02.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/01.jpg",
+    "same_floor_next": "main-building/second-floor/03.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/03.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/02.jpg",
+    "same_floor_next": "main-building/second-floor/04.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/04.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/03.jpg",
+    "same_floor_next": "main-building/second-floor/05.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/05.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/04.jpg",
+    "same_floor_next": "main-building/second-floor/06.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/06.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/05.jpg",
+    "same_floor_next": "main-building/second-floor/07.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/07.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/06.jpg",
+    "same_floor_next": "main-building/second-floor/08.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/08.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/07.jpg",
+    "same_floor_next": "main-building/second-floor/09.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/09.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/08.jpg",
+    "same_floor_next": "main-building/second-floor/10.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/10.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/09.jpg",
+    "same_floor_next": "main-building/second-floor/11.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/11.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/10.jpg",
+    "same_floor_next": "main-building/second-floor/12.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/12.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/11.jpg",
+    "same_floor_next": "main-building/second-floor/13.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/13.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/12.jpg",
+    "same_floor_next": "main-building/second-floor/14.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/14.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/13.jpg",
+    "same_floor_next": "main-building/second-floor/15.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/15.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/14.jpg",
+    "same_floor_next": "main-building/second-floor/16.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/16.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/15.jpg",
+    "same_floor_next": "main-building/second-floor/17.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/17.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/16.jpg",
+    "same_floor_next": "main-building/second-floor/18.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/18.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/17.jpg",
+    "same_floor_next": "main-building/second-floor/19.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/19.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/18.jpg",
+    "same_floor_next": "main-building/second-floor/20.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/20.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/19.jpg",
+    "same_floor_next": "main-building/second-floor/21.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/21.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/20.jpg",
+    "same_floor_next": "main-building/second-floor/22.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/22.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/21.jpg",
+    "same_floor_next": "main-building/second-floor/23.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/23.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/22.jpg",
+    "same_floor_next": "main-building/second-floor/24.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/24.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/23.jpg",
+    "same_floor_next": "main-building/second-floor/25.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/25.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/24.jpg",
+    "same_floor_next": "main-building/second-floor/26.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/26.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/25.jpg",
+    "same_floor_next": "main-building/second-floor/27.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/27.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/26.jpg",
+    "same_floor_next": "main-building/second-floor/28.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/28.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/27.jpg",
+    "same_floor_next": "main-building/second-floor/29.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/29.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/28.jpg",
+    "same_floor_next": "main-building/second-floor/30.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/30.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/29.jpg",
+    "same_floor_next": "main-building/second-floor/31.jpg"
+  },
+  {
+    "panorama_file": "main-building/second-floor/31.jpg",
+    "floor_slug": "second-floor",
+    "same_floor_previous": "main-building/second-floor/30.jpg",
+    "same_floor_next": null
+  },
+  {
+    "panorama_file": "main-building/third-floor/01.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": null,
+    "same_floor_next": "main-building/third-floor/02.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/02.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/01.jpg",
+    "same_floor_next": "main-building/third-floor/03.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/03.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/02.jpg",
+    "same_floor_next": "main-building/third-floor/04.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/04.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/03.jpg",
+    "same_floor_next": "main-building/third-floor/05.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/05.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/04.jpg",
+    "same_floor_next": "main-building/third-floor/06.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/06.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/05.jpg",
+    "same_floor_next": "main-building/third-floor/07 (2).jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/07 (2).jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/06.jpg",
+    "same_floor_next": "main-building/third-floor/08.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/08.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/07 (2).jpg",
+    "same_floor_next": "main-building/third-floor/09.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/09.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/08.jpg",
+    "same_floor_next": "main-building/third-floor/10.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/10.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/09.jpg",
+    "same_floor_next": "main-building/third-floor/11.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/11.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/10.jpg",
+    "same_floor_next": "main-building/third-floor/12.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/12.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/11.jpg",
+    "same_floor_next": "main-building/third-floor/13.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/13.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/12.jpg",
+    "same_floor_next": "main-building/third-floor/14.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/14.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/13.jpg",
+    "same_floor_next": "main-building/third-floor/15.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/15.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/14.jpg",
+    "same_floor_next": "main-building/third-floor/16.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/16.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/15.jpg",
+    "same_floor_next": "main-building/third-floor/17.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/17.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/16.jpg",
+    "same_floor_next": "main-building/third-floor/18.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/18.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/17.jpg",
+    "same_floor_next": "main-building/third-floor/19.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/19.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/18.jpg",
+    "same_floor_next": "main-building/third-floor/20.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/20.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/19.jpg",
+    "same_floor_next": "main-building/third-floor/21.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/21.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/20.jpg",
+    "same_floor_next": "main-building/third-floor/22.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/22.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/21.jpg",
+    "same_floor_next": "main-building/third-floor/23.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/23.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/22.jpg",
+    "same_floor_next": "main-building/third-floor/24.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/24.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/23.jpg",
+    "same_floor_next": "main-building/third-floor/25.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/25.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/24.jpg",
+    "same_floor_next": "main-building/third-floor/26.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/26.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/25.jpg",
+    "same_floor_next": "main-building/third-floor/27.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/27.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/26.jpg",
+    "same_floor_next": "main-building/third-floor/28.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/28.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/27.jpg",
+    "same_floor_next": "main-building/third-floor/29.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/29.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/28.jpg",
+    "same_floor_next": "main-building/third-floor/30.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/30.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/29.jpg",
+    "same_floor_next": "main-building/third-floor/31.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/31.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/30.jpg",
+    "same_floor_next": "main-building/third-floor/32.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/32.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/31.jpg",
+    "same_floor_next": "main-building/third-floor/33.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/33.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/32.jpg",
+    "same_floor_next": "main-building/third-floor/34.jpg"
+  },
+  {
+    "panorama_file": "main-building/third-floor/34.jpg",
+    "floor_slug": "third-floor",
+    "same_floor_previous": "main-building/third-floor/33.jpg",
+    "same_floor_next": null
+  },
+  {
+    "panorama_file": "panoramas/MainGate/main-gate.jpg",
+    "floor_slug": "Ground",
+    "relationship_type": "forward",
+    "connects_to_panorama": "central-pathway",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/MainGate/central-pathway.jpg",
+    "floor_slug": "Ground",
+    "relationship_type": "back",
+    "connects_to_panorama": "main-gate",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/MainGate/central-pathway.jpg",
+    "floor_slug": "Ground",
+    "relationship_type": "forward",
+    "connects_to_panorama": "admin-entrance",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/MainGate/central-pathway.jpg",
+    "floor_slug": "Ground",
+    "relationship_type": "left",
+    "connects_to_panorama": "library-entrance",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/MainGate/central-pathway.jpg",
+    "floor_slug": "Ground",
+    "relationship_type": "right",
+    "connects_to_panorama": "blockA-entrance",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/MainGate/central-pathway.jpg",
+    "floor_slug": "Ground",
+    "relationship_type": "forward",
+    "connects_to_panorama": "blockB-entrance",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/MainGate/central-pathway.jpg",
+    "floor_slug": "Ground",
+    "relationship_type": "left",
+    "connects_to_panorama": "cafeteria",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/MainGate/central-pathway.jpg",
+    "floor_slug": "Ground",
+    "relationship_type": "right",
+    "connects_to_panorama": "labs-entrance",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/MainGate/central-pathway.jpg",
+    "floor_slug": "Ground",
+    "relationship_type": "forward",
+    "connects_to_panorama": "classrooms-entrance",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Admin/admin-entrance.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "back",
+    "connects_to_panorama": "central-pathway",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Admin/admin-entrance.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "enter_room",
+    "connects_to_panorama": "reception",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Admin/reception.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "exit_room",
+    "connects_to_panorama": "admin-entrance",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Admin/reception.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "enter_room",
+    "connects_to_panorama": "principal-office",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Admin/principal-office.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "exit_room",
+    "connects_to_panorama": "reception",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Library/library-entrance.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "back",
+    "connects_to_panorama": "central-pathway",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Library/library-entrance.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "forward",
+    "connects_to_panorama": "reading-hall",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Library/reading-hall.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "back",
+    "connects_to_panorama": "library-entrance",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Library/reading-hall.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "enter_room",
+    "connects_to_panorama": "reference-section",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Library/reference-section.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "exit_room",
+    "connects_to_panorama": "reading-hall",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/BlockA/blockA-entrance.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "back",
+    "connects_to_panorama": "central-pathway",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/BlockA/blockA-entrance.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "forward",
+    "connects_to_panorama": "blockA-corridor-ground",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/BlockA/blockA-corridor-ground.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "back",
+    "connects_to_panorama": "blockA-entrance",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/BlockA/blockA-corridor-ground.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "enter_room",
+    "connects_to_panorama": "classroom-101",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/BlockA/blockA-corridor-ground.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "upstairs",
+    "connects_to_panorama": "blockA-corridor-first",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/BlockA/classroom-101.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "exit_room",
+    "connects_to_panorama": "blockA-corridor-ground",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/BlockA/blockA-corridor-first.jpg",
+    "floor_slug": "First Floor",
+    "relationship_type": "downstairs",
+    "connects_to_panorama": "blockA-corridor-ground",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/BlockA/blockA-corridor-first.jpg",
+    "floor_slug": "First Floor",
+    "relationship_type": "enter_room",
+    "connects_to_panorama": "classroom-201",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/BlockA/classroom-201.jpg",
+    "floor_slug": "First Floor",
+    "relationship_type": "exit_room",
+    "connects_to_panorama": "blockA-corridor-first",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/BlockB/blockB-entrance.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "back",
+    "connects_to_panorama": "central-pathway",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/BlockB/blockB-entrance.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "enter_room",
+    "connects_to_panorama": "seminar-hall",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/BlockB/seminar-hall.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "exit_room",
+    "connects_to_panorama": "blockB-entrance",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Cafeteria/cafeteria.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "back",
+    "connects_to_panorama": "central-pathway",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Labs/labs-entrance.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "back",
+    "connects_to_panorama": "central-pathway",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Labs/labs-entrance.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "enter_room",
+    "connects_to_panorama": "computer-lab",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Labs/computer-lab.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "exit_room",
+    "connects_to_panorama": "labs-entrance",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Labs/computer-lab.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "forward",
+    "connects_to_panorama": "electronics-lab",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Labs/electronics-lab.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "back",
+    "connects_to_panorama": "computer-lab",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Classrooms/classrooms-entrance.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "back",
+    "connects_to_panorama": "central-pathway",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Classrooms/classrooms-entrance.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "enter_room",
+    "connects_to_panorama": "room-101",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Classrooms/room-101.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "exit_room",
+    "connects_to_panorama": "classrooms-entrance",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Classrooms/room-101.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "forward",
+    "connects_to_panorama": "room-102",
+    "source": "panoramas.json authored hotspot"
+  },
+  {
+    "panorama_file": "panoramas/Classrooms/room-102.jpg",
+    "floor_slug": "Ground Floor",
+    "relationship_type": "back",
+    "connects_to_panorama": "room-101",
+    "source": "panoramas.json authored hotspot"
+  }
+]

@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, Languages, MapIcon, MessageSquare, Mic, Navigation } from "lucide-react";
+import { Camera, Languages, MapIcon, MessageSquare, Mic } from "lucide-react";
 
 import { FeatureCard, SectionTitle } from "@/components/ui";
 
@@ -11,13 +11,6 @@ const FEATURES = [
     description:
       "Ask questions about admissions, academics, or facilities and get answers grounded in GAT's own knowledge base.",
     accent: "purple" as const,
-  },
-  {
-    icon: Navigation,
-    title: "Indoor Navigation",
-    description:
-      "Find the shortest path between any building, floor, or room — with turn-by-turn walking directions.",
-    accent: "blue" as const,
   },
   {
     icon: Camera,

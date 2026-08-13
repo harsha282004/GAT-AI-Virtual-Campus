@@ -1,0 +1,156 @@
+[
+  {
+    "entity_id": "DEPT_CSE_FIRST_FLOOR",
+    "entity_type": "department",
+    "name": "Department of Computer Science and Engineering (CSE)",
+    "floor_slug": "first-floor",
+    "panorama_file": "first-floor/01.jpg",
+    "evidence": "Overhead directional sign: 'DEPT. OF CSE / DEPT. OF ISE / STAFF ROOM (ISE) / ISE LAB / CLASS ROOMS : 202, 203, 203A, 213 / TOILET (Gents)'.",
+    "confidence": 0.95,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "DEPT_ISE_FIRST_FLOOR",
+    "entity_type": "department",
+    "name": "Department of Information Science and Engineering (ISE)",
+    "floor_slug": "first-floor",
+    "panorama_file": "first-floor/01.jpg",
+    "evidence": "Same overhead sign as DEPT_CSE_FIRST_FLOOR: 'DEPT. OF CSE / DEPT. OF ISE / STAFF ROOM (ISE) / ISE LAB / CLASS ROOMS : 202, 203, 203A, 213 / TOILET (Gents)'.",
+    "confidence": 0.95,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "DEPT_EEE_SECOND_FLOOR",
+    "entity_type": "department",
+    "name": "Department of Electrical and Electronics Engineering (EEE)",
+    "floor_slug": "second-floor",
+    "panorama_file": "second-floor/01.jpg",
+    "evidence": "Overhead directional sign: 'DEPT. OF EEE / DEPT. OF ECE / MEASUREMENTS & CONTROL SYSTEMS LAB / POWER SYSTEM SIMULATION LAB / CLASS ROOMS : 302, 316, 317, 318 / TOILET (Gents)'.",
+    "confidence": 0.95,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "DEPT_ECE_SECOND_FLOOR",
+    "entity_type": "department",
+    "name": "Department of Electronics and Communication Engineering (ECE)",
+    "floor_slug": "second-floor",
+    "panorama_file": "second-floor/01.jpg",
+    "evidence": "Same overhead sign as DEPT_EEE_SECOND_FLOOR.",
+    "confidence": 0.95,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "DEPT_CSE_SECOND_FLOOR",
+    "entity_type": "department",
+    "name": "Department of Computer Science and Engineering (CSE) — Staff Room 4",
+    "floor_slug": "second-floor",
+    "panorama_file": "second-floor/25.jpg",
+    "evidence": "Notice board: 'Global Academy of Technology / DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING / Staff Room - Room 310'.",
+    "confidence": 0.97,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "DEPT_CHEMISTRY_GROUND_FLOOR_ADMIN_WING",
+    "entity_type": "department",
+    "name": "Department of Chemistry",
+    "floor_slug": "ground-floor",
+    "panorama_file": "ground-floor/gf_04.jpg",
+    "evidence": "Overhead directional sign lists 'DEPT. OF CHEMISTRY / CHEMISTRY LAB' — corroborates the separate DEPT_CHEMISTRY_GF finding from ground-floor/gf_15.jpg.",
+    "confidence": 0.9,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "DEPT_AIML_GROUND_FLOOR",
+    "entity_type": "department",
+    "name": "Artificial Intelligence & Machine Learning",
+    "floor_slug": "ground-floor",
+    "panorama_file": "ground-floor/gf_29.jpg",
+    "evidence": "Wall sign 'Artificial Intelligence & Machine Learning' near the CSE lab cluster.",
+    "confidence": 0.8,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "DEPT_CSE_FIRST_FLOOR_HOD",
+    "entity_type": "department",
+    "name": "Department of Computer Science and Engineering (CSE) — HOD Office",
+    "floor_slug": "first-floor",
+    "panorama_file": "first-floor/05.jpg",
+    "evidence": "Banner 'Dept. of Computer Science and Engineering' directly above Room 201's door, with HOD nameplate 'Dr. R. Rajkumar'.",
+    "confidence": 0.97,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "DEPT_ISE_FIRST_FLOOR_HOD",
+    "entity_type": "department",
+    "name": "Department of Information Science and Engineering (ISE) — Coordinator/HOD Office",
+    "floor_slug": "first-floor",
+    "panorama_file": "first-floor/10.jpg",
+    "evidence": "Wall banners 'Department of Information Science & Engineering' with a door nameplate '... / Coordinator & HOD'.",
+    "confidence": 0.85,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "DEPT_ISE_FIRST_FLOOR_DIRECTORY",
+    "entity_type": "department",
+    "name": "Department of Information Science and Engineering (ISE)",
+    "floor_slug": "first-floor",
+    "panorama_file": "first-floor/15.jpg",
+    "evidence": "Overhead directional sign: 'DEPT. OF ISE / MECH LAB & NETWORKING LAB / CLASS ROOMS: 207, 208 / PHYSICAL EDUCATION DIRECTOR / STAFF ROOM (CSE) / CLASS ROOMS: 202, 203A, 213 / TOILET (Gents)'.",
+    "confidence": 0.9,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "DEPT_AIML_FIRST_FLOOR",
+    "entity_type": "department",
+    "name": "Computer Science & Engineering (Artificial Intelligence & Machine Learning)",
+    "floor_slug": "first-floor",
+    "panorama_file": "first-floor/32.jpg",
+    "evidence": "Wall sign 'COMPUTER SCIENCE & ENGINEERING (ARTIFICIAL INTELLIGENCE & MACHINE LEARNING)'.",
+    "confidence": 0.85,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "DEPT_ECE_THIRD_FLOOR",
+    "entity_type": "department",
+    "name": "Department of Electronics and Communication Engineering (ECE)",
+    "floor_slug": "third-floor",
+    "panorama_file": "third-floor/12.jpg",
+    "evidence": "Wall boards 'Department of Electronics and Communication Engineering' (vision/mission text).",
+    "confidence": 0.85,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "DEPT_ECE_ISE_THIRD_FLOOR_DIRECTORY",
+    "entity_type": "department",
+    "name": "Staff Room (ECE) / Staff Room (ISE) directory",
+    "floor_slug": "third-floor",
+    "panorama_file": "third-floor/18.jpg",
+    "evidence": "Overhead directional sign: 'STAFF ROOM (ECE) / STAFF ROOM (ISE) / LABORATORIES (ECE) / CLASS ROOMS: 401, 402, 405, 406, 417, 418, 418A / TOILET (Gents)' and 'TRAINING & PLACEMENT CELL / STAFF ROOM (ECE) / CLASS ROOM: 411 / TOILET (Ladies)'.",
+    "confidence": 0.9,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "DEPT_AIDS_THIRD_FLOOR",
+    "entity_type": "department",
+    "name": "Artificial Intelligence and Data Science (AI&DS)",
+    "floor_slug": "third-floor",
+    "panorama_file": "third-floor/32.jpg",
+    "evidence": "Wall sign 'ARTIFICIAL INTELLIGENCE AND DATA SCIENCE (AI&DS)' above a doorway; a small door tag is present but not reliably legible (recorded separately in review_required).",
+    "confidence": 0.85,
+    "verified": true,
+    "needs_review": false
+  }
+]

@@ -8,7 +8,6 @@ from app.api.v1 import (
     documents,
     edges,
     floors,
-    navigation,
     nodes,
     panoramas,
     rooms,
@@ -29,7 +28,6 @@ api_router.include_router(
     cross_floor_hotspots.router, prefix="/cross-floor-hotspots", tags=["CrossFloorHotspots"]
 )
 api_router.include_router(documents.router, prefix="/documents", tags=["Documents"])
-api_router.include_router(navigation.router, prefix="/navigation", tags=["Navigation"])
 api_router.include_router(tour.router, prefix="/tour", tags=["Tour"])
 
 __all__ = ["api_router"]

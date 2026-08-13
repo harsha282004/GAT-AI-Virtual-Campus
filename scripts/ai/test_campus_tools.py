@@ -1,9 +1,10 @@
-"""Phase 6 — Campus tools + navigation/panorama integration test harness.
+"""Phase 6 — Campus tools + location/panorama integration test harness.
 
 Covers the 8 required categories: normal campus question, facility lookup,
-room lookup, navigation request, panorama/tour request, unresolved
-location, unrelated question, tool failure/unavailable tool. Exercises the
-REAL backend (real Postgres data, real navigation graph) — no mocking.
+room lookup, route-style query (Phase 9: must degrade safely, not route),
+panorama/tour request, unresolved location, unrelated question, tool
+failure/unavailable tool. Exercises the REAL backend (real Postgres data,
+real campus graph) — no mocking.
 
 Usage: python scripts/ai/test_campus_tools.py
 """
@@ -33,8 +34,13 @@ CASES = [
         lambda: navigation_handle("Where is Room 101?"),
     ),
     (
-        "D-NAVIGATION-REQUEST",
-        "How do I get to the CSE Block?",
+        # Phase 9 scope change: indoor routing was removed from the
+        # project. This case now confirms a route-style query degrades
+        # to the ordinary RAG path (or a safe refusal) rather than
+        # producing a fabricated turn-by-turn route — see
+        # navigation_agent.py's Phase 9 docstring note.
+        "D-ROUTE-QUERY-DEGRADES-SAFELY",
+        "How do I get to the CSE Block? (routing removed in Phase 9 — must NOT return a route)",
         lambda: navigation_handle("How do I get to the CSE Block?"),
     ),
     (
@@ -43,6 +49,8 @@ CASES = [
         lambda: navigation_handle("Show me the panorama for the library"),
     ),
     (
+        # "Take me to X" no longer matches a route pattern (Phase 9) — this
+        # is now just an unresolved-location-style query like any other.
         "F-UNRESOLVED-LOCATION",
         "Take me to Room 204.",
         lambda: navigation_handle("Take me to Room 204."),

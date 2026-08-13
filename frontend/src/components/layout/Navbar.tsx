@@ -14,7 +14,6 @@ const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Campus", href: "/campus" },
   { label: "Virtual Tour", href: "/tour" },
-  { label: "Indoor Navigation", href: "/navigation" },
   { label: "3D Map", href: "/map" },
   { label: "AI Assistant", href: "/chat" },
   { label: "About", href: "/#why-choose-gat" },

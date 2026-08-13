@@ -33,7 +33,7 @@ Declaring this route as a plain `def` (not `async def`) is the correct
 FastAPI-idiomatic answer: Starlette runs sync route handlers in a thread
 pool automatically, so a slow request never blocks the event loop. This
 also matches the ACTUAL existing convention in this codebase —
-backend/app/api/v1/navigation.py's handlers are sync `def` too.
+backend/app/api/v1/tour.py's handlers are sync `def` too.
 
 PHASE 8 ADDITIONS — session persistence + hardening:
 Session/history reads and writes go through app.session.store (now
@@ -55,6 +55,7 @@ from __future__ import annotations
 import logging
 import re
 import sys
+import time
 import uuid
 from pathlib import Path
 from typing import Any
@@ -65,6 +66,7 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
 from app.core.exceptions import BadRequestError
+from app.core.settings import settings
 from app.models.chat_session import ChatSession
 from app.schemas.chat import (
     ChatRequest,
@@ -96,6 +98,69 @@ import supervisor as _supervisor  # noqa: E402
 # isort: on
 
 router = APIRouter()
+
+# Development-only diagnostic mode (Task 9 of the RAG audit): a per-request
+# trace of intent/agent/tool/retrieval/rerank/confidence/model/latency,
+# logged server-side only — never returned in the HTTP response, so normal
+# users never see it. Gated on ENVIRONMENT rather than LOG_LEVEL so it can't
+# accidentally light up in production just because someone turns log
+# verbosity up.
+_RAG_DEBUG_ENABLED = settings.ENVIRONMENT == "development"
+
+
+def warmup() -> None:
+    """Eagerly builds the retrieval/rerank singletons (BM25 index over all
+    1488 chunks + the SentenceTransformer embedding model + the ChromaDB
+    collection handle) once, at process startup — see main.py's lifespan.
+
+    Without this, HybridRetriever/Reranker are true singletons (built once
+    and reused — see hybrid_retrieval.get_retriever()/reranker.get_reranker())
+    but are built LAZILY, on whichever request first reaches
+    agent_base.run_specialist(). Any query that falls through to the RAG
+    path — including a navigation_agent query whose tool lookup misses
+    (e.g. an unseeded room number) — pays that one-time cold-start cost
+    (observed: several seconds to load the embedding model + tokenize/index
+    1488 chunks for BM25) inline, inside the request, which routinely
+    exceeds the frontend's 10s axios timeout (frontend/src/api/client.ts).
+    Calling this during startup moves that cost to server boot, where a
+    slow response doesn't strand a user.
+    """
+    from hybrid_retrieval import get_retriever
+    from reranker import get_reranker
+
+    start = time.perf_counter()
+    get_retriever()
+    get_reranker()
+    logger.info("RAG pipeline warmup complete in %.1fs", time.perf_counter() - start)
+
+
+def _log_rag_debug_trace(message: str, result: dict[str, Any], elapsed_ms: float) -> None:
+    if not _RAG_DEBUG_ENABLED:
+        return
+    top_chunks = [
+        {
+            "source_url": c.get("source_url"),
+            "hybrid_score": c.get("hybrid_score"),
+            "rerank_score": c.get("rerank_score"),
+        }
+        for c in (result.get("retrieved_context") or [])[:5]
+    ]
+    logger.info(
+        "[RAG_DEBUG] question=%r agent=%s reason=%s tool_used=%s status=%s "
+        "confidence=%s(%s) model=%s rerank_mode=%s top_chunks=%s latency_ms=%.1f",
+        message,
+        result.get("selected_agent"),
+        result.get("agent_reason"),
+        result.get("tool_used"),
+        result.get("generation_status"),
+        result.get("confidence_score"),
+        result.get("confidence_level"),
+        result.get("model"),
+        result.get("rerank_mode"),
+        top_chunks,
+        elapsed_ms,
+    )
+
 
 # Precise "take me there" / "how do I get there" follow-ups — resolved to
 # the most recently discussed *location* (Phase 7's original mechanism,
@@ -243,7 +308,9 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)) -> ChatResponse:
         session.session_id if session is not None else (payload.session_id or str(uuid.uuid4()))
     )
     logger.info("Chat request (session=%s): %r", session_id, message)
+    _start = time.perf_counter()
     result = _supervisor.route(effective_message)
+    _log_rag_debug_trace(message, result, (time.perf_counter() - _start) * 1000)
 
     if session is not None:
         try:

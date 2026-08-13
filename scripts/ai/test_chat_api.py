@@ -93,13 +93,18 @@ def run_tests() -> list[dict[str, Any]]:
     )
     results.append(_print_case("3-ROOM-LOOKUP", "Where is Room 101?", _post("Where is Room 101?")))
     results.append(
-        _print_case("4-NAVIGATION", "How do I get to Room 101?", _post("How do I get to Room 101?"))
+        _print_case(
+            "4-ROUTE-QUERY-DEGRADES-SAFELY",
+            "How do I get to Room 101? (Phase 9: indoor routing removed — "
+            "must NOT return a fabricated route)",
+            _post("How do I get to Room 101?"),
+        )
     )
     results.append(
         _print_case(
-            "5-PANORAMA-TOUR",
-            "Show me the route to the auditorium. (real ambiguity expected — "
-            "both a room and a building named 'Auditorium' exist)",
+            "5-ROUTE-QUERY-DEGRADES-SAFELY-2",
+            "Show me the route to the auditorium. (Phase 9: indoor routing "
+            "removed — must NOT return a fabricated route)",
             _post("Show me the route to the auditorium."),
         )
     )

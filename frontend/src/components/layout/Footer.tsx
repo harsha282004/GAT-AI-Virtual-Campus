@@ -7,7 +7,6 @@ import Link from "next/link";
 const QUICK_LINKS = [
   { label: "Campus Overview", href: "/campus" },
   { label: "Virtual Tour", href: "/tour" },
-  { label: "Indoor Navigation", href: "/navigation" },
   { label: "3D Campus Map", href: "/map" },
   { label: "AI Assistant", href: "/chat" },
 ];

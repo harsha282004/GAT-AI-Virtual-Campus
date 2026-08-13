@@ -155,13 +155,29 @@ def case_e_invalid_session() -> dict[str, Any]:
 
 
 def case_f_session_isolation() -> dict[str, Any]:
+    """Phase 9 scope change: this follow-up ("How do I get there?") used to
+    resolve deterministically via the now-removed navigation_tool, whose
+    structured `navigation.to_label` field made session-isolation trivial
+    to assert exactly. That field is gone (routing was removed from the
+    project — see navigation_agent.py's Phase 9 docstring note), and the
+    reformulated question ("How do I get to Library?") now degrades to the
+    ordinary RAG path, whose free-text answer isn't a reliable positive
+    signal. What still matters — and is still fully checked here — is that
+    session B's location never leaks into session A's answer, and that no
+    fabricated route is produced."""
     _header("F-SESSION-ISOLATION", "Session A (library) vs Session B (CSE Block) — no leakage")
     session_a = _post("Where is the library?").json().get("session_id")
     _post("Where is the CSE Block?")  # session B, discarded — only used to prove no leakage
-    followup_a = _post("How do I get there?", session_id=session_a).json()
-    to_label = (followup_a.get("navigation") or {}).get("to_label")
-    ok = to_label == "Library"
-    print(f"  session A follow-up resolved to: {to_label!r}  (expected 'Library')  ok={ok}")
+    response = _post("How do I get there?", session_id=session_a)
+    followup_a = response.json()
+    answer = (followup_a.get("answer") or "").lower()
+    no_leak = "cse" not in answer
+    no_fabricated_route = followup_a.get("navigation") is None
+    ok = response.status_code == 200 and no_leak and no_fabricated_route
+    print(
+        f"  session A follow-up answer mentions 'cse'={not no_leak}  "
+        f"navigation_field={followup_a.get('navigation')}  ok={ok}"
+    )
     return {"label": "F-SESSION-ISOLATION", "ok": ok}
 
 
@@ -184,16 +200,22 @@ def case_h_unrelated_question() -> dict[str, Any]:
 
 
 def case_i_navigation_tool() -> dict[str, Any]:
-    _header("I-NAVIGATION-TOOL", "How do I get to Room 101?")
+    """Phase 9 scope change: indoor source-to-destination routing was
+    removed from the project (see navigation_agent.py/campus_tools.py's
+    Phase 9 docstring notes). This case now guards the removal — a
+    route-style query must NOT produce a fabricated route or the deleted
+    'navigation_tool' tool_used value; it should degrade to the ordinary
+    RAG path (or a safe refusal) instead."""
+    _header("I-NAVIGATION-REMOVED", "How do I get to Room 101?")
     response = _post("How do I get to Room 101?")
     data = response.json()
     ok = (
         response.status_code == 200
-        and data.get("tool_used") == "navigation_tool"
-        and data.get("navigation") is not None
+        and data.get("tool_used") != "navigation_tool"
+        and data.get("navigation") is None
     )
     print(f"  tool_used={data.get('tool_used')}  navigation={data.get('navigation')}  ok={ok}")
-    return {"label": "I-NAVIGATION-TOOL", "ok": ok}
+    return {"label": "I-NAVIGATION-REMOVED", "ok": ok}
 
 
 def case_j_panorama_tool() -> dict[str, Any]:

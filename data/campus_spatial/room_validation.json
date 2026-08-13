@@ -1,0 +1,52 @@
+[
+  {
+    "room_number": "201",
+    "status": "FOUND",
+    "panorama_file": "main-building/first-floor/05.jpg",
+    "building": "Main Building",
+    "floor": "first-floor",
+    "evidence": "Door plaque '201' directly beneath a 'Dept. of Computer Science and Engineering' banner and a 'Dr. R. Rajkumar / Professor, HOD' nameplate, confirmed via zoomed crop. Adjacent door reads 'LH-202'.",
+    "confidence": 0.97
+  },
+  {
+    "room_number": "202",
+    "status": "FOUND",
+    "panorama_file": "main-building/first-floor/01.jpg",
+    "building": "Main Building",
+    "floor": "first-floor",
+    "evidence": "Overhead directional sign: 'CLASS ROOMS : 202, 203, 203A, 213'.",
+    "confidence": 0.95
+  },
+  {
+    "room_number": "203",
+    "status": "FOUND",
+    "panorama_file": "main-building/first-floor/01.jpg",
+    "building": "Main Building",
+    "floor": "first-floor",
+    "evidence": "Overhead directional sign: 'CLASS ROOMS : 202, 203, 203A, 213'.",
+    "confidence": 0.95
+  },
+  {
+    "room_number": "301",
+    "status": "NOT_FOUND",
+    "note": "Not observed anywhere in the complete main-building panorama set (all 156/156 primary panoramas across entrance, ground, first, second, and third floor were visually reviewed). This is a real gap in the confirmed room-number sequence (e.g. second-floor jumps 302,304-318 with 301 absent), not an unsearched area — but it does not rule out the room existing in an unphotographed nook, a mislabeled space, or a numbering scheme not captured by visible door signage."
+  },
+  {
+    "room_number": "302",
+    "status": "FOUND",
+    "panorama_file": "main-building/second-floor/01.jpg",
+    "building": "Main Building",
+    "floor": "second-floor",
+    "evidence": "Overhead directional sign: 'CLASS ROOMS : 302, 316, 317, 318'.",
+    "confidence": 0.95
+  },
+  {
+    "room_number": "303",
+    "status": "FOUND",
+    "panorama_file": "main-building/second-floor/03.jpg",
+    "building": "Main Building",
+    "floor": "second-floor",
+    "evidence": "Door-header sign 'POWER SYSTEM SIMULATION LAB'; room plaque '303', confirmed via a 6x zoomed crop — unambiguous digits.",
+    "confidence": 0.97
+  }
+]

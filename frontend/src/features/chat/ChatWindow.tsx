@@ -31,10 +31,19 @@ const QUICK_PROMPTS = [
   { icon: MapPinned, label: "Where is the library?" },
 ];
 
-let messageCounter = 0;
+// A module-level incrementing counter is NOT safe here: useChatStore
+// persists `messages` (via zustand's `persist` middleware, key "gat-chat")
+// to localStorage, so prior IDs like "user-1"/"assistant-2" survive a page
+// reload while this counter resets to 0 — the next message after reload
+// then regenerates the same IDs and collides with the persisted history
+// (the "two children with the same key" warning). crypto.randomUUID() is
+// unique regardless of reloads/persisted history/StrictMode double-renders.
 function nextId(prefix: string) {
-  messageCounter += 1;
-  return `${prefix}-${messageCounter}`;
+  const unique =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `${prefix}-${unique}`;
 }
 
 export function ChatWindow() {

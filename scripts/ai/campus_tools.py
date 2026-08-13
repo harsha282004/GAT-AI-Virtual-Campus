@@ -12,7 +12,7 @@ full IMPLEMENTED / PARTIALLY IMPLEMENTED / NOT AVAILABLE breakdown):
 
 - campus_lookup(query)      -> IMPLEMENTED (wraps search_buildings)
 - room_lookup(query)        -> IMPLEMENTED (wraps search_rooms, +department fallback)
-- navigation_tool(to, from) -> IMPLEMENTED (wraps build_graph/find_shortest_path/format_directions)
+- resolve_location(query)   -> IMPLEMENTED (location-only lookup, no routing)
 - panorama_lookup(query)    -> IMPLEMENTED (direct Panorama lookup + find_nearest_panorama fallback)
 - hotspot_lookup(node_id)   -> IMPLEMENTED (direct CrossFloorHotspot query)
 - contact_lookup(query)     -> NOT AVAILABLE (no structured contact table exists; the
@@ -24,6 +24,23 @@ Every function returns a dict, never raises past its own boundary, and
 never invents an entity, route, or field that the database doesn't
 actually contain — an unresolved query returns a typed "not_found"/
 "ambiguous" status, not a guess.
+
+PHASE 9 SCOPE CHANGE — read before assuming a routing tool exists here:
+This module used to also expose `navigation_tool(to, from)`, a
+source-to-destination A* routing tool (wrapping
+`app.navigation.build_graph`/`find_shortest_path`/`format_directions`) that
+produced turn-by-turn directions for chat queries like "how do I get to
+CSE Block?". Phase 9 revised the project scope: this project is a virtual
+campus tour + AI information assistant, not an indoor navigation/routing
+system, so that function has been removed from this module (see
+navigation_agent.py's matching docstring note for the caller-side half of
+this change). The underlying `app.navigation` graph/pathfinding package
+(build_graph, find_shortest_path, format_directions, single_source_distances,
+etc.) was deliberately left completely intact in the backend — it is still
+imported here for `resolve_building_entrance_node`/`find_nearest_panorama`,
+so nothing was deleted that this module (or the Tour/panorama features)
+still depends on. Only the point-to-point routing entry point itself was
+removed.
 """
 
 from __future__ import annotations
@@ -42,14 +59,11 @@ from _shared import configure_logging
 from app.core.exceptions import AppError
 from app.models.building import Building
 from app.models.cross_floor_hotspot import CrossFloorHotspot
-from app.models.node import Node
 from app.models.panorama import Panorama
 from app.models.room import Room
 from app.navigation import (
     build_graph,
     find_nearest_panorama,
-    find_shortest_path,
-    format_directions,
     resolve_building_entrance_node,
     search_buildings,
     search_rooms,
@@ -272,95 +286,6 @@ def resolve_location(query: str) -> dict[str, Any]:
     except Exception as exc:  # noqa: BLE001
         logger.error("resolve_location failed for %r: %s", query, exc)
         return {"tool": "campus_lookup", "status": "tool_error", "error": str(exc)}
-
-
-# ---- navigation_tool ----
-def navigation_tool(
-    to_query: str,
-    from_query: str | None = None,
-    *,
-    from_node_id: int | None = None,
-    accessible: bool = False,
-) -> dict[str, Any]:
-    """Resolves `to_query` (and `from_query`/`from_node_id`, defaulting to
-    the campus Main Gate node when neither is given — a real node in the
-    seeded navigation graph, not an invented default) to node IDs, then
-    calls the existing build_graph/find_shortest_path/format_directions
-    exactly as backend/app/api/v1/navigation.py does. Also resolves which
-    scenes along the path already have a panorama, tying navigation and
-    panorama lookup together per Phase 6's requirement — using only
-    existing Panorama rows, never inventing one."""
-    try:
-        with get_db_session() as db:
-            to_resolution = _resolve_single_location(db, to_query)
-            if to_resolution["status"] != "resolved":
-                return {
-                    "tool": "navigation_tool",
-                    "status": f"destination_{to_resolution['status']}",
-                    "to_query": to_query,
-                    "candidates": to_resolution.get("candidates", []),
-                }
-
-            if from_node_id is not None:
-                from_id = from_node_id
-                from_label = f"node #{from_node_id}"
-            elif from_query:
-                from_resolution = _resolve_single_location(db, from_query)
-                if from_resolution["status"] != "resolved":
-                    return {
-                        "tool": "navigation_tool",
-                        "status": f"origin_{from_resolution['status']}",
-                        "from_query": from_query,
-                        "candidates": from_resolution.get("candidates", []),
-                    }
-                from_id = from_resolution["node_id"]
-                from_label = from_resolution["name"]
-            else:
-                main_gate = db.query(Node).filter(Node.name.ilike("%main gate%")).first()
-                if main_gate is None:
-                    return {
-                        "tool": "navigation_tool",
-                        "status": "missing_start_location",
-                        "note": "No start location was given and no default campus "
-                        "entrance node ('Main Gate') exists to fall back to.",
-                    }
-                from_id = main_gate.id
-                from_label = f"{main_gate.name} (default starting point)"
-
-            graph = build_graph(db, accessible_only=accessible)
-            path = find_shortest_path(graph, from_id, to_resolution["node_id"])
-            steps = format_directions(path, graph.nodes_by_id)
-
-            panoramas = (
-                db.query(Panorama).filter(Panorama.node_id.in_(path.node_ids)).all()
-                if path.node_ids
-                else []
-            )
-            panorama_by_node = {p.node_id: _panorama_to_dict(p) for p in panoramas}
-            panorama_sequence = [
-                panorama_by_node[node_id]
-                for node_id in path.node_ids
-                if node_id in panorama_by_node
-            ]
-
-            return {
-                "tool": "navigation_tool",
-                "status": "route_found",
-                "from_node_id": from_id,
-                "from_label": from_label,
-                "to_node_id": to_resolution["node_id"],
-                "to_label": to_resolution["name"],
-                "total_distance": path.total_distance,
-                "estimated_walk_time_minutes": path.estimated_walk_time_minutes,
-                "is_accessible": path.is_accessible,
-                "turn_by_turn": [step.instruction for step in steps],
-                "panorama_sequence": panorama_sequence,
-            }
-    except AppError as exc:
-        return {"tool": "navigation_tool", "status": "no_path_found", "error": exc.message}
-    except Exception as exc:  # noqa: BLE001
-        logger.error("navigation_tool failed for %r -> %r: %s", from_query, to_query, exc)
-        return {"tool": "navigation_tool", "status": "tool_error", "error": str(exc)}
 
 
 # ---- panorama_lookup ----

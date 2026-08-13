@@ -1,0 +1,86 @@
+[
+  {
+    "entity_id": "LAB_CHEMISTRY_GF",
+    "entity_type": "laboratory",
+    "name": "Chemistry Lab",
+    "department": "Chemistry",
+    "floor_slug": "ground-floor",
+    "panorama_file": "ground-floor/gf_15.jpg",
+    "evidence": "Door header sign 'LAB-2', room plaque '112', Department of Chemistry notice board on adjacent wall.",
+    "confidence": 0.9,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "LAB_ISE_FIRST_FLOOR",
+    "entity_type": "laboratory",
+    "name": "ISE Lab",
+    "department": "ISE",
+    "floor_slug": "first-floor",
+    "panorama_file": "first-floor/01.jpg",
+    "evidence": "Overhead directional sign lists 'ISE LAB' in the CSE/ISE wing.",
+    "confidence": 0.9,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "LAB_MEASUREMENTS_CONTROL_SYSTEMS",
+    "entity_type": "laboratory",
+    "name": "Measurements & Control Systems Lab",
+    "department": "EEE",
+    "floor_slug": "second-floor",
+    "panorama_file": "second-floor/01.jpg",
+    "evidence": "Overhead directional sign lists 'MEASUREMENTS & CONTROL SYSTEMS LAB'.",
+    "confidence": 0.9,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "LAB_POWER_SYSTEM_SIMULATION",
+    "entity_type": "laboratory",
+    "name": "Power System Simulation Lab",
+    "department": "EEE",
+    "floor_slug": "second-floor",
+    "panorama_file": "second-floor/01.jpg",
+    "evidence": "Overhead directional sign lists 'POWER SYSTEM SIMULATION LAB'.",
+    "confidence": 0.9,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "LAB_CHEMISTRY_LAB1_GROUND",
+    "entity_type": "laboratory",
+    "name": "Chemistry Lab (LAB-1)",
+    "department": "Chemistry",
+    "floor_slug": "ground-floor",
+    "panorama_file": "ground-floor/gf_17.jpg",
+    "evidence": "Door-header sign 'LAB-1' with a 'CHEMISTRY' wall sign and notice board.",
+    "confidence": 0.85,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "LAB_IVAN_SUTHERLAND",
+    "entity_type": "laboratory",
+    "name": "Ivan Sutherland Lab",
+    "department": "CSE",
+    "floor_slug": "first-floor",
+    "panorama_file": "first-floor/25.jpg",
+    "evidence": "Door header 'Ivan Sutherland Lab' with 'Dept of CSE Lab Notices' and 'Department of Computer Science and Engineering' signs (room number not legible in frame).",
+    "confidence": 0.75,
+    "verified": true,
+    "needs_review": false
+  },
+  {
+    "entity_id": "LAB_EDSGER_DIJKSTRA",
+    "entity_type": "laboratory",
+    "name": "Edsger Dijkstra Lab / Cloud Lab on AWS",
+    "department": "CSE",
+    "floor_slug": "first-floor",
+    "panorama_file": "first-floor/30.jpg",
+    "evidence": "Door header 'Edsger Dijkstra Lab' with sign 'CLOUD LAB ON AWS - BIG DATA AND BLOCK CHAIN' and 'Department of Computer Science and Engineering / Computer Lab-1, Block-III / Data Structures Laboratory / Design and Analysis of Algorithm Laboratory' (room number not legible in frame).",
+    "confidence": 0.75,
+    "verified": true,
+    "needs_review": false
+  }
+]

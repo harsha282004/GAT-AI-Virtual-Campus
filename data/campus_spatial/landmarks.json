@@ -1,0 +1,26 @@
+[
+  {
+    "entity_id": "STAIRCASE_BLOCKA-CORRIDOR-GROUND_BLOCKA-CORRIDOR-FIRST",
+    "entity_type": "landmark",
+    "name": "Staircase",
+    "panorama_file": "/panoramas/BlockA/blockA-corridor-ground.jpg",
+    "connects_to_panorama": "blockA-corridor-first",
+    "evidence": "Authored hotspot in panoramas.json (type=upstairs).",
+    "confidence": 1.0,
+    "verified": true,
+    "needs_review": false,
+    "source": "panoramas.json"
+  },
+  {
+    "entity_id": "STAIRCASE_BLOCKA-CORRIDOR-FIRST_BLOCKA-CORRIDOR-GROUND",
+    "entity_type": "landmark",
+    "name": "Staircase",
+    "panorama_file": "/panoramas/BlockA/blockA-corridor-first.jpg",
+    "connects_to_panorama": "blockA-corridor-ground",
+    "evidence": "Authored hotspot in panoramas.json (type=downstairs).",
+    "confidence": 1.0,
+    "verified": true,
+    "needs_review": false,
+    "source": "panoramas.json"
+  }
+]

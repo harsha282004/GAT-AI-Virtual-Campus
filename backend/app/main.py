@@ -17,6 +17,12 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info("%s starting up (environment=%s)", settings.PROJECT_NAME, settings.ENVIRONMENT)
+    # Build the RAG retrieval/rerank singletons now, not on the first chat
+    # request — see app.api.v1.chat.warmup()'s docstring for why a lazy
+    # first build was causing request-time timeouts.
+    from app.api.v1.chat import warmup as _warmup_rag_pipeline
+
+    _warmup_rag_pipeline()
     yield
     logger.info("%s shutting down", settings.PROJECT_NAME)
 

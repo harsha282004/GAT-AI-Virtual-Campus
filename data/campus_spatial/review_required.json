@@ -1,0 +1,35 @@
+[
+  {
+    "panorama_id": "ground-floor/gf_25.jpg",
+    "entity_id": "ROOM_109A",
+    "issue": "sign_partially_cropped_or_angled",
+    "observed_text": "Door glass panel faintly labelled '109 A'.",
+    "confidence": 0.55,
+    "needs_manual_review": true
+  },
+  {
+    "panorama_id": "ground-floor/gf_34.jpg",
+    "entity_id": "ROOM_105",
+    "issue": "sign_partially_cropped_or_angled",
+    "observed_text": "Door sign 'ELECTRICAL ROOM' with a partially visible room plaque '105'.",
+    "confidence": 0.65,
+    "needs_manual_review": true
+  },
+  {
+    "panorama_id": "third-floor/32.jpg",
+    "entity_id": "ROOM_409_TENTATIVE",
+    "issue": "sign_partially_cropped_or_angled",
+    "observed_text": "Small door tag beneath the 'ARTIFICIAL INTELLIGENCE AND DATA SCIENCE (AI&DS)' sign, appears to read '409' but is too small/low-contrast in the available frame to confirm with confidence.",
+    "confidence": 0.4,
+    "needs_manual_review": true
+  },
+  {
+    "panorama_id": "main-building/first-floor/01.jpg",
+    "entity_id": null,
+    "issue": "sign_illegible",
+    "observed_text": "Partial fragment visible at frame edge: '...RES & NETWORKING LAB' and '...DIRECTOR' — too small/cropped to transcribe reliably even at 3x zoom.",
+    "possible_value": null,
+    "confidence": 0.2,
+    "needs_manual_review": true
+  }
+]

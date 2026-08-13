@@ -1,7 +1,8 @@
 """Phase 6 — Navigation Agent (real tool integration).
 
-Handles: building locations, floor locations, room locations, campus
-navigation/route requests, indoor navigation-related questions.
+Handles: building locations, floor locations, room locations,
+panorama/tour lookups — location and spatial-lookup questions, not
+routing.
 
 Phase 5 shipped this agent with a documented stub (`NavigationAdapter`)
 because its own docstring believed scripts/ai/ could not import
@@ -10,29 +11,43 @@ to be incorrect: CLAUDE.md only says the running app never imports
 scripts/ (one direction), and scripts/db/seed.py already imports
 backend/app/navigation/pathfinding.py directly via a plain SQLAlchemy
 Session — there is no actual project rule against the reverse direction.
-Phase 6 corrects this: navigation queries are now resolved against the
-REAL backend navigation engine (via campus_tools.py, which wraps
+Phase 6 corrects this: location queries are now resolved against the
+REAL backend data layer (via campus_tools.py, which wraps
 backend/app/navigation/'s existing functions unmodified — see that
 module's docstring for exactly which functions are called).
 
-Two paths, chosen deterministically per query (Phase 6's "tool
+PHASE 9 SCOPE CHANGE — read before assuming this agent still does routing:
+This agent used to also classify a "route" sub-intent ("how do I get to
+X", "take me from X to Y") and call `campus_tools.navigation_tool()` for
+real A* turn-by-turn directions. Phase 9 revised the project scope: this
+project is a virtual campus tour + AI information assistant, not an indoor
+navigation/routing system, so that classification branch, its regex
+patterns, `_format_route_answer()`, and the `navigation_tool` import have
+all been removed. A query that used to match the route patterns (e.g. "how
+do I get to CSE Block?") now simply falls through to intent "none" below,
+same as any other query neither of the two remaining tool paths can
+resolve — it is answered by the ordinary grounded RAG path, never given a
+fabricated route. `campus_tools.navigation_tool()` itself was deleted from
+campus_tools.py (see that module's own Phase 9 docstring note); the
+underlying `app.navigation` graph/pathfinding package it used to call was
+NOT touched, since `resolve_location()`/`panorama_lookup()` below still
+depend on parts of it.
+
+Two paths remain, chosen deterministically per query (Phase 6's "tool
 selection" requirement — don't call a tool for every question):
 
-1. TOOL PATH — the query looks like a route request ("how do I get to
-   X", "take me from X to Y") or a bare location request ("where is
-   X"). campus_tools.navigation_tool()/resolve_location() are called; on
-   a confident single match, the tool's own structured data (real turn-by-
-   turn directions, real distances, real building/floor names) becomes the
-   answer directly — the LLM is not involved, so it cannot alter a room
-   number, distance, or route. On an ambiguous match, a clarification
-   listing the real candidates is returned — never a guess. Only on
-   "not found"/error does this path fall through to (2).
+1. TOOL PATH — the query looks like a bare location request ("where is
+   X") or a panorama request. campus_tools.resolve_location()/
+   panorama_lookup() are called; on a confident single match, the tool's
+   own structured data (real building/floor names, real panorama titles)
+   becomes the answer directly — the LLM is not involved, so it cannot
+   alter a room number or location. On an ambiguous match, a
+   clarification listing the real candidates is returned — never a
+   guess. Only on "not found"/error does this path fall through to (2).
 2. RAG PATH — agent_base.run_specialist(), identical to every other
    agent (Phase 2-4 pipeline, unmodified), for informational
    navigation-flavored questions the tool layer can't resolve to a single
-   graph node (e.g. "How can I reach the second floor?" with no building
-   named — see docs/RAG_ARCHITECTURE.md's Phase 6 section for why that's
-   an inherent ambiguity, not a bug).
+   graph node.
 """
 
 from __future__ import annotations
@@ -41,7 +56,7 @@ import re
 from typing import Any
 
 from agent_base import run_specialist
-from campus_tools import hotspot_lookup, navigation_tool, panorama_lookup, resolve_location
+from campus_tools import hotspot_lookup, panorama_lookup, resolve_location
 
 AGENT_NAME = "navigation_agent"
 
@@ -49,21 +64,6 @@ _PANORAMA_FOR_PATTERN = re.compile(r"panorama\s+(?:for|of)\s+(.+)", re.IGNORECAS
 _PANORAMA_GENERIC_PATTERN = re.compile(
     r"(?:what|which) panorama should i (?:open|see|view|show)", re.IGNORECASE
 )
-
-_FROM_TO_PATTERN = re.compile(r"from\s+(.+?)\s+to\s+(.+)", re.IGNORECASE)
-
-_ROUTE_TO_PATTERNS = [
-    re.compile(p, re.IGNORECASE)
-    for p in [
-        r"how (?:do|can) i (?:get|reach) to\s+(.+)",
-        r"how (?:do|can) i reach\s+(.+)",
-        r"take me to\s+(.+)",
-        r"navigate to\s+(.+)",
-        r"route to\s+(.+)",
-        r"directions to\s+(.+)",
-        r"show me the route to\s+(.+)",
-    ]
-]
 
 _WHERE_IS_PATTERN = re.compile(r"where(?:'s| is)\s+(.+)", re.IGNORECASE)
 
@@ -84,31 +84,11 @@ def classify_navigation_query(query: str) -> dict[str, Any]:
     if _PANORAMA_GENERIC_PATTERN.search(query):
         return {"intent": "panorama", "from_text": None, "to_text": None}
 
-    m = _FROM_TO_PATTERN.search(query)
-    if m:
-        return {"intent": "route", "from_text": _clean(m.group(1)), "to_text": _clean(m.group(2))}
-
-    for pattern in _ROUTE_TO_PATTERNS:
-        m = pattern.search(query)
-        if m:
-            return {"intent": "route", "from_text": None, "to_text": _clean(m.group(1))}
-
     m = _WHERE_IS_PATTERN.search(query)
     if m:
         return {"intent": "location", "from_text": None, "to_text": _clean(m.group(1))}
 
     return {"intent": "none", "from_text": None, "to_text": None}
-
-
-def _format_route_answer(tool_result: dict[str, Any]) -> str:
-    lines = list(tool_result["turn_by_turn"])
-    lines.append(
-        f"Total distance: {tool_result['total_distance']:.0f}m "
-        f"(~{tool_result['estimated_walk_time_minutes']:.1f} min walk)."
-    )
-    if not tool_result["is_accessible"]:
-        lines.append("Note: this route is not fully accessible (includes stairs).")
-    return " ".join(lines)
 
 
 def _format_location_answer(detail: dict[str, Any], entity_type: str) -> str:
@@ -231,19 +211,6 @@ def handle(query: str) -> dict[str, Any]:
             )
         if tool_result["status"] == "ambiguous":
             return _clarification_response(query, "panorama_lookup", tool_result)
-
-        result = run_specialist(AGENT_NAME, query)
-        result["navigation_tool_result"] = tool_result
-        return result
-
-    if classification["intent"] == "route" and classification["to_text"]:
-        tool_result = navigation_tool(classification["to_text"], classification["from_text"])
-        if tool_result["status"] == "route_found":
-            return _tool_response(
-                query, "navigation_tool", tool_result, _format_route_answer(tool_result)
-            )
-        if tool_result["status"] in ("destination_ambiguous", "origin_ambiguous"):
-            return _clarification_response(query, "navigation_tool", tool_result)
 
         result = run_specialist(AGENT_NAME, query)
         result["navigation_tool_result"] = tool_result
