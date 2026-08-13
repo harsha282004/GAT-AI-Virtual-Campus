@@ -38,6 +38,11 @@ rank_bm25>=0.2
 # code, so it needs to be declared explicitly rather than relied on as a
 # transitive dependency.
 scikit-learn>=1.5
+# torch: Phase 10's RNN (LSTM) intent classifier (backend/app/intent_model/).
+# Already present transitively (pulled in by sentence-transformers), but is
+# now imported directly by application code, so declared explicitly for the
+# same reason as scikit-learn above.
+torch>=2.0
 
 # --- Utilities ---
 python-dotenv>=1.0

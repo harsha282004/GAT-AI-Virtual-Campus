@@ -4,6 +4,20 @@ Handles: building locations, floor locations, room locations,
 panorama/tour lookups — location and spatial-lookup questions, not
 routing.
 
+PHASE 10 ADDITION — spatial_knowledge.py (data/campus_spatial/*.json,
+built in Phase 9 from real panorama signage) is now consulted FIRST for
+location-intent queries, before the existing PostgreSQL
+campus_tools.resolve_location(). Reason: the Phase 9 dataset is the only
+source that actually covers the real main-building room numbers (201-419
+etc.) — PostgreSQL's seeded Room table only has a handful of placeholder
+rooms and does not contain them at all. If spatial_knowledge finds nothing,
+this falls through to resolve_location() (unchanged) exactly as before, so
+the legacy placeholder set (Library, Auditorium, ...) keeps working. Unlike
+_tool_response() below (used for the 100%-certain deterministic DB lookups
+resolve_location()/panorama_lookup() perform), spatial answers carry their
+REAL evidence-derived confidence — a low-confidence or unresolved spatial
+record is never reported as HIGH/1.0.
+
 Phase 5 shipped this agent with a documented stub (`NavigationAdapter`)
 because its own docstring believed scripts/ai/ could not import
 backend/app/*. That belief was re-checked during Phase 6's audit and found
@@ -57,6 +71,8 @@ from typing import Any
 
 from agent_base import run_specialist
 from campus_tools import hotspot_lookup, panorama_lookup, resolve_location
+from confidence import categorize as categorize_confidence
+from spatial_knowledge import extract_room_number, format_spatial_answer, search_spatial
 
 AGENT_NAME = "navigation_agent"
 
@@ -65,7 +81,27 @@ _PANORAMA_GENERIC_PATTERN = re.compile(
     r"(?:what|which) panorama should i (?:open|see|view|show)", re.IGNORECASE
 )
 
+# Phase 10: broadened beyond the original "where is X" / "where's X" to
+# cover the paraphrases users actually asked for (Phase 10 spec, Section 9)
+# — "where can I find X", "tell me the location of X", "which floor is X
+# on" / "X is on which floor", and a bare room-number query with no
+# location verb at all ("room no 202?"). Each pattern extracts the same
+# `to_text` shape as before, so classify_navigation_query()'s caller does
+# not need to know which phrasing matched.
 _WHERE_IS_PATTERN = re.compile(r"where(?:'s| is)\s+(.+)", re.IGNORECASE)
+_WHERE_CAN_FIND_PATTERN = re.compile(r"where\s+(?:can|could|do)\s+i\s+find\s+(.+)", re.IGNORECASE)
+_LOCATION_OF_PATTERN = re.compile(
+    r"(?:tell me|what is|show me)\s+(?:the\s+)?location of\s+(.+)" r"|\blocation of\s+(.+)",
+    re.IGNORECASE,
+)
+_WHICH_FLOOR_IS_X_ON_PATTERN = re.compile(
+    r"which floor is\s+(.+?)\s+on\b|which floor is\s+(.+?)[\?\.!]*$", re.IGNORECASE
+)
+_X_IS_ON_WHICH_FLOOR_PATTERN = re.compile(r"(.+?)\s+is on which floor\b", re.IGNORECASE)
+# Bare "room 202" / "room no 202?" with no surrounding location verb at
+# all — only matched as a last resort (see classify_navigation_query), so
+# it can't misfire on a sentence that merely mentions a room in passing.
+_BARE_ROOM_PATTERN = re.compile(r"\broom\s*(?:no\.?|number|#)?\s*\d{2,4}[a-z]?\b", re.IGNORECASE)
 
 
 def _clean(text: str) -> str:
@@ -84,9 +120,28 @@ def classify_navigation_query(query: str) -> dict[str, Any]:
     if _PANORAMA_GENERIC_PATTERN.search(query):
         return {"intent": "panorama", "from_text": None, "to_text": None}
 
-    m = _WHERE_IS_PATTERN.search(query)
+    for pattern in (
+        _WHERE_IS_PATTERN,
+        _WHERE_CAN_FIND_PATTERN,
+        _WHICH_FLOOR_IS_X_ON_PATTERN,
+        _X_IS_ON_WHICH_FLOOR_PATTERN,
+    ):
+        m = pattern.search(query)
+        if m:
+            group = next(g for g in m.groups() if g)
+            return {"intent": "location", "from_text": None, "to_text": _clean(group)}
+
+    m = _LOCATION_OF_PATTERN.search(query)
     if m:
-        return {"intent": "location", "from_text": None, "to_text": _clean(m.group(1))}
+        group = next(g for g in m.groups() if g)
+        return {"intent": "location", "from_text": None, "to_text": _clean(group)}
+
+    # Last resort: a bare room-number mention with none of the phrasings
+    # above — e.g. "room no 202?" typed with no verb at all. Still a clear,
+    # unambiguous location intent (nothing else "room 202" could mean), so
+    # safe to route without a strong sentence-level cue.
+    if _BARE_ROOM_PATTERN.search(query):
+        return {"intent": "location", "from_text": None, "to_text": _clean(query)}
 
     return {"intent": "none", "from_text": None, "to_text": None}
 
@@ -149,6 +204,40 @@ def _tool_response(
         "grounded": True,
         "tool_used": tool_name,
         "tool_result": tool_result,
+    }
+
+
+def _spatial_response(query: str, spatial_result: dict[str, Any]) -> dict[str, Any]:
+    """Builds the Agent Response Contract for a spatial_knowledge.py lookup.
+    Unlike _tool_response() (used for the 100%-certain PostgreSQL lookups),
+    confidence here is the REAL evidence-derived value from Phase 9 — never
+    hardcoded to 1.0/HIGH, per Phase 10's explicit "do not force confidence
+    to 1.0" requirement. A not_found/not_found_confirmed result is honestly
+    reported as ungrounded (no fabricated location), matching the same
+    refusal shape the rest of the pipeline already uses."""
+    answer, confidence, status = format_spatial_answer(spatial_result)
+    grounded = status in ("resolved", "low_confidence", "ambiguous")
+    generation_status = {
+        "resolved": "tool_resolved",
+        "low_confidence": "tool_resolved_low_confidence",
+        "ambiguous": "clarification_needed",
+        "not_found": "no_context",
+        "not_found_confirmed": "no_context",
+    }[status]
+    return {
+        "original_query": query,
+        "selected_agent": AGENT_NAME,
+        "retrieved_context": [],
+        "confidence_score": confidence,
+        "confidence_level": categorize_confidence(confidence),
+        "generation_status": generation_status,
+        "answer": answer,
+        "sources": [],
+        "source_urls": [],
+        "refusal_reason": None if grounded else "No verified spatial record matched this query.",
+        "grounded": grounded,
+        "tool_used": "spatial_knowledge",
+        "tool_result": spatial_result,
     }
 
 
@@ -217,12 +306,47 @@ def handle(query: str) -> dict[str, Any]:
         return result
 
     if classification["intent"] == "location" and classification["to_text"]:
+        # Phase 10: spatial_knowledge.py (Phase 9's panorama-derived JSON)
+        # is consulted first — it's the only source that covers the real
+        # main-building room numbers. IMPORTANT distinction preserved here:
+        # "not_found" (Phase 9 has no data on this number at all — most
+        # possible room numbers were never asked about) falls through to
+        # the legacy campus_tools.resolve_location()/RAG path exactly as
+        # before Phase 10, so numbers only the older placeholder data knows
+        # about (e.g. "Room 101") keep working. "not_found_confirmed" (one
+        # of the 6 numbers Phase 9 explicitly searched the ENTIRE panorama
+        # set for and did not find, e.g. Room 301) is a real, deliberate
+        # answer in its own right and is returned directly — that is
+        # Section 13's hallucination-prevention requirement, not a gap.
+        spatial_result = search_spatial(classification["to_text"])
+        if spatial_result["status"] in (
+            "resolved",
+            "low_confidence",
+            "ambiguous",
+            "not_found_confirmed",
+        ):
+            return _spatial_response(query, spatial_result)
+
         tool_result = resolve_location(classification["to_text"])
         if tool_result["status"] == "resolved":
             answer = _format_location_answer(tool_result["detail"], tool_result["entity_type"])
             return _tool_response(query, "campus_lookup", tool_result, answer)
         if tool_result["status"] == "ambiguous":
             return _clarification_response(query, "campus_lookup", tool_result)
+
+        # Phase 10 performance fix: a query that is UNAMBIGUOUSLY asking
+        # about a specific room number (extract_room_number matched) and
+        # was checked against BOTH structured sources (Phase 9 spatial data
+        # and PostgreSQL) with no match in either — answering this via the
+        # full RAG pipeline anyway costs a real 8-18s LLM round trip (see
+        # this phase's timeout investigation) just to arrive at the exact
+        # same honest "no information" conclusion the retrieved GAT
+        # documents were never going to contain in the first place (they
+        # describe policy/regulations, not a per-room directory). Skip the
+        # expensive, low-value RAG call and answer immediately — still
+        # completely honest, just fast.
+        if extract_room_number(classification["to_text"]):
+            return _spatial_response(query, spatial_result)
 
         result = run_specialist(AGENT_NAME, query)
         result["navigation_tool_result"] = tool_result

@@ -51,9 +51,16 @@ CASES = [
     (
         # "Take me to X" no longer matches a route pattern (Phase 9) — this
         # is now just an unresolved-location-style query like any other.
+        # Room 301 specifically: Phase 9 visually reviewed the ENTIRE
+        # main-building panorama set and explicitly could not find it (see
+        # data/campus_spatial/room_validation.json) — the expected
+        # behavior (Phase 10, Section 13) is an honest "couldn't verify"
+        # answer, never a fabricated location. (Room 204, used here before
+        # Phase 10, is now a real Phase 9-resolved room and no longer
+        # demonstrates the unresolved case.)
         "F-UNRESOLVED-LOCATION",
-        "Take me to Room 204.",
-        lambda: navigation_handle("Take me to Room 204."),
+        "Take me to Room 301.",
+        lambda: navigation_handle("Take me to Room 301."),
     ),
     (
         "G-UNRELATED-QUESTION",

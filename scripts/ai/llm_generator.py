@@ -24,6 +24,8 @@ Usage:
 from __future__ import annotations
 
 import os
+import threading
+import time
 from typing import Any
 
 import ollama
@@ -42,6 +44,25 @@ OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
 # core/config.py uses, so a project .env can override both consistently.
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.2")
 REQUEST_TIMEOUT_S = 60
+
+# Phase 10 timeout investigation: a single Ollama generation call on this
+# CPU-only setup already takes ~7-9s in isolation — already thin against a
+# 10s frontend timeout. Measured live: two concurrent chat requests both
+# hitting Ollama at once did NOT run at roughly the same ~8s each — they
+# both slowed to 17s and 45s respectively (CPU contention), because
+# chat.py's handler runs in Starlette's thread pool with no limit on how
+# many of those threads can call Ollama at the same moment. This is the
+# actual root cause behind reported "timeout of 10000ms exceeded" reports
+# under any real concurrent load — not a retrieval/routing/NLU problem
+# (retrieval completes in single-digit milliseconds; every routing test in
+# this phase resolved correctly and fast). Bounding concurrent Ollama calls
+# to 1 turns "N requests all degrade together" into "requests queue and
+# each gets the full ~8s service time in turn" — slower under load in
+# aggregate (inherent to a single CPU-bound local model), but predictable
+# per-request latency instead of an unbounded multiplicative blowup.
+# Configurable, not hidden behind a bigger timeout value.
+_OLLAMA_MAX_CONCURRENT = int(os.environ.get("OLLAMA_MAX_CONCURRENT_REQUESTS", "1"))
+_ollama_semaphore = threading.Semaphore(_OLLAMA_MAX_CONCURRENT)
 
 SYSTEM_PROMPT = """You are the GAT Virtual Campus Assistant, answering questions about \
 Global Academy of Technology (GAT) using ONLY the official GAT context supplied to you below.
@@ -232,9 +253,19 @@ def generate_answer(
             model=model,
             client_kwargs={"timeout": REQUEST_TIMEOUT_S},
         )
-        response = llm.invoke(
-            [SystemMessage(content=system_prompt), HumanMessage(content=user_prompt)]
-        )
+        wait_start = time.perf_counter()
+        with _ollama_semaphore:
+            queue_wait_s = time.perf_counter() - wait_start
+            if queue_wait_s > 0.05:
+                logger.info(
+                    "Ollama call queued %.2fs behind another in-flight generation "
+                    "(max concurrent=%d)",
+                    queue_wait_s,
+                    _OLLAMA_MAX_CONCURRENT,
+                )
+            response = llm.invoke(
+                [SystemMessage(content=system_prompt), HumanMessage(content=user_prompt)]
+            )
         answer_text = (
             response.content if isinstance(response.content, str) else str(response.content)
         )

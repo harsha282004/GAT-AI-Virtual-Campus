@@ -1,0 +1,11 @@
+{
+  "train_accuracy": 1.0,
+  "val_accuracy": 0.529411792755127,
+  "best_epoch": 147,
+  "num_train_examples": 134,
+  "num_val_examples": 34,
+  "vocab_size": 283,
+  "num_classes": 12,
+  "epochs": 150,
+  "note": "Trained on a small synthetic seed dataset (dataset.py) \u2014 see that module's honesty note. Held-out accuracy measured on a random 80/20 split, not cross-validated. Checkpoint saved is the best-val-accuracy epoch (early stopping), not the final epoch."
+}
