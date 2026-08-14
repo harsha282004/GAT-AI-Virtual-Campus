@@ -55,8 +55,9 @@ DEFAULT_AGENT_MODEL = "llama3.2"
 
 # Maps Phase 4's existing generation_status values to a human-readable
 # refusal reason. Only statuses that represent "no answer was generated"
-# get a reason; "generated" maps to None. No new statuses are invented —
-# this is purely a presentation layer over Phase 4's existing contract.
+# get a reason; "generated" maps to None. Phase 14 adds exactly one new
+# status (grounding_check_failed) for the same reason this comment already
+# describes — everything else here is still Phase 4's original contract.
 _REFUSAL_REASONS = {
     "low_confidence_refusal": (
         "Retrieval confidence was too low to generate a reliable grounded answer."
@@ -65,6 +66,10 @@ _REFUSAL_REASONS = {
     "ollama_unreachable": "The local Ollama service is unreachable.",
     "model_unavailable": "The preferred local LLM model is not available in Ollama.",
     "generation_failed": "The LLM generation call failed.",
+    "grounding_check_failed": (
+        "The generated answer contained a specific claim that could not be verified "
+        "against the retrieved context."
+    ),
 }
 
 
