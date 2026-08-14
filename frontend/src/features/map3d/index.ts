@@ -1,2 +1,2 @@
 export * from "./BuildingNodeSidebar";
-export * from "./Map3DPlaceholder";
+export * from "./Map3DCampusView";
