@@ -147,7 +147,8 @@ def _log_rag_debug_trace(message: str, result: dict[str, Any], elapsed_ms: float
     ]
     logger.info(
         "[RAG_DEBUG] question=%r agent=%s reason=%s tool_used=%s status=%s "
-        "confidence=%s(%s) model=%s rerank_mode=%s top_chunks=%s latency_ms=%.1f",
+        "confidence=%s(%s) model=%s rerank_mode=%s context_chunks=%s/%s top_chunks=%s "
+        "latency_ms=%.1f",
         message,
         result.get("selected_agent"),
         result.get("agent_reason"),
@@ -157,6 +158,8 @@ def _log_rag_debug_trace(message: str, result: dict[str, Any], elapsed_ms: float
         result.get("confidence_level"),
         result.get("model"),
         result.get("rerank_mode"),
+        result.get("context_chunks_used"),
+        result.get("context_chunks_considered"),
         top_chunks,
         elapsed_ms,
     )
@@ -183,6 +186,16 @@ _FOLLOWUP_INDICATOR_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
+# Phase 11 addition: a bare floor follow-up ("Which floor?", "Which floor
+# is it on?", "And which floor?") after a resolved spatial answer (e.g.
+# "Where is CSE?" -> "Which floor?"). Deliberately separate from
+# _FOLLOWUP_INDICATOR_PATTERN above: "Which floor?" on its own contains
+# none of that pattern's indicator words, so without this it silently fell
+# through unresolved and was answered as a brand-new, contextless question.
+_FOLLOWUP_FLOOR_PATTERN = re.compile(
+    r"^(?:and\s+)?which floor(?:\s+is\s+(?:it|that|this))?\s*\??$", re.IGNORECASE
+)
+
 
 def _resolve_followup_message(message: str, db: Session, session: ChatSession) -> str:
     if _FOLLOWUP_THERE_PATTERN.search(message):
@@ -199,6 +212,19 @@ def _resolve_followup_message(message: str, db: Session, session: ChatSession) -
         # itself an unresolved/ambiguous location) — fall through rather
         # than guess; a plain topic-continuation prepend below may still
         # help, and if not, the message is routed as-is.
+
+    if _FOLLOWUP_FLOOR_PATTERN.match(message.strip()):
+        last_location = get_last_location(db, session)
+        if last_location:
+            logger.info(
+                "Resolved floor follow-up %r -> 'Which floor is %s on?' (session=%s)",
+                message,
+                last_location,
+                session.session_id,
+            )
+            return f"Which floor is {last_location} on?"
+        # No resolved location remembered — fall through to the generic
+        # indicator-based prepend below rather than guess.
 
     if _FOLLOWUP_INDICATOR_PATTERN.search(message):
         exchange = get_last_exchange(db, session)
@@ -217,10 +243,17 @@ def _extract_location_mentioned(result: dict[str, Any]) -> str | None:
     shape the routed agent produced, for the session store to remember —
     only ever a name that a real tool actually resolved, never guessed.
 
-    Three real shapes to handle, all from campus_tools.py (Phase 6):
+    Four real shapes to handle (all from campus_tools.py, Phase 6, unless
+    noted):
     - navigation_tool's route_found: {"to_label": "..."}
-    - resolve_location's resolved (bare "where is X" lookup): {"detail": {"name": "..."}}
+    - resolve_location's resolved (bare "where is X" lookup):
+      {"detail": {"name": "..."}}
     - panorama_lookup's *_found: {"panorama": {"title": "..."}}
+    - spatial_knowledge.search_spatial()'s resolved/low_confidence result:
+      {"status": "resolved"/"low_confidence", "record": {"name": "..."}}
+      (spatial_knowledge.py, Phase 10/11 addition) — only for those two
+      statuses, since "ambiguous"/"not_found"/"not_found_confirmed" never
+      resolved to one real place worth remembering for a follow-up.
     """
     tool_result = result.get("tool_result")
     if isinstance(tool_result, dict):
@@ -232,6 +265,13 @@ def _extract_location_mentioned(result: dict[str, Any]) -> str | None:
         panorama = tool_result.get("panorama")
         if isinstance(panorama, dict) and panorama.get("title"):
             return str(panorama["title"])
+        record = tool_result.get("record")
+        if (
+            isinstance(record, dict)
+            and record.get("name")
+            and tool_result.get("status") in ("resolved", "low_confidence")
+        ):
+            return str(record["name"])
     resolved_location = result.get("resolved_location")
     if isinstance(resolved_location, dict):
         detail = resolved_location.get("detail")

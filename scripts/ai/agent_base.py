@@ -13,6 +13,14 @@ reranker.rerank (Phase 3), confidence.compute_confidence (Phase 3),
 llm_generator.generate_answer (Phase 4) — including Phase 4's own
 LOW-confidence short-circuit and Ollama-failure handling, which this
 module does not re-implement or bypass.
+
+PHASE 11 ADDITION — context_selection.select_context() runs between
+rerank() and compute_confidence()/generate_answer(): it drops near-duplicate
+chunks and chunks scoring far below the top result (see that module's
+docstring), so confidence scoring and the LLM prompt both see the same,
+already-cleaned context set instead of the raw top-k reranked list. This is
+a filter only — it never reorders or fabricates content, and reranker.py's
+own scoring is untouched.
 """
 
 from __future__ import annotations
@@ -21,6 +29,7 @@ from typing import Any
 
 from _shared import configure_logging
 from confidence import compute_confidence
+from context_selection import select_context
 from hybrid_retrieval import DEFAULT_CANDIDATE_N, hybrid_search
 from llm_generator import generate_answer
 from reranker import DEFAULT_TOP_K, rerank
@@ -61,8 +70,9 @@ def run_specialist(
     """
     candidates = hybrid_search(query, top_k=DEFAULT_CANDIDATE_N)
     reranked = rerank(query, candidates, top_k=top_k)
-    confidence = compute_confidence(reranked, query)
-    generation = generate_answer(query, reranked, confidence, model=model)
+    selected_context = select_context(reranked)
+    confidence = compute_confidence(selected_context, query)
+    generation = generate_answer(query, selected_context, confidence, model=model)
 
     retrieved_context = [
         {
@@ -73,7 +83,7 @@ def run_specialist(
             "hybrid_score": r["hybrid_score"],
             "rerank_score": r["rerank_score"],
         }
-        for r in reranked
+        for r in selected_context
     ]
     source_urls = [s["source_url"] for s in generation["sources"] if s.get("source_url")]
 
@@ -91,4 +101,6 @@ def run_specialist(
         "grounded": generation["grounded"],
         "model": generation.get("model"),
         "rerank_mode": reranked[0]["rerank_mode"] if reranked else None,
+        "context_chunks_considered": len(reranked),
+        "context_chunks_used": len(selected_context),
     }
