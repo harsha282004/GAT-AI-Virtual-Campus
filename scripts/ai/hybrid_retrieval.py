@@ -13,6 +13,15 @@ Usage (as a library):
 
 Usage (smoke test):
     python scripts/ai/hybrid_retrieval.py
+
+PHASE 12 ADDITION — hybrid_search() (not dense_search()/bm25_search()
+themselves, which stay pure primitives) now runs the query through
+query_expansion.expand_query() before generating candidates, so a handful
+of in-domain synonym paraphrases ("branches" vs "departments", "washroom"
+vs "toilet", ...) widen the candidate pool without touching reranking,
+confidence, or the LLM prompt — see that module's docstring for why this is
+safe for every query outside its small, hand-checked vocabulary (i.e.
+everything out-of-domain is returned completely unchanged).
 """
 
 from __future__ import annotations
@@ -27,6 +36,7 @@ from _shared import (
     configure_logging,
 )
 from build_embeddings import load_chunks
+from query_expansion import expand_query
 from rank_bm25 import BM25Okapi
 from sentence_transformers import SentenceTransformer
 
@@ -143,9 +153,15 @@ class HybridRetriever:
         bm25_weight: float = BM25_WEIGHT,
     ) -> list[dict]:
         """query -> top_k hybrid results, fused from top candidate_n dense
-        + top candidate_n BM25 candidates, sorted by hybrid_score desc."""
-        dense_raw = self.dense_search(query, top_n=candidate_n)
-        bm25_raw = self.bm25_search(query, top_n=candidate_n)
+        + top candidate_n BM25 candidates, sorted by hybrid_score desc.
+
+        Phase 12: candidate generation runs on expand_query(query), a
+        synonym-widened variant used ONLY here — every other field/return
+        value in this module still keys and reports off the real chunk
+        content, unaffected by expansion."""
+        expanded_query = expand_query(query)
+        dense_raw = self.dense_search(expanded_query, top_n=candidate_n)
+        bm25_raw = self.bm25_search(expanded_query, top_n=candidate_n)
 
         dense_norm = self._normalize(dense_raw)
         bm25_norm = self._normalize(bm25_raw)

@@ -21,6 +21,15 @@ docstring), so confidence scoring and the LLM prompt both see the same,
 already-cleaned context set instead of the raw top-k reranked list. This is
 a filter only — it never reorders or fabricates content, and reranker.py's
 own scoring is untouched.
+
+PHASE 12 ADDITION — context_selection.apply_domain_boost() runs
+immediately after rerank(), before select_context(): `agent_name` (already
+a parameter here since Phase 5 — the Supervisor's routing decision, not a
+new signal) nudges reranked scores toward the calling agent's known-domain
+sources by a small fixed amount, for the one domain with an established
+pattern. select_context()'s weak-chunk floor is then computed against the
+boosted scores, so a borderline same-domain chunk has a slightly better
+chance of surviving that floor than an equally-scored off-domain one.
 """
 
 from __future__ import annotations
@@ -29,7 +38,7 @@ from typing import Any
 
 from _shared import configure_logging
 from confidence import compute_confidence
-from context_selection import select_context
+from context_selection import apply_domain_boost, select_context
 from hybrid_retrieval import DEFAULT_CANDIDATE_N, hybrid_search
 from llm_generator import generate_answer
 from reranker import DEFAULT_TOP_K, rerank
@@ -70,6 +79,7 @@ def run_specialist(
     """
     candidates = hybrid_search(query, top_k=DEFAULT_CANDIDATE_N)
     reranked = rerank(query, candidates, top_k=top_k)
+    reranked = apply_domain_boost(reranked, agent_name)
     selected_context = select_context(reranked)
     confidence = compute_confidence(selected_context, query)
     generation = generate_answer(query, selected_context, confidence, model=model)

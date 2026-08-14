@@ -114,6 +114,14 @@ _WHICH_FLOOR_IS_X_ON_PATTERN = re.compile(
     r"which floor is\s+(.+?)\s+on\b|which floor is\s+(.+?)[\?\.!]*$", re.IGNORECASE
 )
 _X_IS_ON_WHICH_FLOOR_PATTERN = re.compile(r"(.+?)\s+is on which floor\b", re.IGNORECASE)
+# Phase 12: "Which floor can I find classroom 202?" — a genuine blend of
+# the "which floor" and "where can I find" phrasings above that neither one
+# alone matches (it isn't "which floor IS X" and it isn't "WHERE can I find
+# X"). Found via literal testing of Phase 12's own example queries, not
+# assumed.
+_WHICH_FLOOR_CAN_FIND_PATTERN = re.compile(
+    r"which floor (?:can|could) i find\s+(.+)", re.IGNORECASE
+)
 # Bare "room 202" / "room no 202?" with no surrounding location verb at
 # all — only matched as a last resort (see classify_navigation_query), so
 # it can't misfire on a sentence that merely mentions a room in passing.
@@ -143,6 +151,7 @@ def classify_navigation_query(query: str) -> dict[str, Any]:
     for pattern in (
         _WHERE_IS_PATTERN,
         _WHERE_CAN_FIND_PATTERN,
+        _WHICH_FLOOR_CAN_FIND_PATTERN,
         _WHICH_FLOOR_IS_X_ON_PATTERN,
         _X_IS_ON_WHICH_FLOOR_PATTERN,
     ):
