@@ -110,6 +110,14 @@ NAVIGATION_PHRASES = [
     "how can i get to",
     "which floor",
     "which building",
+    # Phase 15: "what floor is X on?" — the same question as "which floor",
+    # phrased with "what" instead — found while checking that
+    # conversation_context.py's reformulated queries (which reuse the
+    # follow-up's own "what floor"/"which floor" wording rather than
+    # normalizing it) always route correctly regardless of which word the
+    # user originally used.
+    "what floor",
+    "what building",
     "how to reach",
     "directions to",
     "navigate to",

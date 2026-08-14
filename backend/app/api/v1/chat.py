@@ -48,6 +48,22 @@ safely by the existing app-wide handlers in app.core.exceptions
 with a generic message) — no stack trace or internal detail ever reaches
 the client, reusing that existing infrastructure rather than duplicating
 it here.
+
+PHASE 15 ADDITIONS — contextual conversation:
+scripts/ai/conversation_context.py's resolve_reference() (pure, DB-
+independent) is layered in front of the Phase 7/8 follow-up mechanism
+below, using app.session.store.get_recent_active_entities() as its
+candidate list. Three outcomes: "resolved" (exactly one active entity —
+the follow-up is reformulated into a self-contained query and proceeds
+through the normal pipeline below, unchanged); "ambiguous" (2+ distinct
+active entities — the request is answered directly with a clarifying
+question and NEVER reaches _supervisor.route() at all, per this phase's
+"ask, don't guess" rule); "independent"/"no_context" (no cue, or a cue
+with nothing to resolve against — falls through to the pre-existing
+Phase 7/8 mechanisms below unchanged). The user's ORIGINAL message is
+still what gets persisted and logged as the user turn (see `message` vs
+`effective_message` below) — only the text handed to the routing/
+retrieval pipeline changes.
 """
 
 from __future__ import annotations
@@ -79,6 +95,7 @@ from app.session.store import (
     get_last_exchange,
     get_last_location,
     get_or_create_session,
+    get_recent_active_entities,
     record_message,
 )
 
@@ -94,6 +111,11 @@ if str(_SCRIPTS_AI_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_AI_DIR))
 
 import supervisor as _supervisor  # noqa: E402
+from conversation_context import (  # noqa: E402
+    ResolutionResult,
+    format_clarification_question,
+    resolve_reference,
+)
 
 # isort: on
 
@@ -175,29 +197,34 @@ _FOLLOWUP_THERE_PATTERN = re.compile(
 )
 
 # Phase 8 addition: broader topic-continuation follow-ups ("which one is
-# closest?", "what about that one?") — resolved by prepending the previous
-# *question* (not the answer) as retrieval/prompt context, rather than
-# trying to substitute a single entity name the way the pattern above
-# does. Deliberately narrow (a fixed indicator-word list), not general
-# pronoun resolution — see backend/app/session/store.py's docstring for
-# why that scope was chosen.
+# closest?", "another option?") that name no single substitutable entity —
+# resolved by prepending the previous *question* (not the answer) as
+# retrieval/prompt context. Deliberately narrow (a fixed indicator-word
+# list) and now the FALLBACK tier behind Phase 15's structured
+# conversation_context.resolve_reference() below, not the primary
+# mechanism — kept as-is (not merged into conversation_context.py's own
+# pattern set) because "one/ones/closest/nearest/also/another/instead"
+# describe a comparison/alternative, not a substitutable entity reference,
+# so a raw-question prepend remains the right strategy for them, same as
+# Phase 8 originally found. The old Phase 11 bare-floor-follow-up pattern
+# that used to live here is now subsumed by conversation_context.py's own
+# broader bare-adjunct pattern (which/what floor/building), so it isn't
+# duplicated in this file anymore.
 _FOLLOWUP_INDICATOR_PATTERN = re.compile(
     r"\b(it|that|this|those|these|one|ones|closest|nearest|also|another|instead)\b",
     re.IGNORECASE,
 )
 
-# Phase 11 addition: a bare floor follow-up ("Which floor?", "Which floor
-# is it on?", "And which floor?") after a resolved spatial answer (e.g.
-# "Where is CSE?" -> "Which floor?"). Deliberately separate from
-# _FOLLOWUP_INDICATOR_PATTERN above: "Which floor?" on its own contains
-# none of that pattern's indicator words, so without this it silently fell
-# through unresolved and was answered as a brand-new, contextless question.
-_FOLLOWUP_FLOOR_PATTERN = re.compile(
-    r"^(?:and\s+)?which floor(?:\s+is\s+(?:it|that|this))?\s*\??$", re.IGNORECASE
-)
 
-
-def _resolve_followup_message(message: str, db: Session, session: ChatSession) -> str:
+def _resolve_followup_message(
+    message: str, db: Session, session: ChatSession, reference_result: ResolutionResult
+) -> str:
+    """`reference_result` is computed once by the caller (chat()) via
+    conversation_context.resolve_reference() — passed in rather than
+    recomputed here so the "ambiguous" branch (handled entirely by the
+    caller, before this function is even called — see chat()) and this
+    function's own "resolved"/"no_context"/"independent" handling always
+    agree on the same classification of `message`."""
     if _FOLLOWUP_THERE_PATTERN.search(message):
         last_location = get_last_location(db, session)
         if last_location:
@@ -213,20 +240,24 @@ def _resolve_followup_message(message: str, db: Session, session: ChatSession) -
         # than guess; a plain topic-continuation prepend below may still
         # help, and if not, the message is routed as-is.
 
-    if _FOLLOWUP_FLOOR_PATTERN.match(message.strip()):
-        last_location = get_last_location(db, session)
-        if last_location:
-            logger.info(
-                "Resolved floor follow-up %r -> 'Which floor is %s on?' (session=%s)",
-                message,
-                last_location,
-                session.session_id,
-            )
-            return f"Which floor is {last_location} on?"
-        # No resolved location remembered — fall through to the generic
-        # indicator-based prepend below rather than guess.
+    if reference_result.status == "resolved" and reference_result.resolved_query:
+        logger.info(
+            "Phase 15 context resolution: %r -> %r (entity=%r, session=%s)",
+            message,
+            reference_result.resolved_query,
+            reference_result.entity_used,
+            session.session_id,
+        )
+        return reference_result.resolved_query
 
-    if _FOLLOWUP_INDICATOR_PATTERN.search(message):
+    # Reached when: a reference cue was found but no active entity exists
+    # to resolve it against (status "no_context" — e.g. "What about the AI
+    # course?" after a plain academic RAG answer that resolved no
+    # structured entity), OR the older, narrower indicator list above
+    # matches a phrasing conversation_context.py doesn't cover ("which one
+    # is closest?"). Both fall back to the same Phase 8 strategy: prepend
+    # the raw previous question as extra retrieval context.
+    if reference_result.status == "no_context" or _FOLLOWUP_INDICATOR_PATTERN.search(message):
         exchange = get_last_exchange(db, session)
         if exchange:
             last_user_message, _last_answer = exchange
@@ -321,6 +352,28 @@ def _build_sources(result: dict[str, Any]) -> list[ChatSourceOut]:
     ]
 
 
+def _build_clarification_response(clarification: str, session_id: str) -> ChatResponse:
+    """Phase 15: the answer for a genuinely ambiguous contextual reference
+    (2+ equally plausible active entities) — never a guess. Confidence is
+    1.0/HIGH for the same reason navigation_agent.py's own real-entity
+    ambiguity responses already use that value: this is a case the system
+    is CERTAIN is ambiguous, not an uncertain probabilistic answer, so
+    Phase 14's "never artificially inflate confidence" rule isn't in
+    tension with it — no retrieval or generation happened to inflate."""
+    return ChatResponse(
+        answer=clarification,
+        status="clarification_needed",
+        confidence=1.0,
+        confidence_level="HIGH",
+        selected_agent="conversation_context",
+        tool_used="conversation_context",
+        sources=[],
+        navigation=None,
+        panorama=None,
+        session_id=session_id,
+    )
+
+
 @router.post("", response_model=ChatResponse, summary="Ask the GAT AI Campus Assistant")
 def chat(payload: ChatRequest, db: Session = Depends(get_db)) -> ChatResponse:
     message = payload.message.strip()
@@ -337,17 +390,51 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)) -> ChatResponse:
     except SQLAlchemyError:
         logger.warning("Session persistence unavailable; continuing statelessly.", exc_info=True)
 
-    effective_message = message
-    if session is not None:
-        try:
-            effective_message = _resolve_followup_message(message, db, session)
-        except SQLAlchemyError:
-            logger.warning("Follow-up context lookup failed; using the raw message.", exc_info=True)
-
     session_id = (
         session.session_id if session is not None else (payload.session_id or str(uuid.uuid4()))
     )
+
+    # Phase 15: classify the reference BEFORE anything else. "ambiguous" is
+    # handled entirely here — it short-circuits the whole request (never
+    # reaches _supervisor.route(), never touches retrieval/generation) —
+    # exactly the "ask, don't guess" rule. Every other outcome
+    # ("resolved"/"no_context"/"independent") is resolved into a single
+    # effective_message string by _resolve_followup_message() below and
+    # proceeds through the ordinary pipeline unchanged.
+    effective_message = message
+    reference_result = ResolutionResult(status="independent")
+    if session is not None:
+        try:
+            active_entities = get_recent_active_entities(db, session)
+            reference_result = resolve_reference(message, active_entities)
+        except SQLAlchemyError:
+            logger.warning("Context lookup failed; treating as independent.", exc_info=True)
+
+    if reference_result.status == "ambiguous":
+        clarification = format_clarification_question(reference_result.candidates)
+        logger.info(
+            "Ambiguous contextual reference %r -> candidates=%s (session=%s)",
+            message,
+            reference_result.candidates,
+            session_id,
+        )
+        if session is not None:
+            try:
+                record_message(db, session, role="user", content=message)
+                record_message(db, session, role="assistant", content=clarification)
+            except SQLAlchemyError:
+                logger.warning("Failed to persist this chat turn.", exc_info=True)
+        return _build_clarification_response(clarification, session_id)
+
+    if session is not None:
+        try:
+            effective_message = _resolve_followup_message(message, db, session, reference_result)
+        except SQLAlchemyError:
+            logger.warning("Follow-up context lookup failed; using the raw message.", exc_info=True)
+
     logger.info("Chat request (session=%s): %r", session_id, message)
+    if effective_message != message:
+        logger.info("Effective (resolved) query (session=%s): %r", session_id, effective_message)
     _start = time.perf_counter()
     result = _supervisor.route(effective_message)
     _log_rag_debug_trace(message, result, (time.perf_counter() - _start) * 1000)

@@ -9,12 +9,22 @@ multiple server processes would all see the same session state (the one
 real production gap Phase 7 explicitly flagged as unresolved).
 
 Still intentionally NOT a general conversation-memory/context-window
-system: it stores messages and exposes two narrow, explainable helpers
+system: it stores messages and exposes narrow, explainable helpers
 (`get_last_location` for "how do I get there?"-style follow-ups,
 `get_last_exchange` for topic-continuation follow-ups like "which one is
 closest?") — the same scope Phase 7 had, just durable now. No
 authentication/user concept is attached, per Phase 8's explicit
 instruction not to add one.
+
+PHASE 15 ADDITION — `get_recent_active_entities` reads the SAME
+`resolved_location` column `get_last_location` already reads, just
+returning up to a small bounded number of recent DISTINCT values instead
+of only the single latest one. No schema change: `resolved_location`
+already generalizes past pure "location" (facilities_agent's supplementary
+DB lookup and navigation_agent's spatial/tool paths both populate it for
+non-navigation queries too — see backend/app/api/v1/chat.py's
+`_extract_location_mentioned()`), so the existing column already carries
+what Phase 15's conversational-entity tracking needs.
 """
 
 from __future__ import annotations
@@ -122,6 +132,42 @@ def get_last_location(db: Session, session: ChatSession) -> str | None:
         if message.role == "assistant" and message.resolved_location:
             return message.resolved_location
     return None
+
+
+# Phase 15: how many recent DISTINCT entities count as "still active" for
+# conversational-reference resolution. Deliberately small and bounded (see
+# CONTEXT_TTL_SECONDS above for the time dimension of the same "controlled
+# context window" requirement) — 2 is enough to both resolve the common
+# single-entity case AND detect the simplest real ambiguity (two distinct
+# entities recently discussed, e.g. "Where is the CSE department?" then
+# "Where is the library?" then a bare "Where is it?"); a third, older,
+# distinct entity is unlikely to still be the intended referent and is
+# deliberately excluded rather than added as a third guess.
+MAX_ACTIVE_ENTITIES = 2
+
+
+def get_recent_active_entities(
+    db: Session, session: ChatSession, max_distinct: int = MAX_ACTIVE_ENTITIES
+) -> list[str]:
+    """Up to `max_distinct` most-recent DISTINCT resolved_location values
+    from assistant turns in this session, most-recent-first, honoring the
+    same freshness/TTL rule as get_last_location() above — reuses the
+    exact same column Phase 6/8 already populate, no new schema. This is
+    the candidate list scripts/ai/conversation_context.resolve_reference()
+    disambiguates a follow-up reference against: exactly 1 distinct
+    candidate resolves unambiguously, 2+ requires asking the user rather
+    than guessing (Phase 15's core behavioral rule), 0 means there is
+    nothing to resolve against at all."""
+    entities: list[str] = []
+    for message in reversed(_recent_messages(db, session, MAX_MESSAGES_PER_SESSION)):
+        if not _is_fresh(message):
+            break
+        if message.role == "assistant" and message.resolved_location:
+            if message.resolved_location not in entities:
+                entities.append(message.resolved_location)
+            if len(entities) >= max_distinct:
+                break
+    return entities
 
 
 def get_last_exchange(db: Session, session: ChatSession) -> tuple[str, str] | None:
