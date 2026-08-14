@@ -19,6 +19,14 @@ for a different model, and never papered over with a fabricated answer.
 Usage:
     from llm_generator import answer_question
     result = answer_question("What undergraduate programs are offered?")
+
+PHASE 14 ADDITION — grounding.find_unsupported_claims() runs on every
+successful generation, right before it is returned: a deterministic check
+for specific-looking claims (phone numbers, currency amounts, room numbers,
+years) in the LLM's own answer that don't trace back to the CONTEXT it was
+given. This is a safety net layered on top of the existing confidence gate
+below, not a replacement for it — LOW confidence still refuses before the
+LLM is even called, as it always has.
 """
 
 from __future__ import annotations
@@ -31,6 +39,7 @@ from typing import Any
 import ollama
 from _shared import configure_logging
 from confidence import compute_confidence
+from grounding import build_grounding_failure_result, find_unsupported_claims
 from hybrid_retrieval import DEFAULT_CANDIDATE_N, hybrid_search
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_ollama import ChatOllama
@@ -283,9 +292,19 @@ def generate_answer(
             "error": f"{type(exc).__name__}: {exc}",
         }
 
+    answer_text = answer_text.strip()
+    unsupported_claims = find_unsupported_claims(answer_text, context_block)
+    if unsupported_claims:
+        logger.warning(
+            "Grounding check failed for query=%r: unsupported claims %s in generated answer",
+            query,
+            unsupported_claims,
+        )
+        return build_grounding_failure_result(query, confidence, sources, model, unsupported_claims)
+
     return {
         "question": query,
-        "answer": answer_text.strip(),
+        "answer": answer_text,
         "confidence": confidence["confidence"],
         "confidence_level": category,
         "sources": sources,

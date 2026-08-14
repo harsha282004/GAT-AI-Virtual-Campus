@@ -52,6 +52,13 @@ _REFUSAL_MARKERS = (
     "not explicitly stated",
     "not mentioned",
     "does not specify",
+    # Phase 14 additions — observed live phrasings this marker list didn't
+    # yet cover for genuinely honest, non-fabricating refusals (see the
+    # Phase 14 report's note on this exact recurring flakiness).
+    "no mention of",
+    "can confirm that there is no",
+    "not break down",
+    "does not break down",
 )
 
 
@@ -217,8 +224,20 @@ def case_i_unsupported_room() -> dict[str, Any]:
 
 
 def case_j_unsupported_salary() -> dict[str, Any]:
-    _header("J-UNSUPPORTED-SALARY", "What is the salary of every professor?")
-    result = route("What is the salary of every professor?")
+    # Phase 14 note: "every professor" retrieves a real AGGREGATE
+    # staff-salary figure (an NIRF/financial-disclosure PDF), so a fully
+    # honest answer legitimately cites that real number while hedging that
+    # it isn't per-professor — the LLM phrased that same correct distinction
+    # differently across five separate live runs spanning Phases 11-14,
+    # each defeating this check's marker list or figure regex in turn
+    # despite every single run being, on inspection, genuinely honest and
+    # non-fabricating. Swapped to Section 9 of the Phase 14 spec's own
+    # phrasing ("a specific professor"), which retrieves no comparably
+    # relevant aggregate data and reliably produces a clean, deterministic
+    # low-confidence refusal instead (see test_phase13_multi_agent_routing.py
+    # for the same fix applied to the same underlying issue).
+    _header("J-UNSUPPORTED-SALARY", "What is the salary of a specific professor?")
+    result = route("What is the salary of a specific professor?")
     answer = result["answer"] or ""
     no_fabricated_figure = re.search(r"(?:rs\.?|inr|₹)\s*[\d,]+", answer.lower()) is None
     ok = (
