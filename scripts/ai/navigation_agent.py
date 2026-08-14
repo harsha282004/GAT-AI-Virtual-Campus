@@ -80,6 +80,18 @@ _PANORAMA_FOR_PATTERN = re.compile(r"panorama\s+(?:for|of)\s+(.+)", re.IGNORECAS
 _PANORAMA_GENERIC_PATTERN = re.compile(
     r"(?:what|which) panorama should i (?:open|see|view|show)", re.IGNORECASE
 )
+# Phase 11: "Can I see X in the virtual tour?" / "Show me X in the 360 tour"
+# — a paraphrase of the same panorama-lookup intent as _PANORAMA_FOR_PATTERN
+# above, just phrased around "virtual tour" instead of the word "panorama".
+# Routes through the exact same existing tool (campus_tools.panorama_lookup)
+# with the exact same RAG fallback on a miss — no new navigation behaviour,
+# only recognizing one more real phrasing of an already-supported intent.
+_VIRTUAL_TOUR_PATTERN = re.compile(
+    r"(?:can|could) i see\s+(.+?)\s+in the (?:virtual )?tour\b"
+    r"|show me\s+(.+?)\s+in the (?:virtual )?tour\b"
+    r"|is there (?:a|any) view of\s+(.+?)\s+in the (?:virtual )?tour\b",
+    re.IGNORECASE,
+)
 
 # Phase 10: broadened beyond the original "where is X" / "where's X" to
 # cover the paraphrases users actually asked for (Phase 10 spec, Section 9)
@@ -87,8 +99,12 @@ _PANORAMA_GENERIC_PATTERN = re.compile(
 # on" / "X is on which floor", and a bare room-number query with no
 # location verb at all ("room no 202?"). Each pattern extracts the same
 # `to_text` shape as before, so classify_navigation_query()'s caller does
-# not need to know which phrasing matched.
-_WHERE_IS_PATTERN = re.compile(r"where(?:'s| is)\s+(.+)", re.IGNORECASE)
+# not need to know which phrasing matched. Phase 11: also accepts the
+# plural "where are X" ("where are the washrooms?") — a facility can have
+# more than one real location, and search_spatial()/format_spatial_answer()
+# already handle reporting all of them, so only the phrase-matching needed
+# broadening, not the answer logic.
+_WHERE_IS_PATTERN = re.compile(r"where(?:'s| is| are)\s+(.+)", re.IGNORECASE)
 _WHERE_CAN_FIND_PATTERN = re.compile(r"where\s+(?:can|could|do)\s+i\s+find\s+(.+)", re.IGNORECASE)
 _LOCATION_OF_PATTERN = re.compile(
     r"(?:tell me|what is|show me)\s+(?:the\s+)?location of\s+(.+)" r"|\blocation of\s+(.+)",
@@ -119,6 +135,10 @@ def classify_navigation_query(query: str) -> dict[str, Any]:
         return {"intent": "panorama", "from_text": None, "to_text": _clean(m.group(1))}
     if _PANORAMA_GENERIC_PATTERN.search(query):
         return {"intent": "panorama", "from_text": None, "to_text": None}
+    m = _VIRTUAL_TOUR_PATTERN.search(query)
+    if m:
+        group = next(g for g in m.groups() if g)
+        return {"intent": "panorama", "from_text": None, "to_text": _clean(group)}
 
     for pattern in (
         _WHERE_IS_PATTERN,

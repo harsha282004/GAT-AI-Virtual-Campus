@@ -28,6 +28,18 @@ department/program chunk already present in the indexed corpus. Names come
 straight from each page's real <title> (captured as `source_title` during
 Phase 1 chunking) — never invented — and every result cites its real
 source_url, exactly like a normal RAG answer.
+
+PHASE 11 ADDITION — courses/programs/branches share this same aggregation
+path. In this KB there is no separate "courses" document distinct from the
+department pages — each department page IS the program page (e.g.
+computer-science-engineering.html is both "the CSE department" and "the
+B.E. in CSE"), confirmed by inspecting the indexed corpus, not assumed. So
+"What courses are available?" / "What programs does GAT offer?" / "Which
+branches does the college have?" have the identical aggregation gap
+"What departments...?" has, and the identical fix applies: enumerate the
+real pages rather than trust top-5 retrieval (or the LLM) to assemble a
+complete list. `_looks_like_aggregation_query()` matches all four
+phrasings; the underlying data and answer-building logic are unchanged.
 """
 
 from __future__ import annotations
@@ -43,15 +55,38 @@ AGENT_NAME = "academic_agent"
 # Narrow, explicit phrasings only — deliberately NOT a loose "contains both
 # 'what' and 'department'" combinator, which would misfire on ordinary
 # academic questions that happen to mention "department" (e.g. "What are
-# the fees for the mechanical department?").
+# the fees for the mechanical department?"). Phase 11: the same style of
+# narrow pattern is used for the courses/programs/branches phrasings added
+# below — one specific sentence shape per entry, not a keyword-contains
+# check, so an unrelated sentence that merely mentions "course" in passing
+# doesn't misfire into the aggregation path.
 _LIST_DEPARTMENTS_PATTERNS = [
     re.compile(r"\bwhat\s+departments?\b", re.IGNORECASE),
     re.compile(r"\bwhich\s+departments?\b", re.IGNORECASE),
     re.compile(r"\bhow\s+many\s+departments?\b", re.IGNORECASE),
     re.compile(r"\blist\s+(?:of\s+)?departments?\b", re.IGNORECASE),
-    re.compile(r"\bdepartments?\s+(?:does|do)\s+\w+\s+offer\b", re.IGNORECASE),
     re.compile(r"\bdepartments?\s+(?:are\s+)?available\b", re.IGNORECASE),
     re.compile(r"\ball\s+(?:the\s+)?departments?\b", re.IGNORECASE),
+    # Phase 11 — courses/programs/branches paraphrases of the same
+    # aggregation question (see this module's docstring for why they share
+    # the identical underlying data/gap as the department phrasings above).
+    re.compile(r"\bwhat\s+(?:all\s+)?courses?\b", re.IGNORECASE),
+    re.compile(r"\bwhich\s+courses?\b", re.IGNORECASE),
+    re.compile(r"\bcourses?\s+(?:are\s+)?(?:available|offered)\b", re.IGNORECASE),
+    re.compile(r"\bwhat\s+programs?\b", re.IGNORECASE),
+    re.compile(r"\bwhich\s+programs?\b", re.IGNORECASE),
+    re.compile(r"\bprograms?\s+(?:are\s+)?(?:available|offered)\b", re.IGNORECASE),
+    re.compile(r"\bwhat\s+branches?\b", re.IGNORECASE),
+    re.compile(r"\bwhich\s+branches?\b", re.IGNORECASE),
+    re.compile(r"\bbranches?\s+(?:are\s+)?(?:available|offered)\b", re.IGNORECASE),
+    # "<departments|courses|programs|branches> does/do <anything> <have|offer>"
+    # — a non-greedy middle group (not a single \w+) so it also covers
+    # "branches does the college have" / "programs do they offer", not just
+    # a single-word subject like "GAT".
+    re.compile(
+        r"\b(?:departments?|courses?|programs?|branches?)\s+(?:does|do)\s+.+?\s+(?:have|offer)\b",
+        re.IGNORECASE,
+    ),
 ]
 
 # Every real department/program page in this KB has "engineering" somewhere

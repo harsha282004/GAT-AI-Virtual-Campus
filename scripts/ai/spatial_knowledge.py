@@ -90,9 +90,36 @@ _STOPWORDS = {
 }
 
 
+# Phase 11 addition: GAT's own signage says "Toilet", but a visitor
+# naturally asks for "washroom"/"restroom"/"loo" — a small, explicit map
+# (not a general plural-stripping rule) so a real, photographed facility
+# isn't missed just because the query used a different everyday word for
+# it. Deliberately an exact enumerated list, NOT a general "strip trailing
+# s" stemmer: an early version of this tried that and it silently broke
+# unrelated matching — "Control Systems Lab" and "Power System Simulation
+# Lab" both normalized to the same "system" token and became falsely
+# "ambiguous" with each other. Distinct multi-word technical names sharing
+# one common word (System/Systems, Room/Rooms, Lab/Labs, ...) are exactly
+# the case a blanket stemmer breaks, so only the specific synonyms actually
+# needed (toilet-adjacent wording) are listed here, hand-checked against
+# the current KB.
+_SYNONYMS = {
+    "washroom": "toilet",
+    "washrooms": "toilet",
+    "restroom": "toilet",
+    "restrooms": "toilet",
+    "bathroom": "toilet",
+    "bathrooms": "toilet",
+    "toilets": "toilet",
+    "loo": "toilet",
+    "wc": "toilet",
+}
+
+
 def _significant_tokens(text: str) -> set[str]:
     tokens = re.findall(r"[a-z0-9]+", text.lower())
-    return {t for t in tokens if t not in _STOPWORDS and len(t) >= 3}
+    normalized = (_SYNONYMS.get(t, t) for t in tokens)
+    return {t for t in normalized if t not in _STOPWORDS and len(t) >= 3}
 
 
 # A narrower, standalone-number fallback — only meant to be tried by a
@@ -251,20 +278,51 @@ def search_spatial(query: str) -> dict[str, Any]:
     matches = kb.search_by_name(query)
     all_matches = [(etype, e) for etype, entries in matches.items() for e in entries]
 
-    # Collapse records that describe the SAME real-world evidence — either
-    # the exact same source panorama (Phase 9 sometimes files one photo's
-    # evidence under both a "room" and a "department" record, e.g. the CSE
-    # HOD's office is both ROOM_201 and DEPT_CSE_FIRST_FLOOR_HOD, same
-    # first-floor/05.jpg) or an identical `name` string. Prefer the more
+    # Collapse records that describe the SAME real-world place.
+    #
+    # 1. Same room_number — the strongest identity signal: two "room"
+    #    records for room 303 are the same physical room even if Phase 9
+    #    photographed its door plaque and its overhead directional sign as
+    #    two separate panoramas.
+    # 2. Same `name` as a room record (Phase 11) — a room's Phase 9 `name`
+    #    field already encodes its real function (e.g. Room 303's name IS
+    #    "Power System Simulation Lab"), so a non-room record with that
+    #    exact same name (e.g. laboratory_locations.json's own, separately
+    #    curated "Power System Simulation Lab" entry, sourced from a
+    #    different evidence photo) is the same real place, not a second
+    #    one. Deliberately scoped to "matches a ROOM's name" rather than
+    #    "any two records sharing a name" — several genuinely distinct real
+    #    places share one generic name (four separate "Toilet (Gents)" on
+    #    four different floors), and merging those by name alone would
+    #    wrongly hide real locations rather than remove a duplicate.
+    # 3. The exact same source panorama (Phase 9 sometimes files one
+    #    photo's evidence under both a "room" and a "department" record,
+    #    e.g. the CSE HOD's office is both ROOM_201 and
+    #    DEPT_CSE_FIRST_FLOOR_HOD, same first-floor/05.jpg).
+    # 4. Falls back to an identical `name` string only when none of the
+    #    above apply (unchanged from Phase 10).
+    #
+    # Whichever rule matches, the tie-break below still prefers the more
     # specific record (has a room_number) and, failing that, the
     # higher-confidence one. Genuinely distinct locations (same department,
     # different panorama/room — e.g. CSE's HOD office AND its separate
     # staff room) are real, useful multi-location info and are preserved.
+    room_names_to_key = {
+        (e.get("name") or "").strip().lower(): f"room:{str(e['room_number']).upper()}"
+        for etype, e in all_matches
+        if etype == "rooms" and e.get("room_number") and e.get("name")
+    }
+
     by_name: dict[str, tuple[str, dict[str, Any]]] = {}
     for etype, e in all_matches:
-        key = (e.get("panorama_file") or "").strip().lower() or (
-            e.get("name") or ""
-        ).strip().lower()
+        room_number = e.get("room_number")
+        name_lower = (e.get("name") or "").strip().lower()
+        key = (
+            (f"room:{str(room_number).upper()}" if room_number else None)
+            or room_names_to_key.get(name_lower)
+            or (e.get("panorama_file") or "").strip().lower()
+            or name_lower
+        )
         existing = by_name.get(key)
         if existing is None:
             by_name[key] = (etype, e)

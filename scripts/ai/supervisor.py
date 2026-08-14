@@ -97,6 +97,12 @@ _ROOM_NUMBER_PATTERN = re.compile(r"\broom\s*(?:no\.?|number|#)?\s*\d{2,4}[a-z]?
 NAVIGATION_PHRASES = [
     "where is",
     "where's",
+    # Phase 11: plural form ("where are the washrooms?") — without this, a
+    # facility spread across multiple physical locations (washrooms, staff
+    # rooms) fell through to keyword scoring instead of the spatial lookup
+    # navigation_agent already knows how to do for every entity type
+    # (rooms/departments/labs/facilities/landmarks — see spatial_knowledge.py).
+    "where are",
     "how do i reach",
     "how can i reach",
     "how do i get to",
@@ -117,6 +123,12 @@ NAVIGATION_PHRASES = [
     "where can i find",
     "where could i find",
     "location of",
+    # Phase 11 — virtual-tour-flavored panorama lookups (see
+    # navigation_agent.py's _VIRTUAL_TOUR_PATTERN); routed here rather than
+    # the RNN fallback so this phrasing is deterministic, not
+    # confidence-dependent.
+    "in the virtual tour",
+    "in the tour",
 ]
 
 # Single-domain keyword sets used for scoring once no navigation phrase
