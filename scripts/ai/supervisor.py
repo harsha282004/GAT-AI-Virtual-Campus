@@ -41,6 +41,7 @@ import facilities_agent
 import general_agent
 import navigation_agent
 from _shared import configure_logging
+from confidence import categorize as categorize_confidence
 
 logger = configure_logging("supervisor")
 
@@ -154,6 +155,15 @@ DOMAIN_KEYWORDS: dict[str, list[str]] = {
         "cutoff",
         "seat matrix",
         "how to join",
+        # Phase 13: found via literal testing — "What are the fees for BE
+        # CSE?" previously had no deterministic match (fee/fees appears in
+        # no DOMAIN_KEYWORDS list and no RNN training example — see
+        # backend/app/intent_model/dataset.py) and fell through to the RNN,
+        # which classified it as COURSES -> academic_agent. The Phase 13
+        # spec's own routing table places fees under Admissions; this makes
+        # that routing deterministic instead of RNN-confidence-dependent.
+        "fee",
+        "fees",
     ],
     "academic_agent": [
         "department",
@@ -258,11 +268,108 @@ def classify(query: str) -> tuple[str, str]:
     )
 
 
+# ---------------------------------------------------------------------------
+# Phase 13 — Multi-domain query coordination
+# ---------------------------------------------------------------------------
+#
+# A single query can legitimately ask for information from two different
+# specialist domains at once (the Phase 13 spec's own example: "Where is
+# the CSE department and what programs are offered?"). This is deliberately
+# a thin, OPT-IN layer in front of the single-agent path above, not a
+# rewrite of it: split the query into clauses on an explicit conjunction
+# ("and" / ";"), classify EACH clause with the exact same classify()
+# function every single-domain query already uses (no separate intent
+# system — Phase 13's own instruction), and only take the multi-domain path
+# at all when two clauses land on genuinely DIFFERENT agents. A query like
+# "What is the admission process and what is the fee structure?" splits
+# into two clauses that both classify to admission_agent, so it falls
+# straight through to the normal single-agent path below, completely
+# unchanged from Phase 5 — this gate is conservative by construction, not
+# just by threshold-tuning.
+
+_CLAUSE_SPLIT_PATTERN = re.compile(r"\s+and\s+|\s*;\s*", re.IGNORECASE)
+
+
+def _split_clauses(query: str) -> list[str]:
+    return [c.strip() for c in _CLAUSE_SPLIT_PATTERN.split(query) if c.strip()]
+
+
+def detect_multi_domain(query: str) -> list[tuple[str, str, str]] | None:
+    """query -> [(clause, agent_name, reason), ...] if splitting on an
+    explicit conjunction yields 2+ clauses that classify to 2+ DIFFERENT
+    agents, else None (the overwhelmingly common case for ordinary
+    single-domain queries, including ones that happen to contain "and")."""
+    clauses = _split_clauses(query)
+    if len(clauses) < 2:
+        return None
+
+    classified = [(clause, *classify(clause)) for clause in clauses]
+    if len({agent for _, agent, _ in classified}) < 2:
+        return None
+    return classified
+
+
+def _run_multi_domain(query: str, classified: list[tuple[str, str, str]]) -> dict[str, Any]:
+    """Dispatches each clause to its own classified agent's handle() and
+    deterministically concatenates the results. No extra LLM call is made
+    to "merge" the sub-answers — each clause's answer is already
+    independently grounded (or honestly refused) by its own agent's
+    existing pipeline; combining is plain string/list concatenation, not
+    generation. If a clause's own agent already avoids an LLM call
+    (aggregation/tool-resolved/spatial paths — Phase 11/12), the combined
+    answer costs no more Ollama calls than that clause would have alone."""
+    sub_results = []
+    for clause, agent_name, reason in classified:
+        result = AGENTS[agent_name](clause)
+        result["agent_reason"] = reason
+        sub_results.append((clause, agent_name, result))
+        logger.info(
+            "Multi-domain sub-routing: clause=%r -> agent=%s (%s)", clause, agent_name, reason
+        )
+
+    answers = [r["answer"] for _, _, r in sub_results if r.get("answer")]
+    confidences = [r["confidence_score"] for _, _, r in sub_results]
+    confidence_score = round(min(confidences), 4) if confidences else 0.0
+    agents_involved = [agent for _, agent, _ in sub_results]
+
+    logger.info("Multi-domain routing: query=%r -> agents=%s", query, agents_involved)
+
+    return {
+        "original_query": query,
+        "selected_agent": "+".join(agents_involved),
+        "retrieved_context": [
+            c for _, _, r in sub_results for c in (r.get("retrieved_context") or [])
+        ],
+        "confidence_score": confidence_score,
+        "confidence_level": categorize_confidence(confidence_score),
+        "generation_status": "multi_domain",
+        "answer": " ".join(answers),
+        "sources": [s for _, _, r in sub_results for s in (r.get("sources") or [])],
+        "source_urls": [u for _, _, r in sub_results for u in (r.get("source_urls") or [])],
+        "refusal_reason": None,
+        "grounded": all(r.get("grounded", False) for _, _, r in sub_results),
+        "tool_used": "multi_domain",
+        "agent_reason": "; ".join(
+            f"clause {i + 1} ({agent}): {reason}" for i, (_, agent, reason) in enumerate(classified)
+        ),
+        "sub_results": [
+            {"clause": clause, "agent": agent, "status": r["generation_status"]}
+            for clause, agent, r in sub_results
+        ],
+    }
+
+
 def route(query: str) -> dict[str, Any]:
     """The Supervisor's only real job: classify, dispatch, and annotate
     the result with routing metadata. It never touches retrieved_context,
     confidence, or the answer itself — those come back from the chosen
-    specialist untouched."""
+    specialist untouched. Phase 13: first checks whether the query is a
+    genuine multi-domain request (see detect_multi_domain() above); if not
+    — the common case — behaves exactly as it did in Phase 5."""
+    multi = detect_multi_domain(query)
+    if multi is not None:
+        return _run_multi_domain(query, multi)
+
     agent_name, reason = classify(query)
     logger.info("Routing decision: query=%r -> agent=%s (%s)", query, agent_name, reason)
 
