@@ -87,6 +87,13 @@ _LIST_DEPARTMENTS_PATTERNS = [
         r"\b(?:departments?|courses?|programs?|branches?)\s+(?:does|do)\s+.+?\s+(?:have|offer)\b",
         re.IGNORECASE,
     ),
+    # Phase 12 — "What can I study at GAT?" (Phase 12 spec's own paraphrase
+    # example): names no department/course/program/branch keyword at all,
+    # so none of the patterns above match it, yet it's asking the identical
+    # aggregation question. Narrow to "study" as the verb (not a loose
+    # "study" keyword-contains) so it doesn't misfire on e.g. "How should I
+    # study for the entrance exam?".
+    re.compile(r"\bwhat\s+can\s+(?:i|we|one|you)\s+study\b", re.IGNORECASE),
 ]
 
 # Every real department/program page in this KB has "engineering" somewhere

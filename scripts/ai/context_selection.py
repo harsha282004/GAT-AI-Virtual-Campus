@@ -23,10 +23,25 @@ Called from agent_base.run_specialist() immediately after rerank() and
 before compute_confidence()/generate_answer(), so the confidence score and
 the LLM's context reflect the exact same chunk set — not two slightly
 different views of retrieval.
+
+PHASE 12 ADDITION — apply_domain_boost(): Phase 10's intent-driven routing
+already tells us which specialist agent is answering a query (e.g.
+academic_agent for a COURSES/DEPARTMENTS intent); this is a small, optional
+signal used to nudge — never override — reranking for the one domain where
+a reliable URL-pattern signal already exists (kept in sync with
+academic_agent.py's own _DEPARTMENT_PAGE_PATTERN, duplicated rather than
+imported for the same reason supervisor.py duplicates
+navigation_agent.py's room-number pattern instead of importing it — a
+small, self-contained regex is cheaper to keep in sync than to add a new
+cross-module dependency for). A same-domain chunk gets a small fixed bonus;
+everything else is untouched. This runs AFTER reranker.py's own scoring and
+BEFORE select_context() above, so the weak-chunk floor is computed against
+the boosted (final) scores.
 """
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from hybrid_retrieval import _tokenize
@@ -51,6 +66,45 @@ def _jaccard(a: set[str], b: set[str]) -> float:
     if not union:
         return 0.0
     return len(a & b) / len(union)
+
+
+# Phase 12 — one entry per specialist agent we have a reliable,
+# already-established URL-pattern signal for. Deliberately small: a wrong
+# or over-eager boost pattern would bias retrieval toward the wrong
+# evidence, so only academic_agent's proven-in-Phase-11 department/program
+# page pattern is included, not a guessed pattern for every agent.
+_DOMAIN_SOURCE_PATTERNS: dict[str, re.Pattern[str]] = {
+    "academic_agent": re.compile(r"gat\.ac\.in/[^/]*engineering[^/]*\.html$", re.IGNORECASE),
+}
+
+# A small, fixed nudge (not a ranking override) — see this module's
+# docstring. reranker.py's own heuristic score is already in [0, 1]; this
+# can move a same-domain chunk up by at most this much.
+DOMAIN_BOOST = 0.05
+
+
+def apply_domain_boost(
+    reranked: list[dict[str, Any]], agent_name: str | None
+) -> list[dict[str, Any]]:
+    """reranked (reranker.rerank() output) -> the same list, with a small
+    score bonus applied to chunks whose source_url matches the calling
+    agent's known domain pattern, re-sorted by the resulting score. A no-op
+    (returns the input unchanged) when no pattern is registered for
+    agent_name — the common case for every agent except academic_agent
+    today."""
+    pattern = _DOMAIN_SOURCE_PATTERNS.get(agent_name or "")
+    if pattern is None or not reranked:
+        return reranked
+
+    boosted = []
+    for r in reranked:
+        score = r["rerank_score"]
+        if pattern.search(r.get("source_url") or ""):
+            score = round(min(1.0, score + DOMAIN_BOOST), 4)
+        boosted.append({**r, "rerank_score": score})
+
+    boosted.sort(key=lambda r: r["rerank_score"], reverse=True)
+    return boosted
 
 
 def select_context(reranked: list[dict[str, Any]]) -> list[dict[str, Any]]:
