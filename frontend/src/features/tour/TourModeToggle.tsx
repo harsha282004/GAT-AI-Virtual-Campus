@@ -15,17 +15,17 @@ interface TourModeToggleProps {
  * hotspot-driven walking) and Guided Tour (Sprint 3's automatic walk). */
 export function TourModeToggle({ mode, onChange }: TourModeToggleProps) {
   return (
-    <div className="glass inline-flex items-center gap-1 rounded-full p-1 shadow-soft">
+    <div className="glass inline-flex items-center gap-1.5 rounded-full p-1.5 shadow-soft">
       <button
         type="button"
         aria-pressed={mode === "manual"}
         onClick={() => onChange("manual")}
         className={cn(
-          "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-medium transition-all duration-200",
+          "flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-200",
           mode === "manual" ? "bg-brand text-white" : "text-ink hover:bg-brand/10",
         )}
       >
-        <Footprints className="h-3.5 w-3.5" />
+        <Footprints className="h-4 w-4" />
         Manual Tour
       </button>
       <button
@@ -33,11 +33,11 @@ export function TourModeToggle({ mode, onChange }: TourModeToggleProps) {
         aria-pressed={mode === "guided"}
         onClick={() => onChange("guided")}
         className={cn(
-          "flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-medium transition-all duration-200",
+          "flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-all duration-200",
           mode === "guided" ? "bg-brand text-white" : "text-ink hover:bg-brand/10",
         )}
       >
-        <Sparkles className="h-3.5 w-3.5" />
+        <Sparkles className="h-4 w-4" />
         Guided Tour
       </button>
     </div>
