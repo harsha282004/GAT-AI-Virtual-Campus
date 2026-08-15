@@ -17,19 +17,36 @@ def build_crud_router(
     update_schema: type,
     read_schema: type,
     resource_name: str,
+    paginated: bool = True,
 ) -> APIRouter:
     """Standard list/get/create/update/delete endpoints for one resource.
     Resource-specific behavior (search, navigation) is added on top of the
     returned router in that resource's own module — this factory only covers
-    the identical CRUD shape shared by every model."""
+    the identical CRUD shape shared by every model.
+
+    `paginated=False` (opt-out, default stays True for every existing
+    caller) drops the skip/limit query params from the list route entirely
+    — for a small, fully admin-managed dataset where silently truncating
+    the list is a bug, not a safety valve (see CrossFloorHotspot, whose
+    default-limit=100 GET was dropping every hotspot created past the
+    100th). Every other resource keeps today's paginated behavior
+    unchanged."""
     router = APIRouter()
 
-    @router.get("", response_model=list[read_schema])  # type: ignore[valid-type]
-    def list_items(
-        db: Session = Depends(get_db),
-        pagination: Pagination = Depends(pagination_params),
-    ) -> Any:
-        return crud_obj.get_multi(db, skip=pagination.skip, limit=pagination.limit)
+    if paginated:
+
+        @router.get("", response_model=list[read_schema])  # type: ignore[valid-type]
+        def list_items(
+            db: Session = Depends(get_db),
+            pagination: Pagination = Depends(pagination_params),
+        ) -> Any:
+            return crud_obj.get_multi(db, skip=pagination.skip, limit=pagination.limit)
+
+    else:
+
+        @router.get("", response_model=list[read_schema])  # type: ignore[valid-type]
+        def list_items(db: Session = Depends(get_db)) -> Any:  # type: ignore[misc]
+            return crud_obj.get_multi(db)
 
     @router.get("/{item_id}", response_model=read_schema)
     def get_item(item_id: int, db: Session = Depends(get_db)) -> Any:
