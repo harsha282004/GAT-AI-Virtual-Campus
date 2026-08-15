@@ -167,6 +167,7 @@ export function useGuidedTour({
   const start = useCallback(() => {
     if (!isNodeUsable(seedNode)) {
       setErrorMessage("This scene can't start a guided tour — no panorama is loaded.");
+      statusRef.current = "error";
       setStatus("error");
       return;
     }
@@ -177,18 +178,33 @@ export function useGuidedTour({
     activeNodeRef.current = seedNode;
     visitedRef.current = new Set([seedNode.sceneId]);
     phaseIndexRef.current = 0;
+    // statusRef must be updated synchronously here, not just via the
+    // `statusRef.current = status` mirror at the top of the hook body —
+    // runNodeSequence below runs synchronously up to its first `await`
+    // (JS async-function semantics), which happens before React has had a
+    // chance to re-render and update the ref from the setStatus() call.
+    // Without this, its very first loop check would still read the old
+    // status and could bail out immediately (this was exactly Resume's bug:
+    // see resume() below).
+    statusRef.current = "playing";
     setStatus("playing");
     void runNodeSequence(seedNode, 0, token);
   }, [seedNode, runNodeSequence]);
 
   const pause = useCallback(() => {
     if (statusRef.current !== "playing") return;
+    statusRef.current = "paused";
     setStatus("paused");
   }, []);
 
   const resume = useCallback(() => {
     if (statusRef.current !== "paused" || !activeNodeRef.current) return;
     const token = runTokenRef.current;
+    // Must be set synchronously (see start()'s comment) — otherwise
+    // runNodeSequence's first iteration, which runs synchronously inside
+    // this same call, would still read statusRef.current as "paused" and
+    // immediately re-freeze at the same phaseIndex without ever resuming.
+    statusRef.current = "playing";
     setStatus("playing");
     void runNodeSequence(activeNodeRef.current, phaseIndexRef.current, token);
   }, [runNodeSequence]);
@@ -196,6 +212,7 @@ export function useGuidedTour({
   const stop = useCallback(() => {
     runTokenRef.current += 1;
     phaseIndexRef.current = 0;
+    statusRef.current = "stopped";
     setStatus("stopped");
     setPhase(null);
   }, []);
@@ -210,6 +227,7 @@ export function useGuidedTour({
     phaseIndexRef.current = 0;
     setErrorMessage(null);
     onAdvance(node.sceneId, {});
+    statusRef.current = "playing";
     setStatus("playing");
     void runNodeSequence(node, 0, token);
   }, [onAdvance, runNodeSequence]);
