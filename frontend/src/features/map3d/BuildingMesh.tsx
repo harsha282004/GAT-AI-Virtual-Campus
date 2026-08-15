@@ -64,14 +64,23 @@ export function BuildingMesh({ placement, isSelected, onSelect }: BuildingMeshPr
         </mesh>
       )}
 
-      {(hovered || isSelected) && (
-        <Html position={[0, height + 2.5, 0]} center distanceFactor={60} occlude={false}>
-          <div className="pointer-events-none rounded-lg bg-slate-900/90 px-3 py-1.5 text-xs font-medium whitespace-nowrap text-white shadow-lg">
-            {building.name}
-            {building.code && <span className="ml-1 text-white/60">({building.code})</span>}
-          </div>
-        </Html>
-      )}
+      {/* Always visible (not just hover/select) so every building is
+          identifiable at a glance — hover/select still get the richer,
+          higher-contrast treatment via the conditional classes below. */}
+      <Html position={[0, height + 2.5, 0]} center distanceFactor={60} occlude={false}>
+        <div
+          className={`pointer-events-none rounded-lg px-3 py-1.5 text-xs font-medium whitespace-nowrap shadow-lg transition-colors ${
+            hovered || isSelected ? "bg-slate-900/90 text-white" : "bg-white/85 text-slate-800"
+          }`}
+        >
+          {building.name}
+          {building.code && (
+            <span className={hovered || isSelected ? "ml-1 text-white/60" : "ml-1 text-slate-500"}>
+              ({building.code})
+            </span>
+          )}
+        </div>
+      </Html>
     </group>
   );
 }

@@ -8,6 +8,7 @@ from app.api.v1 import (
     documents,
     edges,
     floors,
+    navigate,
     nodes,
     panoramas,
     rooms,
@@ -29,5 +30,6 @@ api_router.include_router(
 )
 api_router.include_router(documents.router, prefix="/documents", tags=["Documents"])
 api_router.include_router(tour.router, prefix="/tour", tags=["Tour"])
+api_router.include_router(navigate.router, prefix="/navigate", tags=["Navigate"])
 
 __all__ = ["api_router"]

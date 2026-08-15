@@ -10,8 +10,11 @@ import {
   type ComponentRef,
 } from "react";
 
+import type { CampusEdge, CampusNode } from "@/types";
+
 import { BuildingMesh } from "./BuildingMesh";
 import type { BuildingPlacement } from "./campusLayout";
+import { NodeNetwork3D } from "./NodeNetwork3D";
 
 export interface CampusSceneHandle {
   resetView: () => void;
@@ -25,6 +28,11 @@ interface CampusScene3DProps {
   placements: BuildingPlacement[];
   selectedBuildingId: number | null;
   onSelectBuilding: (buildingId: number) => void;
+  /** Real campus graph data (Phase 5) — rendered as a connected node/edge
+   * network via NodeNetwork3D, the same real pos_x/pos_y plane the
+   * buildings above are already placed on. */
+  nodes: CampusNode[];
+  edges: CampusEdge[];
 }
 
 /** Bounding circle (center + radius) around every building's ground
@@ -53,7 +61,7 @@ function sceneBounds(placements: BuildingPlacement[]) {
  * shadows/post-processing — deliberately kept cheap; see
  * docs/phase16_3d_campus_map.md's performance section. */
 export const CampusScene3D = forwardRef<CampusSceneHandle, CampusScene3DProps>(
-  function CampusScene3D({ placements, selectedBuildingId, onSelectBuilding }, ref) {
+  function CampusScene3D({ placements, selectedBuildingId, onSelectBuilding, nodes, edges }, ref) {
     const controlsRef = useRef<ComponentRef<typeof OrbitControls>>(null);
     const { centerX, centerZ, radius } = useMemo(() => sceneBounds(placements), [placements]);
 
@@ -118,6 +126,8 @@ export const CampusScene3D = forwardRef<CampusSceneHandle, CampusScene3DProps>(
           <planeGeometry args={[radius * 4, radius * 4]} />
           <meshStandardMaterial color="#DCE9FF" />
         </mesh>
+
+        <NodeNetwork3D nodes={nodes} edges={edges} />
 
         {placements.map((placement) => (
           <BuildingMesh

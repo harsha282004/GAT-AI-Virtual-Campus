@@ -1,6 +1,6 @@
 "use client";
 
-import { LocateFixed, RotateCcw } from "lucide-react";
+import { LocateFixed, Navigation2, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { ErrorState, Skeleton } from "@/components/ui";
@@ -13,6 +13,8 @@ import { useCampusStore } from "@/store";
 import { BuildingGeoInfoPanel } from "./BuildingGeoInfoPanel";
 import { haversineDistanceMeters } from "./geoDistance";
 import { GoogleSatelliteMap, type GoogleSatelliteMapHandle } from "./GoogleSatelliteMap";
+import { NavigationPanel } from "./NavigationPanel";
+import { useCampusNavigation } from "./useCampusNavigation";
 import { UserLocationStatusBanner } from "./UserLocationStatusBanner";
 import { useUserLocation } from "./useUserLocation";
 
@@ -81,6 +83,18 @@ export function SatelliteCampusMap() {
       ? "warning"
       : "info";
   const showBanner = bannerMessage !== null && bannerMessage !== dismissedMessage;
+
+  // Phase 19 — connects Phase 18's real GPS position (userPosition,
+  // above — the SAME state, not a second watcher) to the existing
+  // navigation graph. selectedBuildingId is the SAME destination
+  // selection state the sidebar/search already write to.
+  const navigation = useCampusNavigation({
+    userPosition,
+    nodes: nodes.data ?? [],
+    buildings: buildings.data ?? [],
+    selectedBuildingId,
+  });
+  const [isNavPanelOpen, setIsNavPanelOpen] = useState(false);
 
   const isLoading = buildings.isLoading || nodes.isLoading || floors.isLoading;
   const isError = buildings.isError || nodes.isError || floors.isError;
@@ -154,6 +168,8 @@ export function SatelliteCampusMap() {
           selectedBuildingId={selectedBuildingId}
           onSelectBuilding={handleSelectBuilding}
           userPosition={userPosition}
+          route={navigation.route}
+          nodes={nodes.data ?? []}
         />
 
         <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-col gap-2 p-4">
@@ -185,6 +201,20 @@ export function SatelliteCampusMap() {
               >
                 <RotateCcw className="h-4 w-4" />
               </button>
+              <button
+                type="button"
+                onClick={() => setIsNavPanelOpen((prev) => !prev)}
+                aria-label="Navigate"
+                title="Navigate"
+                aria-pressed={isNavPanelOpen}
+                className={
+                  isNavPanelOpen
+                    ? "flex h-10 w-10 items-center justify-center rounded-full border border-brand bg-brand text-white shadow-soft transition-colors"
+                    : "flex h-10 w-10 items-center justify-center rounded-full border border-hairline bg-white text-ink shadow-soft transition-colors hover:bg-brand/5 dark:bg-[#0F172A] dark:text-white"
+                }
+              >
+                <Navigation2 className="h-4 w-4" />
+              </button>
             </div>
           </div>
 
@@ -200,6 +230,14 @@ export function SatelliteCampusMap() {
             </div>
           )}
         </div>
+
+        {isNavPanelOpen && (
+          <div className="pointer-events-none absolute bottom-4 left-4 max-w-[calc(100%-2rem)]">
+            <div className="pointer-events-auto">
+              <NavigationPanel nav={navigation} onClose={() => setIsNavPanelOpen(false)} />
+            </div>
+          </div>
+        )}
 
         {selectedPlacement && (
           <div className="pointer-events-none absolute bottom-4 right-4 max-w-[calc(100%-2rem)]">
