@@ -374,7 +374,11 @@ export default function TourPage() {
         <div
           className={cn(
             "pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4 transition-opacity duration-300",
-            chromeVisible ? "opacity-100" : "opacity-0",
+            // Manual Tour's minimap (like its bottom controls, below) must
+            // stay visible on idle, not fade away — it's the user's "where
+            // am I" reference, not decorative chrome. Guided Tour keeps the
+            // original idle-fade behavior for this bar, unchanged.
+            (mode === "manual" ? !immersiveMode : chromeVisible) ? "opacity-100" : "opacity-0",
           )}
         >
           <div className="pointer-events-auto flex flex-col items-start gap-2">

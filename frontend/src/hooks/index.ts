@@ -2,6 +2,7 @@ export * from "./useBuildings";
 export * from "./useChat";
 export * from "./useCrossFloorHotspots";
 export * from "./useDocuments";
+export * from "./useEdges";
 export * from "./useFloors";
 export * from "./useGuidedTour";
 export * from "./useNodes";

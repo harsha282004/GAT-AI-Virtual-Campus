@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useMemo, useRef } from "react";
 
 import { ErrorState, Skeleton } from "@/components/ui";
-import { useBuildings, useFloors, useNodes } from "@/hooks";
+import { useBuildings, useEdges, useFloors, useNodes } from "@/hooks";
 import { useCampusStore } from "@/store";
 
 import { BuildingInfoPanel } from "./BuildingInfoPanel";
@@ -41,14 +41,15 @@ export function Map3DCampusView() {
   const buildings = useBuildings();
   const nodes = useNodes();
   const floors = useFloors();
+  const edges = useEdges();
 
   const selectedBuildingId = useCampusStore((state) => state.selectedBuildingId);
   const setSelectedBuildingId = useCampusStore((state) => state.setSelectedBuildingId);
 
   const sceneRef = useRef<CampusSceneHandle>(null);
 
-  const isLoading = buildings.isLoading || nodes.isLoading || floors.isLoading;
-  const isError = buildings.isError || nodes.isError || floors.isError;
+  const isLoading = buildings.isLoading || nodes.isLoading || floors.isLoading || edges.isLoading;
+  const isError = buildings.isError || nodes.isError || floors.isError || edges.isError;
 
   const placements = useMemo(
     () => deriveBuildingPlacements(buildings.data ?? [], nodes.data ?? [], floors.data ?? []),
@@ -64,6 +65,7 @@ export function Map3DCampusView() {
     buildings.refetch();
     nodes.refetch();
     floors.refetch();
+    edges.refetch();
   }
 
   function handleSelectBuilding(buildingId: number) {
@@ -110,6 +112,8 @@ export function Map3DCampusView() {
             placements={placements}
             selectedBuildingId={selectedBuildingId}
             onSelectBuilding={handleSelectBuilding}
+            nodes={nodes.data ?? []}
+            edges={edges.data ?? []}
           />
         </Map3DErrorBoundary>
 

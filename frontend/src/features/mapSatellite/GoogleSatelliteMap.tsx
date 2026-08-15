@@ -16,10 +16,11 @@ import {
   GAT_CAMPUS_MIN_ZOOM,
   GAT_CAMPUS_USER_LOCATION_ZOOM,
 } from "@/config/campusLocation";
-import type { Building } from "@/types";
+import type { Building, CampusNode, Route } from "@/types";
 
 import { BuildingMarker } from "./BuildingMarker";
 import { CampusMarker } from "./CampusMarker";
+import { RoutePolyline } from "./RoutePolyline";
 import { SatelliteMapUnavailable } from "./SatelliteMapUnavailable";
 import type { UserLocationPosition } from "./useUserLocation";
 import { UserLocationMarker } from "./UserLocationMarker";
@@ -39,6 +40,8 @@ interface GoogleSatelliteMapProps {
   selectedBuildingId: number | null;
   onSelectBuilding: (buildingId: number) => void;
   userPosition: UserLocationPosition | null;
+  route: Route | null;
+  nodes: CampusNode[];
 }
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -54,7 +57,10 @@ const CAMPUS_CENTER_LATLNG = {
  * the rest of the page (Navbar, sidebar, the 3D view toggle) keeps
  * working either way (Section 13). */
 export const GoogleSatelliteMap = forwardRef<GoogleSatelliteMapHandle, GoogleSatelliteMapProps>(
-  function GoogleSatelliteMap({ buildings, selectedBuildingId, onSelectBuilding, userPosition }, ref) {
+  function GoogleSatelliteMap(
+    { buildings, selectedBuildingId, onSelectBuilding, userPosition, route, nodes },
+    ref,
+  ) {
     if (!GOOGLE_MAPS_API_KEY) {
       return <SatelliteMapUnavailable reason="missing-key" />;
     }
@@ -67,6 +73,8 @@ export const GoogleSatelliteMap = forwardRef<GoogleSatelliteMapHandle, GoogleSat
           selectedBuildingId={selectedBuildingId}
           onSelectBuilding={onSelectBuilding}
           userPosition={userPosition}
+          route={route}
+          nodes={nodes}
         />
       </APIProvider>
     );
@@ -74,7 +82,10 @@ export const GoogleSatelliteMap = forwardRef<GoogleSatelliteMapHandle, GoogleSat
 );
 
 const SatelliteMapInner = forwardRef<GoogleSatelliteMapHandle, GoogleSatelliteMapProps>(
-  function SatelliteMapInner({ buildings, selectedBuildingId, onSelectBuilding, userPosition }, ref) {
+  function SatelliteMapInner(
+    { buildings, selectedBuildingId, onSelectBuilding, userPosition, route, nodes },
+    ref,
+  ) {
     const status = useApiLoadingStatus();
 
     if (status === APILoadingStatus.FAILED || status === APILoadingStatus.AUTH_FAILURE) {
@@ -117,6 +128,7 @@ const SatelliteMapInner = forwardRef<GoogleSatelliteMapHandle, GoogleSatelliteMa
             accuracy={userPosition.accuracy}
           />
         )}
+        {route && <RoutePolyline route={route} nodes={nodes} />}
       </Map>
     );
   },
