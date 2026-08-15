@@ -11,6 +11,7 @@ const FEATURES = [
     description:
       "Ask questions about admissions, academics, or facilities and get answers grounded in GAT's own knowledge base.",
     accent: "purple" as const,
+    href: "/chat",
   },
   {
     icon: Camera,
@@ -18,6 +19,7 @@ const FEATURES = [
     description:
       "Walk through campus panorama by panorama, Street-View style, starting from the Main Gate.",
     accent: "orange" as const,
+    href: "/tour",
   },
   {
     icon: MapIcon,
@@ -25,6 +27,7 @@ const FEATURES = [
     description:
       "See the whole ~10-acre campus from above, with buildings and pathways rendered in interactive 3D.",
     accent: "green" as const,
+    href: "/map",
   },
   {
     icon: Mic,
@@ -32,12 +35,17 @@ const FEATURES = [
     description:
       '"Take me to the library" — speak your destination and let the assistant guide the way.',
     accent: "pink" as const,
+    // No dedicated voice-navigation destination exists yet — the chat
+    // page's mic button is itself disabled ("Voice input arrives in a
+    // future phase"), so this card stays informational rather than
+    // linking to a feature that isn't actually there yet.
   },
   {
     icon: Languages,
     title: "Multi-language Support",
     description: "Interact in English, Kannada, or Hindi as the platform expands.",
     accent: "gold" as const,
+    // Intentionally not linked — multilingual support isn't implemented yet.
   },
 ];
 

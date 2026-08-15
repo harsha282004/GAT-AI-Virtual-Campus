@@ -47,11 +47,11 @@ export function Footer() {
         <div>
           <div className="mb-4 flex items-center gap-2.5">
             <Image
-              src="/branding/gat-logo.svg"
+              src="/images/gat_logo.jpeg"
               alt="Global Academy of Technology"
               width={40}
               height={40}
-              className="shrink-0"
+              className="shrink-0 rounded-md object-contain"
             />
             <span className="font-display text-sm font-bold text-white">
               Global Academy of Technology

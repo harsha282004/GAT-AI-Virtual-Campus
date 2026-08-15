@@ -1,9 +1,8 @@
 "use client";
 
-import { motion, useMotionTemplate, useSpring } from "framer-motion";
+import { motion } from "framer-motion";
 import { ArrowDown, GraduationCap, MapPin, MessageSquare, PlayCircle, ShieldCheck } from "lucide-react";
 import Image from "next/image";
-import type { MouseEvent } from "react";
 
 import { Button } from "@/components/ui";
 
@@ -14,29 +13,30 @@ const TRUST_STATS = [
 ];
 
 export function Hero() {
-  const rotateX = useSpring(0, { stiffness: 150, damping: 20 });
-  const rotateY = useSpring(0, { stiffness: 150, damping: 20 });
-
-  function handleMouseMove(event: MouseEvent<HTMLDivElement>) {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const x = (event.clientX - bounds.left) / bounds.width - 0.5;
-    const y = (event.clientY - bounds.top) / bounds.height - 0.5;
-    rotateY.set(x * 6);
-    rotateX.set(y * -6);
-  }
-
-  function handleMouseLeave() {
-    rotateX.set(0);
-    rotateY.set(0);
-  }
-
-  const transform = useMotionTemplate`perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-
   return (
     <section className="relative overflow-hidden bg-[#F8FBFF] pt-24 pb-20 dark:bg-[#020617] lg:pt-28">
-      {/* subtle background */}
-      <div className="absolute inset-0 bg-[url('/images/grid.svg')] opacity-[0.04]" />
-
+      {/* Full-bleed background video — fallback Image sits underneath so a
+          video load/decode failure just leaves that image visible instead
+          of a blank layer, same reasoning as before, now covering the
+          whole section instead of a right-side card. */}
+      <Image
+        src="/images/background1.jpeg"
+        alt="Global Academy of Technology campus"
+        fill
+        priority
+        className="object-cover object-center"
+      />
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        poster="/images/background1.jpeg"
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full object-cover object-center"
+      >
+        <source src="/videos/campus1.mp4" type="video/mp4" />
+      </video>
       {/* floating decorative orbs */}
       <motion.div
         animate={{ y: [0, -18, 0], x: [0, 10, 0] }}
@@ -89,7 +89,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="mt-8 max-w-lg text-lg leading-8 text-slate-700 dark:text-slate-300"
+              className="mt-8 max-w-lg text-lg leading-8 text-[#BFDBFE]"
             >
               Growing Ahead Of Time — explore GAT&apos;s buildings, laboratories, classrooms and
               facilities using an AI-guided assistant, indoor navigation, immersive 360° virtual
@@ -119,52 +119,14 @@ export function Hero() {
             >
               {TRUST_STATS.map((stat) => (
                 <div key={stat.label} className="flex items-center gap-2.5">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2E4DB7]/10 text-[#2E4DB7] dark:bg-[#5B8CFF]/10 dark:text-[#5B8CFF]">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2E4DB7]/10 text-white dark:bg-[#5B8CFF]/10">
                     <stat.icon className="h-4 w-4" />
                   </span>
-                  <span className="text-sm font-semibold text-ink">{stat.label}</span>
+                  <span className="text-sm font-semibold text-white">{stat.label}</span>
                 </div>
               ))}
             </motion.div>
           </div>
-
-          {/* RIGHT IMAGE */}
-
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            style={{ transform, transformStyle: "preserve-3d" }}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            className="relative h-[760px] overflow-hidden rounded-[42px] shadow-hero"
-          >
-            <Image
-              src="/images/background1.jpeg"
-              alt="Global Academy of Technology main building"
-              fill
-              priority
-              className="object-cover object-center"
-            />
-
-            {/* soft fade */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#F8FBFF] via-white/15 to-transparent dark:from-[#020617] dark:via-black/15" />
-
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.9, duration: 0.6 }}
-              className="glass absolute bottom-6 left-6 right-6 flex items-center gap-3 rounded-2xl px-5 py-4 sm:right-auto sm:w-auto"
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-white">
-                <MapPin className="h-4.5 w-4.5" />
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-ink">Main Building</p>
-                <p className="text-xs text-muted">Rajarajeshwari Nagar, Bangalore</p>
-              </div>
-            </motion.div>
-          </motion.div>
         </div>
       </div>
 

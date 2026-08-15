@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import Link from "next/link";
 import type { CSSProperties, MouseEvent } from "react";
 
 import { cn } from "@/utils";
@@ -16,6 +17,11 @@ interface FeatureCardProps {
   accent?: FeatureAccent;
   className?: string;
   index?: number;
+  /** When set, the whole card navigates here — the existing hover
+   * ArrowUpRight affordance already below is what signals "clickable",
+   * so no extra styling is needed. Omit to keep a card purely
+   * informational (e.g. Multi-language Support). */
+  href?: string;
 }
 
 const ACCENT_STYLES: Record<FeatureAccent, { bg: string; text: string; glow: string }> = {
@@ -34,6 +40,7 @@ export function FeatureCard({
   accent = "blue",
   className,
   index = 0,
+  href,
 }: FeatureCardProps) {
   const styles = ACCENT_STYLES[accent];
 
@@ -43,7 +50,7 @@ export function FeatureCard({
     event.currentTarget.style.setProperty("--spot-y", `${event.clientY - bounds.top}px`);
   }
 
-  return (
+  const card = (
     <motion.div
       initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -54,6 +61,7 @@ export function FeatureCard({
       style={{ "--spot-color": styles.glow } as CSSProperties}
       className={cn(
         "glass group relative overflow-hidden rounded-3xl p-8 shadow-soft transition-shadow duration-300 hover:shadow-glow",
+        href && "cursor-pointer",
         className,
       )}
     >
@@ -86,5 +94,16 @@ export function FeatureCard({
         )}
       />
     </motion.div>
+  );
+
+  if (!href) return card;
+
+  return (
+    <Link
+      href={href}
+      className="block rounded-3xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+    >
+      {card}
+    </Link>
   );
 }
