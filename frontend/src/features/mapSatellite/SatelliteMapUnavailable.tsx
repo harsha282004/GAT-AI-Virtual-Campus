@@ -14,8 +14,7 @@ const MESSAGES: Record<SatelliteMapUnavailableProps["reason"], string> = {
 };
 
 /** Section 13 — the app must not crash or show a blank screen when the
- * Google Maps API key is missing or the SDK fails to load. Styled to
- * match map3d/Map3DErrorBoundary.tsx's Map3DUnavailable fallback. */
+ * Google Maps API key is missing or the SDK fails to load. */
 export function SatelliteMapUnavailable({ reason }: SatelliteMapUnavailableProps) {
   return (
     <div className="flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-4 rounded-3xl border border-hairline bg-white p-8 text-center shadow-soft dark:bg-[#0F172A] dark:shadow-black/30">

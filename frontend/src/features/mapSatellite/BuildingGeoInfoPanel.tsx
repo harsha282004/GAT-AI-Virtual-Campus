@@ -3,7 +3,7 @@
 import { ArrowRight, Layers, MapPin, Navigation2, X } from "lucide-react";
 
 import { Button, Card } from "@/components/ui";
-import type { BuildingPlacement } from "@/features/map3d/campusLayout";
+import type { BuildingPlacement } from "./campusLayout";
 
 interface BuildingGeoInfoPanelProps {
   placement: BuildingPlacement;
@@ -11,15 +11,12 @@ interface BuildingGeoInfoPanelProps {
   onClose: () => void;
 }
 
-/** Satellite-map counterpart of map3d/BuildingInfoPanel.tsx — same real
- * fields (name/code/description from Building, floor count from Floor
- * rows, node count from Node rows) and the same "Get Directions (coming
- * soon)" reserved integration point, but a geo-appropriate verification
- * badge: whether *this building* has a surveyed latitude/longitude
- * (building.latitude/longitude), not whether the 3D scene found a local
- * pos_x/pos_y anchor for it — those are different facts, so the two
- * panels can't share one banner without one of them saying something
- * untrue about the other view. */
+/** Shows the real fields available for a selected building (name/code/
+ * description from Building, floor count from Floor rows, node count
+ * from Node rows), plus a verification badge for whether *this building*
+ * has a surveyed latitude/longitude (building.latitude/longitude) — a
+ * "Get Directions (coming soon)" integration point is reserved until
+ * turn-by-turn navigation to real-world coordinates ships. */
 export function BuildingGeoInfoPanel({ placement, nodeCount, onClose }: BuildingGeoInfoPanelProps) {
   const { building, floorCount } = placement;
   const hasSurveyedLocation = building.latitude !== null && building.longitude !== null;
