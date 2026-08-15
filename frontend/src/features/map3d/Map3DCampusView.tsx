@@ -24,7 +24,7 @@ const CampusScene3D = dynamic(
 
 function Map3DLoading() {
   return (
-    <div className="flex h-[calc(100vh-7rem)] min-w-0 flex-1 flex-col items-center justify-center gap-3 rounded-3xl bg-brand-gradient shadow-glow">
+    <div className="flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-3 rounded-3xl bg-brand-gradient shadow-glow">
       <div className="h-10 w-10 animate-spin rounded-full border-4 border-white/30 border-t-white" />
       <p className="font-display text-sm font-medium text-white/80">Loading GAT Campus…</p>
     </div>
@@ -78,7 +78,7 @@ export function Map3DCampusView() {
 
   if (isLoading) {
     return (
-      <div className="flex h-[calc(100vh-7rem)] min-w-0 flex-1 flex-col gap-4 rounded-3xl border border-hairline bg-white p-8 dark:bg-[#0F172A]">
+      <div className="flex h-full min-w-0 flex-1 flex-col gap-4 rounded-3xl border border-hairline bg-white p-8 dark:bg-[#0F172A]">
         <Skeleton className="h-8 w-1/3" />
         <Skeleton className="h-full w-full" />
       </div>
@@ -87,7 +87,7 @@ export function Map3DCampusView() {
 
   if (isError) {
     return (
-      <div className="flex h-[calc(100vh-7rem)] min-w-0 flex-1 items-center justify-center">
+      <div className="flex h-full min-w-0 flex-1 items-center justify-center">
         <ErrorState
           title="Unable to load campus map"
           message="The campus buildings and map data could not be retrieved. Please try again."
@@ -102,7 +102,7 @@ export function Map3DCampusView() {
   }
 
   return (
-    <div className="relative flex h-[calc(100vh-7rem)] min-w-0 flex-1 gap-4">
+    <div className="relative flex h-full min-w-0 flex-1 gap-4">
       <div className="relative flex-1 overflow-hidden rounded-3xl shadow-glow">
         <Map3DErrorBoundary>
           <CampusScene3D
