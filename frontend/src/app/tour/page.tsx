@@ -328,7 +328,7 @@ export default function TourPage() {
 
   return (
     <div
-      className="flex h-screen flex-col gap-4 px-4 pb-4 pt-24 sm:px-6 lg:flex-row lg:px-8"
+      className="flex h-screen flex-col gap-4 px-4 pb-4 pt-32 sm:px-6 lg:flex-row lg:px-8"
       onMouseMove={resetIdleTimer}
       onTouchStart={resetIdleTimer}
     >

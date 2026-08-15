@@ -57,20 +57,20 @@ export function TourSidebar({ panoramas, currentFloor, onSelectFloor }: TourSide
   const tree = useMemo(() => groupByBuilding(panoramas), [panoramas]);
 
   return (
-    <aside className="flex h-full w-full flex-col overflow-y-auto rounded-3xl border border-hairline bg-white p-5 shadow-soft dark:bg-[#0F172A] dark:shadow-black/30 lg:w-72">
-      <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
-        <Building2 className="h-3.5 w-3.5" />
+    <aside className="flex h-full w-full flex-col overflow-y-auto rounded-3xl border border-hairline bg-white p-6 shadow-soft dark:bg-[#0F172A] dark:shadow-black/30 lg:w-80">
+      <h2 className="mb-5 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted">
+        <Building2 className="h-4 w-4" />
         Buildings
       </h2>
 
-      <div className="space-y-4">
+      <div className="space-y-5">
         {Array.from(tree.entries()).map(([building, floors]) => (
           <div key={building}>
-            <div className="rounded-xl bg-brand/10 px-3 py-2.5 text-sm font-medium text-brand">
+            <div className="truncate rounded-xl bg-brand/10 px-4 py-3 text-base font-semibold text-brand">
               {building}
             </div>
 
-            <div className="mt-1.5 space-y-0.5 pl-3">
+            <div className="mt-2 space-y-1 pl-3">
               {floors.map((floor) => {
                 const active = floor === currentFloor;
                 return (
@@ -79,12 +79,12 @@ export function TourSidebar({ panoramas, currentFloor, onSelectFloor }: TourSide
                     type="button"
                     onClick={() => onSelectFloor(floor)}
                     className={cn(
-                      "flex w-full items-center gap-1.5 rounded-lg px-3 py-2 text-left text-xs font-medium transition-colors",
+                      "flex w-full items-center gap-2.5 rounded-lg px-3.5 py-2.5 text-left text-sm font-medium transition-colors",
                       active ? "bg-brand text-white" : "text-ink/70 hover:bg-brand/5",
                     )}
                   >
-                    <Layers className="h-3.5 w-3.5 shrink-0" />
-                    {floor}
+                    <Layers className="h-4 w-4 shrink-0" />
+                    <span className="truncate">{floor}</span>
                   </button>
                 );
               })}
