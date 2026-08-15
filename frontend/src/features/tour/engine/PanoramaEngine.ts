@@ -10,13 +10,27 @@ const FLOOR_CROSS_REF_KEY: Record<string, "groundFloor" | "firstFloor" | "second
   "Third Floor": "thirdFloor",
 };
 
-/** Staircase connections between floor DLLs — each floor's *last* scene
- * (by sequence) connects forward into the next floor's *first* scene, and
- * back again, exactly like any other forward/back link within a floor.
- * Nothing here is hotspot- or calibration-specific: it only ever sets
+/** The whole campus tour's continuous floor/section order — every floor's
+ * *last* scene (by sequence) connects forward into the next floor's *first*
+ * scene, and back again, exactly like any other forward/back link within a
+ * floor. Nothing here is hotspot- or calibration-specific: it only ever sets
  * node.next/node.previous, which the existing hotspot engine already turns
- * into a Forward/Back arrow positioned from that node's own initial_yaw. */
-const STAIRCASE_FLOOR_CHAIN = ["Ground Floor", "First Floor", "Second Floor", "Third Floor"] as const;
+ * into a Forward/Back arrow positioned from that node's own initial_yaw —
+ * Manual Tour's Next/Previous and Guided Tour's auto-advance both walk this
+ * same chain, so a scene reaching the end of its own floor continues
+ * straight into the next floor's first scene instead of dead-ending.
+ * Covers every floor bucket that exists after applyFloorReclassification
+ * (Entrance's outdoor walkway through to Central Quadrangle's standalone
+ * courtyard scene), not just the physical Ground-through-Third staircases —
+ * "staircase" was the original, narrower name for this same mechanism. */
+const TOUR_FLOOR_SEQUENCE = [
+  "Entrance",
+  "Ground Floor",
+  "First Floor",
+  "Second Floor",
+  "Third Floor",
+  "Central Quadrangle",
+] as const;
 
 /** Ground Floor's calibrated scene #5 is a standalone courtyard view, not
  * part of the corridor walk — reclassified to its own single-scene "floor"
@@ -202,31 +216,34 @@ export function buildPanoramaEngine(
     }
   }
 
-  // Third pass: staircase connections between floors. Each floor's tail
-  // (its last scene) links forward into the next floor's head (its first
-  // scene) exactly like an ordinary same-floor link — same PanoramaLink
-  // shape, same entry-orientation rule (always the *target's* own
-  // calibrated yaw/pitch), so Manual Tour, Guided Tour and the hotspot
-  // engine all cross the boundary with no awareness that anything special
-  // happened. Only next/previous pointers are touched; each floor's own
-  // PanoramaLinkedList (head/tail/size) is untouched.
-  for (let i = 0; i < STAIRCASE_FLOOR_CHAIN.length - 1; i++) {
-    const lower = engine.getFloor(STAIRCASE_FLOOR_CHAIN[i]);
-    const upper = engine.getFloor(STAIRCASE_FLOOR_CHAIN[i + 1]);
+  // Third pass: continuous-tour connections between floors/sections. Each
+  // floor's tail (its last scene) links forward into the next floor's head
+  // (its first scene) exactly like an ordinary same-floor link — same
+  // PanoramaLink shape, same entry-orientation rule (always the *target's*
+  // own calibrated yaw/pitch), so Manual Tour's Next/Previous, Guided
+  // Tour's auto-advance, and the hotspot engine all cross the boundary with
+  // no awareness that anything special happened: the last scene of one
+  // floor's DLL simply flows into the first scene of the next floor's DLL.
+  // Only next/previous pointers are touched; each floor's own
+  // PanoramaLinkedList (head/tail/size) is untouched, so "Scene X of Y"
+  // still counts within just that floor, never across the boundary.
+  for (let i = 0; i < TOUR_FLOOR_SEQUENCE.length - 1; i++) {
+    const lower = engine.getFloor(TOUR_FLOOR_SEQUENCE[i]);
+    const upper = engine.getFloor(TOUR_FLOOR_SEQUENCE[i + 1]);
     if (!lower?.tail || !upper?.head) continue;
 
-    const staircaseDown = lower.tail;
-    const staircaseUp = upper.head;
+    const boundaryDown = lower.tail;
+    const boundaryUp = upper.head;
 
-    staircaseDown.next = {
-      node: staircaseUp,
-      entryYaw: staircaseUp.yaw,
-      entryPitch: staircaseUp.pitch,
+    boundaryDown.next = {
+      node: boundaryUp,
+      entryYaw: boundaryUp.yaw,
+      entryPitch: boundaryUp.pitch,
     };
-    staircaseUp.previous = {
-      node: staircaseDown,
-      entryYaw: staircaseDown.yaw + 180,
-      entryPitch: staircaseDown.pitch,
+    boundaryUp.previous = {
+      node: boundaryDown,
+      entryYaw: boundaryDown.yaw + 180,
+      entryPitch: boundaryDown.pitch,
     };
   }
 
