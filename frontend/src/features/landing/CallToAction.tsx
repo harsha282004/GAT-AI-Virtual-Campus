@@ -29,13 +29,7 @@ export function CallToAction() {
           <Button href="/tour" size="lg" variant="secondary" icon={<NavigationIcon className="h-5 w-5" />}>
             Start the Virtual Tour
           </Button>
-          <Button
-            href="/chat"
-            size="lg"
-            variant="outline"
-            className="border-white/30 bg-transparent text-white hover:border-white/50 hover:bg-white/10"
-            icon={<MessageSquare className="h-5 w-5" />}
-          >
+          <Button href="/chat" size="lg" variant="outline" icon={<MessageSquare className="h-5 w-5" />}>
             Chat with the Assistant
           </Button>
         </div>

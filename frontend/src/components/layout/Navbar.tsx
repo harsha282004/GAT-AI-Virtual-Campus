@@ -80,7 +80,7 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "relative px-4 py-2 text-[15px] font-medium text-slate-600 transition-colors duration-300 hover:text-[#2E4DB7] dark:text-slate-300 dark:hover:text-[#5B8CFF]",
+                  "relative px-4 py-2 text-[16px] font-medium text-[#2E4DB7] transition-colors duration-300 hover:text-[#2E4DB7] dark:text-[#5B8CFF] dark:hover:text-[#5B8CFF]",
                   active && "text-[#2E4DB7] dark:text-[#5B8CFF]",
                 )}
               >
