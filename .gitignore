@@ -50,3 +50,8 @@ frontend/public/panoramas/main-building/
 Thumbs.db
 .idea/
 *.bak
+
+# --- Local Claude Code tooling (personal settings, installed skills,
+# ad-hoc verification screenshots) — not project deliverables ---
+.claude/
+screenshots/
