@@ -1,5 +1,6 @@
 export * from "./useBuildings";
 export * from "./useChat";
+export * from "./useChatConversation";
 export * from "./useCrossFloorHotspots";
 export * from "./useDocuments";
 export * from "./useEdges";
@@ -9,5 +10,6 @@ export * from "./useNodes";
 export * from "./usePanoramaPreloader";
 export * from "./usePanoramas";
 export * from "./useRooms";
+export * from "./useSpeechRecognition";
 export * from "./useTourKeyboardShortcuts";
 export * from "./useTourPanoramas";

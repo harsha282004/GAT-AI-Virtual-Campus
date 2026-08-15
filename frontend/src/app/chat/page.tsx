@@ -1,9 +1,9 @@
 import { PageContainer, SectionTitle } from "@/components/ui";
-import { ChatWindow } from "@/features/chat";
+import { ChatWindow, SuggestedQuestions } from "@/features/chat";
 
 export default function ChatPage() {
   return (
-    <PageContainer narrow>
+    <PageContainer>
       <SectionTitle
         eyebrow="AI Assistant"
         title="Ask the GAT Assistant"
@@ -12,7 +12,10 @@ export default function ChatPage() {
         className="mx-0"
       />
 
-      <ChatWindow />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <SuggestedQuestions />
+        <ChatWindow />
+      </div>
     </PageContainer>
   );
 }
