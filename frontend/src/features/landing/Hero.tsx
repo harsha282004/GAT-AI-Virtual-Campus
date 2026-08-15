@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { ArrowDown, GraduationCap, MapPin, MessageSquare, PlayCircle, ShieldCheck } from "lucide-react";
-import Image from "next/image";
 
 import { Button } from "@/components/ui";
 
@@ -15,23 +14,18 @@ const TRUST_STATS = [
 export function Hero() {
   return (
     <section className="relative overflow-hidden bg-[#F8FBFF] pt-24 pb-20 dark:bg-[#020617] lg:pt-28">
-      {/* Full-bleed background video — fallback Image sits underneath so a
-          video load/decode failure just leaves that image visible instead
-          of a blank layer, same reasoning as before, now covering the
-          whole section instead of a right-side card. */}
-      <Image
-        src="/images/background1.jpeg"
-        alt="Global Academy of Technology campus"
-        fill
-        priority
-        className="object-cover object-center"
-      />
+      {/* Full-bleed background video. poster is the video's own first frame
+          (extracted from this exact file, not an unrelated photo), so
+          whatever's visible before/while the video loads already matches
+          it — no swap from a different image once playback starts, and no
+          separate <Image> element left in the DOM to flash on remount
+          (e.g. navigating Campus -> Home). */}
       <video
         autoPlay
         loop
         muted
         playsInline
-        poster="/images/background1.jpeg"
+        poster="/videos/campus1-poster.jpg"
         aria-hidden="true"
         className="absolute inset-0 h-full w-full object-cover object-center"
       >
