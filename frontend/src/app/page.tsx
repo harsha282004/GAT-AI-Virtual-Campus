@@ -1,11 +1,11 @@
 import {
-  AIFeatures,
   CallToAction,
+  CampusShowcase,
   CampusStatistics,
   Features,
   Hero,
+  LeadershipSection,
   Testimonials,
-  VirtualTourPreview,
   WhyChooseGAT,
 } from "@/features/landing";
 
@@ -16,8 +16,8 @@ export default function HomePage() {
       <Features />
       <CampusStatistics />
       <WhyChooseGAT />
-      <AIFeatures />
-      <VirtualTourPreview />
+      <LeadershipSection />
+      <CampusShowcase />
       <Testimonials />
       <CallToAction />
     </>
