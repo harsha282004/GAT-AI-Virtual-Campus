@@ -8,6 +8,8 @@ class BuildingBase(BaseModel):
     name: str
     code: str | None = None
     description: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 class BuildingCreate(BuildingBase):
@@ -19,6 +21,8 @@ class BuildingUpdate(BaseModel):
     name: str | None = None
     code: str | None = None
     description: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 class BuildingRead(BuildingBase):
