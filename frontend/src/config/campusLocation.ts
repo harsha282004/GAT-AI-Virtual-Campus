@@ -29,35 +29,18 @@ export const GAT_CAMPUS_DEFAULT_ZOOM = 18;
 export const GAT_CAMPUS_MIN_ZOOM = 15;
 export const GAT_CAMPUS_MAX_ZOOM = 21;
 
-/** Zoom used when centering on the user's real GPS position (Phase 18) —
- * slightly closer than the whole-campus default since it's framing a
- * point, not the full footprint, while still showing campus context. */
-export const GAT_CAMPUS_USER_LOCATION_ZOOM = 19;
-
-/**
- * Phase 18 — a rough heuristic radius (meters) around GAT_CAMPUS_CENTER
- * used only to decide whether to show a "you are outside the campus
- * area" hint. NOT a surveyed campus boundary polygon (none exists — see
- * BUILDING_GEOCODING_STATUS above) and NOT used to alter, clamp, or
- * snap the user's real GPS coordinate in any way. GAT is a ~10-acre
- * campus (per CLAUDE.md's recorded facts), which is roughly a 200m
- * diameter if treated as a circle — 300m gives a small, deliberately
- * generous margin around that so the hint doesn't fire from normal GPS
- * drift while someone is actually on campus.
- */
-export const CAMPUS_NEAR_RADIUS_M = 300;
-
 /**
  * Documents (does not enforce — TypeScript can't express "this column is
  * always null today") why individual buildings do NOT get a marker
  * derived from their local pos_x/pos_y campus-plane coordinates: that
  * plane has no documented compass alignment or absolute scale anchor
- * (see frontend/src/features/map3d/campusLayout.ts's docstring — it is
- * only ever used relative to itself, e.g. for the 3D scene). Projecting
- * it onto real latitude/longitude would silently invent a real-world
- * orientation and position the data does not support. Real per-building
- * markers only render once backend/app/models/building.py's latitude/
- * longitude columns (added this phase, currently NULL for every
- * building) are populated from an actual survey.
+ * (see frontend/src/features/mapSatellite/campusLayout.ts's docstring —
+ * it was only ever used relative to itself, originally for the removed
+ * 3D scene). Projecting it onto real latitude/longitude would silently
+ * invent a real-world orientation and position the data does not
+ * support. Real per-building markers only render once
+ * backend/app/models/building.py's latitude/longitude columns (added in
+ * Phase 17, currently NULL for every building) are populated from an
+ * actual survey.
  */
 export const BUILDING_GEOCODING_STATUS = "pending-survey" as const;

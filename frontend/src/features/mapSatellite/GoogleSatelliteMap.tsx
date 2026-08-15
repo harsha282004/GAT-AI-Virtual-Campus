@@ -14,34 +14,21 @@ import {
   GAT_CAMPUS_DEFAULT_ZOOM,
   GAT_CAMPUS_MAX_ZOOM,
   GAT_CAMPUS_MIN_ZOOM,
-  GAT_CAMPUS_USER_LOCATION_ZOOM,
 } from "@/config/campusLocation";
-import type { Building, CampusNode, Route } from "@/types";
+import type { Building } from "@/types";
 
 import { BuildingMarker } from "./BuildingMarker";
 import { CampusMarker } from "./CampusMarker";
-import { RoutePolyline } from "./RoutePolyline";
 import { SatelliteMapUnavailable } from "./SatelliteMapUnavailable";
-import type { UserLocationPosition } from "./useUserLocation";
-import { UserLocationMarker } from "./UserLocationMarker";
 
 export interface GoogleSatelliteMapHandle {
   resetView: () => void;
-  panTo: (latitude: number, longitude: number) => void;
-  /** Phase 18 — pans/zooms to the user's real GPS position, distinct
-   * from resetView() (which always returns to the configured GAT
-   * campus center — Section "MAP CAMERA BEHAVIOR": these must stay two
-   * separate actions). */
-  centerOnUser: (latitude: number, longitude: number) => void;
 }
 
 interface GoogleSatelliteMapProps {
   buildings: Building[];
   selectedBuildingId: number | null;
   onSelectBuilding: (buildingId: number) => void;
-  userPosition: UserLocationPosition | null;
-  route: Route | null;
-  nodes: CampusNode[];
 }
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -54,13 +41,16 @@ const CAMPUS_CENTER_LATLNG = {
  * @vis.gl/react-google-maps (Google's own maintained React wrapper around
  * the Maps JavaScript API), key read from an env var, never hardcoded.
  * Renders nothing (a graceful fallback instead) if the key is missing —
- * the rest of the page (Navbar, sidebar, the 3D view toggle) keeps
- * working either way (Section 13). */
+ * the rest of the page (Navbar) keeps working either way.
+ *
+ * mapTypeId is "hybrid" (satellite imagery + Google's own real road/
+ * place-label/POI overlay), not "satellite" (raw imagery only) — this is
+ * what gives the map progressive, zoom-based geographic detail (area
+ * names, roads, nearby landmarks) without hardcoding or inventing any
+ * geographic data ourselves; the label density at each zoom level is
+ * entirely Google's built-in behavior. */
 export const GoogleSatelliteMap = forwardRef<GoogleSatelliteMapHandle, GoogleSatelliteMapProps>(
-  function GoogleSatelliteMap(
-    { buildings, selectedBuildingId, onSelectBuilding, userPosition, route, nodes },
-    ref,
-  ) {
+  function GoogleSatelliteMap({ buildings, selectedBuildingId, onSelectBuilding }, ref) {
     if (!GOOGLE_MAPS_API_KEY) {
       return <SatelliteMapUnavailable reason="missing-key" />;
     }
@@ -72,9 +62,6 @@ export const GoogleSatelliteMap = forwardRef<GoogleSatelliteMapHandle, GoogleSat
           buildings={buildings}
           selectedBuildingId={selectedBuildingId}
           onSelectBuilding={onSelectBuilding}
-          userPosition={userPosition}
-          route={route}
-          nodes={nodes}
         />
       </APIProvider>
     );
@@ -82,10 +69,7 @@ export const GoogleSatelliteMap = forwardRef<GoogleSatelliteMapHandle, GoogleSat
 );
 
 const SatelliteMapInner = forwardRef<GoogleSatelliteMapHandle, GoogleSatelliteMapProps>(
-  function SatelliteMapInner(
-    { buildings, selectedBuildingId, onSelectBuilding, userPosition, route, nodes },
-    ref,
-  ) {
+  function SatelliteMapInner({ buildings, selectedBuildingId, onSelectBuilding }, ref) {
     const status = useApiLoadingStatus();
 
     if (status === APILoadingStatus.FAILED || status === APILoadingStatus.AUTH_FAILURE) {
@@ -98,7 +82,7 @@ const SatelliteMapInner = forwardRef<GoogleSatelliteMapHandle, GoogleSatelliteMa
         defaultZoom={GAT_CAMPUS_DEFAULT_ZOOM}
         minZoom={GAT_CAMPUS_MIN_ZOOM}
         maxZoom={GAT_CAMPUS_MAX_ZOOM}
-        mapTypeId="satellite"
+        mapTypeId="hybrid"
         gestureHandling="greedy"
         disableDefaultUI={false}
         fullscreenControl={false}
@@ -121,14 +105,6 @@ const SatelliteMapInner = forwardRef<GoogleSatelliteMapHandle, GoogleSatelliteMa
               onSelect={() => onSelectBuilding(building.id)}
             />
           ))}
-        {userPosition && (
-          <UserLocationMarker
-            latitude={userPosition.latitude}
-            longitude={userPosition.longitude}
-            accuracy={userPosition.accuracy}
-          />
-        )}
-        {route && <RoutePolyline route={route} nodes={nodes} />}
       </Map>
     );
   },
@@ -137,8 +113,7 @@ const SatelliteMapInner = forwardRef<GoogleSatelliteMapHandle, GoogleSatelliteMa
 /** Renders null — exists only to reach useMap() from inside <Map>'s own
  * context (the map instance isn't available any higher up the tree) and
  * expose an imperative resetView() to the floating "Reset View" button
- * that lives outside this component, mirroring map3d/CampusScene3D.tsx's
- * forwardRef + useImperativeHandle pattern for the 3D scene. */
+ * that lives outside this component. */
 const ResetViewController = forwardRef<GoogleSatelliteMapHandle, unknown>(
   function ResetViewController(_props, ref) {
     const map = useMap();
@@ -150,15 +125,6 @@ const ResetViewController = forwardRef<GoogleSatelliteMapHandle, unknown>(
           if (!map) return;
           map.panTo(CAMPUS_CENTER_LATLNG);
           map.setZoom(GAT_CAMPUS_DEFAULT_ZOOM);
-        },
-        panTo: (latitude: number, longitude: number) => {
-          if (!map) return;
-          map.panTo({ lat: latitude, lng: longitude });
-        },
-        centerOnUser: (latitude: number, longitude: number) => {
-          if (!map) return;
-          map.panTo({ lat: latitude, lng: longitude });
-          map.setZoom(GAT_CAMPUS_USER_LOCATION_ZOOM);
         },
       }),
       [map],

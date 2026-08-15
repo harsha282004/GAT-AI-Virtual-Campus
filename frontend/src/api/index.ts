@@ -5,7 +5,6 @@ export * from "./crossFloorHotspots";
 export * from "./documents";
 export * from "./edges";
 export * from "./floors";
-export * from "./navigate";
 export * from "./nodes";
 export * from "./panoramas";
 export * from "./rooms";
