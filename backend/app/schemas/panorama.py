@@ -37,3 +37,12 @@ class PanoramaRead(PanoramaBase):
     id: int
     created_at: datetime.datetime
     updated_at: datetime.datetime
+
+
+class PanoramaOrientationUpdate(BaseModel):
+    """Body for PUT /panoramas/{id}/orientation — the calibration panel's
+    only write path; deliberately narrower than PanoramaUpdate so a
+    calibration save can never touch image_path/title/etc."""
+
+    initial_yaw: float
+    initial_pitch: float

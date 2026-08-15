@@ -80,6 +80,7 @@ def _build_scene(node: Node, panorama: Panorama) -> SceneRead:
     assert node.floor_id is not None
     return SceneRead(
         node_id=node.id,
+        panorama_id=panorama.id,
         name=node.name,
         building_id=node.building_id,
         building_name=node.building.name if node.building else "",

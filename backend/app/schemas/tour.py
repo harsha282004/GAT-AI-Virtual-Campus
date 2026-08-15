@@ -24,6 +24,9 @@ class SceneRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     node_id: int
+    # The underlying Panorama row's own id — distinct from node_id, needed to
+    # target PUT /api/v1/panoramas/{panorama_id}/orientation for calibration.
+    panorama_id: int
     name: str
     building_id: int
     building_name: str
