@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 
+import { useTranslation } from "@/hooks";
 import { cn } from "@/utils";
 import type { TourPanorama } from "@/types";
 
@@ -21,6 +22,7 @@ interface FloorSelectorProps {
 }
 
 export function FloorSelector({ panoramas, currentFloor, onSelectFloor }: FloorSelectorProps) {
+  const { t } = useTranslation();
   const floors = Array.from(new Set(panoramas.map((p) => p.floor))).sort((a, b) => {
     const diff = floorSortIndex(a) - floorSortIndex(b);
     return diff !== 0 ? diff : a.localeCompare(b);
@@ -49,7 +51,7 @@ export function FloorSelector({ panoramas, currentFloor, onSelectFloor }: FloorS
                 transition={{ type: "spring", duration: 0.4 }}
               />
             )}
-            <span className="relative">{floor}</span>
+            <span className="relative">{t(floor)}</span>
           </button>
         );
       })}

@@ -2,6 +2,8 @@
 
 import { Eye, EyeOff } from "lucide-react";
 
+import { useTranslation } from "@/hooks";
+
 interface ImmersiveToggleProps {
   active: boolean;
   onToggle: () => void;
@@ -14,13 +16,14 @@ interface ImmersiveToggleProps {
  * would hide the only way back.
  */
 export function ImmersiveToggle({ active, onToggle }: ImmersiveToggleProps) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"
       onClick={onToggle}
       aria-pressed={active}
-      aria-label={active ? "Exit immersive mode" : "Enter immersive mode"}
-      title={active ? "Exit immersive mode (Space)" : "Immersive mode (Space)"}
+      aria-label={t(active ? "Exit immersive mode" : "Enter immersive mode")}
+      title={t(active ? "Exit immersive mode (Space)" : "Immersive mode (Space)")}
       className="glass flex h-10 w-10 items-center justify-center rounded-full text-ink/70 shadow-soft transition-colors hover:text-brand"
     >
       {active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

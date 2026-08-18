@@ -3,6 +3,7 @@
 import { Building2, Layers } from "lucide-react";
 import { useMemo } from "react";
 
+import { useTranslation } from "@/hooks";
 import { cn } from "@/utils";
 import type { TourPanorama } from "@/types";
 
@@ -54,20 +55,21 @@ function groupByBuilding(panoramas: TourPanorama[]): Map<string, string[]> {
 }
 
 export function TourSidebar({ panoramas, currentFloor, onSelectFloor }: TourSidebarProps) {
+  const { t } = useTranslation();
   const tree = useMemo(() => groupByBuilding(panoramas), [panoramas]);
 
   return (
     <aside className="flex h-full w-full flex-col overflow-y-auto rounded-3xl border border-hairline bg-white p-6 shadow-soft dark:bg-[#0F172A] dark:shadow-black/30 lg:w-80">
       <h2 className="mb-5 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted">
         <Building2 className="h-4 w-4" />
-        Buildings
+        {t("Buildings")}
       </h2>
 
       <div className="space-y-5">
         {Array.from(tree.entries()).map(([building, floors]) => (
           <div key={building}>
             <div className="truncate rounded-xl bg-brand/10 px-4 py-3 text-base font-semibold text-brand">
-              {building}
+              {t(building)}
             </div>
 
             <div className="mt-2 space-y-1 pl-3">
@@ -84,7 +86,7 @@ export function TourSidebar({ panoramas, currentFloor, onSelectFloor }: TourSide
                     )}
                   >
                     <Layers className="h-4 w-4 shrink-0" />
-                    <span className="truncate">{floor}</span>
+                    <span className="truncate">{t(floor)}</span>
                   </button>
                 );
               })}

@@ -3,7 +3,8 @@
 import { Compass, Navigation } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 
-import { useEdges, useNodes } from "@/hooks";
+import { useEdges, useNodes, useTranslation } from "@/hooks";
+import { tCampusMapAria, tMinimapStepOf } from "@/lib/i18n/translations";
 import type { TourPanorama } from "@/types";
 
 interface MinimapProps {
@@ -133,6 +134,7 @@ function projectIntoZone(
  * position — never invents a coordinate.
  */
 export function Minimap({ panoramas, current, visitedIds, onSelect, getLiveYaw }: MinimapProps) {
+  const { t, language } = useTranslation();
   const needleRef = useRef<HTMLDivElement | null>(null);
   const nodesQuery = useNodes();
   const edgesQuery = useEdges();
@@ -237,8 +239,11 @@ export function Minimap({ panoramas, current, visitedIds, onSelect, getLiveYaw }
   const hasEnteredBuilding =
     !isEntranceFloor || panoramas.some((p) => p.floor !== ENTRANCE_FLOOR && visitedIds.has(p.id));
 
-  const locationLabel = [current.building, current.floor].filter(Boolean).join(" · ");
-  const buildingLabel = (current.building || "Main Building").toUpperCase();
+  const locationLabel = [current.building, current.floor]
+    .filter(Boolean)
+    .map((part) => t(part as string))
+    .join(" · ");
+  const buildingLabel = t(current.building || "Main Building").toUpperCase();
 
   return (
     <div
@@ -265,7 +270,7 @@ export function Minimap({ panoramas, current, visitedIds, onSelect, getLiveYaw }
         viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
         className="h-28 w-full sm:h-32 lg:h-36"
         role="img"
-        aria-label={`Campus map of ${locationLabel}, showing your current position and route`}
+        aria-label={tCampusMapAria(language, locationLabel)}
       >
         <defs>
           <filter id="minimap-glow" x="-60%" y="-60%" width="220%" height="220%">
@@ -400,7 +405,7 @@ export function Minimap({ panoramas, current, visitedIds, onSelect, getLiveYaw }
               key={scene.id}
               role="button"
               tabIndex={0}
-              aria-label={`${scene.name}${active ? " (you are here)" : visited ? " (visited)" : ""}`}
+              aria-label={`${scene.name}${active ? ` ${t("(you are here)")}` : visited ? ` ${t("(visited)")}` : ""}`}
               className="cursor-pointer focus:outline-none"
               onClick={() => onSelect(scene.id)}
               onKeyDown={(event) => {
@@ -434,7 +439,7 @@ export function Minimap({ panoramas, current, visitedIds, onSelect, getLiveYaw }
       </svg>
 
       <p className="text-[10px] font-medium" style={{ color: TEXT_SECONDARY }}>
-        {currentIndex >= 0 ? `Step ${currentIndex + 1} of ${floorScenes.length}` : current.name}
+        {currentIndex >= 0 ? tMinimapStepOf(language, currentIndex + 1, floorScenes.length) : current.name}
       </p>
     </div>
   );

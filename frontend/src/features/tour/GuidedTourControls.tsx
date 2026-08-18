@@ -2,6 +2,7 @@
 
 import { Pause, Play, RotateCcw, Square } from "lucide-react";
 
+import { useTranslation } from "@/hooks";
 import { cn } from "@/utils";
 import type { GuidedTourSpeed, GuidedTourStatus } from "@/features/tour/engine";
 
@@ -36,6 +37,7 @@ export function GuidedTourControls({
   onSpeedChange,
 }: GuidedTourControlsProps) {
   const canRestart = status === "playing" || status === "paused" || status === "completed";
+  const { t } = useTranslation();
 
   return (
     <div className="glass flex flex-wrap items-center justify-center gap-3 rounded-full px-3 py-2 shadow-soft">
@@ -46,7 +48,7 @@ export function GuidedTourControls({
           className="flex items-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-medium text-white shadow-soft hover:bg-brand-dark"
         >
           <Pause className="h-4 w-4" />
-          <span className="hidden sm:inline">Pause</span>
+          <span className="hidden sm:inline">{t("Pause")}</span>
         </button>
       ) : status === "paused" ? (
         <button
@@ -55,7 +57,7 @@ export function GuidedTourControls({
           className="flex items-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-medium text-white shadow-soft hover:bg-brand-dark"
         >
           <Play className="h-4 w-4" />
-          <span className="hidden sm:inline">Resume</span>
+          <span className="hidden sm:inline">{t("Resume")}</span>
         </button>
       ) : (
         <button
@@ -64,7 +66,7 @@ export function GuidedTourControls({
           className="flex items-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-medium text-white shadow-soft hover:bg-brand-dark"
         >
           <Play className="h-4 w-4" />
-          <span className="hidden sm:inline">Start Guided Tour</span>
+          <span className="hidden sm:inline">{t("Start Guided Tour")}</span>
         </button>
       )}
 
@@ -72,12 +74,12 @@ export function GuidedTourControls({
         <button
           type="button"
           onClick={onStop}
-          aria-label="Stop"
-          title="Stop"
+          aria-label={t("Stop")}
+          title={t("Stop")}
           className="flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-medium text-ink shadow-soft hover:bg-brand hover:text-white dark:bg-[#0F172A]"
         >
           <Square className="h-4 w-4" />
-          <span className="hidden sm:inline">Stop</span>
+          <span className="hidden sm:inline">{t("Stop")}</span>
         </button>
       )}
 
@@ -85,12 +87,12 @@ export function GuidedTourControls({
         <button
           type="button"
           onClick={onRestart}
-          aria-label="Restart"
-          title="Restart"
+          aria-label={t("Restart")}
+          title={t("Restart")}
           className="flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-medium text-ink shadow-soft hover:bg-brand hover:text-white dark:bg-[#0F172A]"
         >
           <RotateCcw className="h-4 w-4" />
-          <span className="hidden sm:inline">Restart</span>
+          <span className="hidden sm:inline">{t("Restart")}</span>
         </button>
       )}
 
@@ -106,7 +108,7 @@ export function GuidedTourControls({
               speed === option.value ? "bg-brand text-white" : "text-ink/70 hover:text-ink",
             )}
           >
-            {option.label}
+            {t(option.label)}
           </button>
         ))}
       </div>

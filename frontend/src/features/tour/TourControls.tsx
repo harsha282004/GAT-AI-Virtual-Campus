@@ -2,6 +2,7 @@
 
 import { Maximize, PanelLeft, PanelLeftClose, RotateCcw, SkipBack, SkipForward } from "lucide-react";
 
+import { useTranslation } from "@/hooks";
 import { cn } from "@/utils";
 
 interface TourControlsProps {
@@ -52,18 +53,19 @@ export function TourControls({
   sidebarCollapsed,
   onToggleSidebar,
 }: TourControlsProps) {
+  const { t } = useTranslation();
   return (
     <div className="glass flex flex-wrap items-center justify-center gap-3 rounded-full px-3 py-2 shadow-soft">
       <ControlButton
         icon={sidebarCollapsed ? PanelLeft : PanelLeftClose}
-        label={sidebarCollapsed ? "Show sidebar" : "Hide sidebar"}
+        label={t(sidebarCollapsed ? "Show sidebar" : "Hide sidebar")}
         onClick={onToggleSidebar}
         active={sidebarCollapsed}
       />
-      <ControlButton icon={SkipBack} label="Previous" onClick={onPrevious} />
-      <ControlButton icon={RotateCcw} label="Reset View" onClick={onReset} />
-      <ControlButton icon={Maximize} label="Fullscreen" onClick={onFullscreen} />
-      <ControlButton icon={SkipForward} label="Next" onClick={onNext} />
+      <ControlButton icon={SkipBack} label={t("Previous")} onClick={onPrevious} />
+      <ControlButton icon={RotateCcw} label={t("Reset View")} onClick={onReset} />
+      <ControlButton icon={Maximize} label={t("Fullscreen")} onClick={onFullscreen} />
+      <ControlButton icon={SkipForward} label={t("Next")} onClick={onNext} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useSta
 import type { SyntheticEvent } from "react";
 
 import { ErrorState, Spinner } from "@/components/ui";
+import { useTranslation } from "@/hooks";
 import { cn } from "@/utils";
 import type { HotspotDirection, TourHotspot, TourPanorama } from "@/types";
 import type { Pannellum as PannellumClass } from "pannellum-react";
@@ -291,6 +292,7 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
     },
     ref,
   ) {
+    const { t } = useTranslation();
     const viewerRef = useRef<PannellumClass | null>(null);
     const [loaded, setLoaded] = useState(false);
     const [loadError, setLoadError] = useState(false);
@@ -480,15 +482,15 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
       >
         {!loaded && !loadError && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#16213E]/90">
-            <Spinner label="Loading panorama…" />
+            <Spinner label={t("Loading panorama…")} />
           </div>
         )}
 
         {loadError && (
           <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#16213E] p-6">
             <ErrorState
-              title="This panorama couldn't be loaded"
-              message="The image may be missing or your connection dropped. Try again."
+              title={t("This panorama couldn't be loaded")}
+              message={t("The image may be missing or your connection dropped. Try again.")}
               onRetry={handleRetry}
               className="max-w-sm border-none bg-white/5 backdrop-blur"
             />
@@ -636,7 +638,7 @@ export const PanoramaViewer = forwardRef<PanoramaViewerHandle, PanoramaViewerPro
           <div
             className="absolute inset-0 z-40 cursor-crosshair"
             onClick={handlePlacementClick}
-            title="Click where the other floor is visible"
+            title={t("Click where the other floor is visible")}
           />
         )}
       </div>
