@@ -1,21 +1,21 @@
 {
-  "generated_at": "2026-08-09T12:29:36.184320+00:00",
+  "generated_at": "2026-08-18T13:29:07.762363+00:00",
   "sources": {
     "https://www.gat.ac.in/about-nef.html": {
       "source_url": "https://www.gat.ac.in/about-nef.html",
-      "title": "GAT - About NEF",
+      "title": "https://www.gat.ac.in/about-nef.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:56.319926+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 7,
       "errors": []
     },
     "https://www.gat.ac.in/about-us.html": {
       "source_url": "https://www.gat.ac.in/about-us.html",
-      "title": "GAT - About Us",
+      "title": "https://www.gat.ac.in/about-us.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:56.350730+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 9,
       "errors": []
     },
@@ -30,19 +30,19 @@
     },
     "https://www.gat.ac.in/academic-calendar.html": {
       "source_url": "https://www.gat.ac.in/academic-calendar.html",
-      "title": "GAT - Academic Calendar",
+      "title": "https://www.gat.ac.in/academic-calendar.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:56.426483+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 1,
       "errors": []
     },
     "https://www.gat.ac.in/academic-circulars.html": {
       "source_url": "https://www.gat.ac.in/academic-circulars.html",
-      "title": "GAT - Academic Circulars",
+      "title": "https://www.gat.ac.in/academic-circulars.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:56.461512+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 1,
       "errors": []
     },
@@ -57,145 +57,145 @@
     },
     "https://www.gat.ac.in/admission.html": {
       "source_url": "https://www.gat.ac.in/admission.html",
-      "title": "GAT - Admission",
+      "title": "https://www.gat.ac.in/admission.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:56.551694+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 5,
       "errors": []
     },
     "https://www.gat.ac.in/aeronautical-engineering.html": {
       "source_url": "https://www.gat.ac.in/aeronautical-engineering.html",
-      "title": "GAT - Aeronautical Engineering",
+      "title": "https://www.gat.ac.in/aeronautical-engineering.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:56.591470+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 6,
       "errors": []
     },
     "https://www.gat.ac.in/alumni.html": {
       "source_url": "https://www.gat.ac.in/alumni.html",
-      "title": "Alumni : GAT",
+      "title": "https://www.gat.ac.in/alumni.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:56.639581+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
     "https://www.gat.ac.in/artificial-intelligence-data-science.html": {
       "source_url": "https://www.gat.ac.in/artificial-intelligence-data-science.html",
-      "title": "GAT - Artificial Intelligence & Data Science",
+      "title": "https://www.gat.ac.in/artificial-intelligence-data-science.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:56.688477+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 6,
       "errors": []
     },
     "https://www.gat.ac.in/artificial-intelligence-machine-learning.html": {
       "source_url": "https://www.gat.ac.in/artificial-intelligence-machine-learning.html",
-      "title": "GAT - Artificial Intelligence and Machine Learning",
+      "title": "https://www.gat.ac.in/artificial-intelligence-machine-learning.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:56.738118+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 7,
       "errors": []
     },
     "https://www.gat.ac.in/association-and-partnership.html": {
       "source_url": "https://www.gat.ac.in/association-and-partnership.html",
-      "title": "Association and Partnerships",
+      "title": "https://www.gat.ac.in/association-and-partnership.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:56.797736+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 4,
       "errors": []
     },
     "https://www.gat.ac.in/campus-life.html": {
       "source_url": "https://www.gat.ac.in/campus-life.html",
-      "title": "GAT - Campus Life",
+      "title": "https://www.gat.ac.in/campus-life.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:56.851200+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 9,
       "errors": []
     },
     "https://www.gat.ac.in/career.html": {
       "source_url": "https://www.gat.ac.in/career.html",
-      "title": "Career : GAT",
+      "title": "https://www.gat.ac.in/career.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:56.908513+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 1,
       "errors": []
     },
     "https://www.gat.ac.in/Cells.html": {
       "source_url": "https://www.gat.ac.in/Cells.html",
-      "title": "Cells : GAT",
+      "title": "https://www.gat.ac.in/Cells.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:56.967211+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
     "https://www.gat.ac.in/civil-engineering.html": {
       "source_url": "https://www.gat.ac.in/civil-engineering.html",
-      "title": "GAT - Civil Engineering",
+      "title": "https://www.gat.ac.in/civil-engineering.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.013910+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 6,
       "errors": []
     },
     "https://www.gat.ac.in/computer-science-engineering-ai-ml.html": {
       "source_url": "https://www.gat.ac.in/computer-science-engineering-ai-ml.html",
-      "title": "GAT - Computer Science and Engineering (AI & ML)",
+      "title": "https://www.gat.ac.in/computer-science-engineering-ai-ml.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.068423+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 7,
       "errors": []
     },
     "https://www.gat.ac.in/computer-science-engineering.html": {
       "source_url": "https://www.gat.ac.in/computer-science-engineering.html",
-      "title": "GAT - Computer Science & Engineering",
+      "title": "https://www.gat.ac.in/computer-science-engineering.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.122093+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 6,
       "errors": []
     },
     "https://www.gat.ac.in/contact-us.html": {
       "source_url": "https://www.gat.ac.in/contact-us.html",
-      "title": "GAT - Contact US",
+      "title": "https://www.gat.ac.in/contact-us.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.183032+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 1,
       "errors": []
     },
     "https://www.gat.ac.in/electrical-electronics-engineering.html": {
       "source_url": "https://www.gat.ac.in/electrical-electronics-engineering.html",
-      "title": "GAT - Electrical & Electronics Engineering",
+      "title": "https://www.gat.ac.in/electrical-electronics-engineering.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.231218+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 5,
       "errors": []
     },
     "https://www.gat.ac.in/electronics-communication-engineering.html": {
       "source_url": "https://www.gat.ac.in/electronics-communication-engineering.html",
-      "title": "GAT - Electronics & Communication Engineering",
+      "title": "https://www.gat.ac.in/electronics-communication-engineering.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.285823+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 7,
       "errors": []
     },
     "https://www.gat.ac.in/examinations.html": {
       "source_url": "https://www.gat.ac.in/examinations.html",
-      "title": "GAT - Examinations",
+      "title": "https://www.gat.ac.in/examinations.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.306813+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
@@ -215,37 +215,37 @@
     },
     "https://www.gat.ac.in/grievance-redressal-cell.html": {
       "source_url": "https://www.gat.ac.in/grievance-redressal-cell.html",
-      "title": "GAT - Grievance Redressal Cell",
+      "title": "https://www.gat.ac.in/grievance-redressal-cell.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.410004+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
     "https://www.gat.ac.in/hr_policies.html": {
       "source_url": "https://www.gat.ac.in/hr_policies.html",
-      "title": "HR Policies",
+      "title": "https://www.gat.ac.in/hr_policies.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.459939+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 1,
       "errors": []
     },
     "https://www.gat.ac.in/information-science-engineering.html": {
       "source_url": "https://www.gat.ac.in/information-science-engineering.html",
-      "title": "GAT - Information Science & Engineering",
+      "title": "https://www.gat.ac.in/information-science-engineering.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.511625+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 6,
       "errors": []
     },
     "https://www.gat.ac.in/innovation-and-entrepreneurship.html": {
       "source_url": "https://www.gat.ac.in/innovation-and-entrepreneurship.html",
-      "title": "Innovation & Entrepreneurship",
+      "title": "https://www.gat.ac.in/innovation-and-entrepreneurship.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.573543+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 7,
       "errors": []
     },
@@ -265,10 +265,10 @@
     },
     "https://www.gat.ac.in/library.html": {
       "source_url": "https://www.gat.ac.in/library.html",
-      "title": "GAT - Library",
+      "title": "https://www.gat.ac.in/library.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.686210+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 15,
       "errors": []
     },
@@ -283,118 +283,118 @@
     },
     "https://www.gat.ac.in/master-of-business-administration.html": {
       "source_url": "https://www.gat.ac.in/master-of-business-administration.html",
-      "title": "GAT - Master of Business Administration",
+      "title": "https://www.gat.ac.in/master-of-business-administration.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.804788+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 5,
       "errors": []
     },
     "https://www.gat.ac.in/master-of-computer-science-and-engineering.html": {
       "source_url": "https://www.gat.ac.in/master-of-computer-science-and-engineering.html",
-      "title": "GAT - Master of Computer Science and Engineering",
+      "title": "https://www.gat.ac.in/master-of-computer-science-and-engineering.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.863048+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
     "https://www.gat.ac.in/master-of-structural-engineering.html": {
       "source_url": "https://www.gat.ac.in/master-of-structural-engineering.html",
-      "title": "GAT - Master of Structural Engineering",
+      "title": "https://www.gat.ac.in/master-of-structural-engineering.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.923781+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
     "https://www.gat.ac.in/mechanical-engineering.html": {
       "source_url": "https://www.gat.ac.in/mechanical-engineering.html",
-      "title": "GAT - Mechanical Engineering",
+      "title": "https://www.gat.ac.in/mechanical-engineering.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:57.967888+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 6,
       "errors": []
     },
     "https://www.gat.ac.in/naac.html": {
       "source_url": "https://www.gat.ac.in/naac.html",
-      "title": "GAT - NAAC",
+      "title": "https://www.gat.ac.in/naac.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:58.028567+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 1,
       "errors": []
     },
     "https://www.gat.ac.in/nba_accrediation.html": {
       "source_url": "https://www.gat.ac.in/nba_accrediation.html",
-      "title": "NBA Accreditation : GAT",
+      "title": "https://www.gat.ac.in/nba_accrediation.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:58.088306+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 1,
       "errors": []
     },
     "https://www.gat.ac.in/nirf.html": {
       "source_url": "https://www.gat.ac.in/nirf.html",
-      "title": "GAT - NIRF",
+      "title": "https://www.gat.ac.in/nirf.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:58.138973+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
     "https://www.gat.ac.in/phd_program.html": {
       "source_url": "https://www.gat.ac.in/phd_program.html",
-      "title": "GAT - Institutional Accreditation",
+      "title": "https://www.gat.ac.in/phd_program.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:58.191796+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
     "https://www.gat.ac.in/placements.html": {
       "source_url": "https://www.gat.ac.in/placements.html",
-      "title": "GAT - Placements",
+      "title": "https://www.gat.ac.in/placements.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:58.249550+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 9,
       "errors": []
     },
     "https://www.gat.ac.in/postgraduate-programs.html": {
       "source_url": "https://www.gat.ac.in/postgraduate-programs.html",
-      "title": "GAT - Postgraduate Programs",
+      "title": "https://www.gat.ac.in/postgraduate-programs.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:58.300441+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
     "https://www.gat.ac.in/undergraduate-programs.html": {
       "source_url": "https://www.gat.ac.in/undergraduate-programs.html",
-      "title": "GAT - Undergraduate Programs",
+      "title": "https://www.gat.ac.in/undergraduate-programs.html",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:58.359498+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
     "https://www.gat.ac.in/": {
       "source_url": "https://www.gat.ac.in/",
-      "title": "GAT - Home",
+      "title": "https://www.gat.ac.in/",
       "source_type": "official_website",
       "collection_date": "2026-08-09T12:23:58.418306+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
     "https://www.gat.ac.in/documents/12B.pdf": {
       "source_url": "https://www.gat.ac.in/documents/12B.pdf",
-      "title": "12B.pdf",
+      "title": "https://www.gat.ac.in/documents/12B.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:23:58.469886+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 5,
       "errors": []
     },
@@ -414,19 +414,19 @@
     },
     "https://www.gat.ac.in/documents/2f.pdf": {
       "source_url": "https://www.gat.ac.in/documents/2f.pdf",
-      "title": "2f.pdf",
+      "title": "https://www.gat.ac.in/documents/2f.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:23:58.575648+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
     "https://www.gat.ac.in/documents/4th& 6th Even CoE . 2025-2026.pdf": {
       "source_url": "https://www.gat.ac.in/documents/4th& 6th Even CoE . 2025-2026.pdf",
-      "title": "4th& 6th Even CoE . 2025-2026.pdf",
+      "title": "https://www.gat.ac.in/documents/4th& 6th Even CoE . 2025-2026.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:23:58.628983+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
@@ -446,37 +446,37 @@
     },
     "https://www.gat.ac.in/documents/Alumni-Celll-GAT_new.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Alumni-Celll-GAT_new.pdf",
-      "title": "Alumni-Celll-GAT_new.pdf",
+      "title": "https://www.gat.ac.in/documents/Alumni-Celll-GAT_new.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:23:58.733128+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 6,
       "errors": []
     },
     "https://www.gat.ac.in/documents/Anti-Ragging-Celll-GAT_new.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Anti-Ragging-Celll-GAT_new.pdf",
-      "title": "Anti-Ragging-Celll-GAT_new.pdf",
+      "title": "https://www.gat.ac.in/documents/Anti-Ragging-Celll-GAT_new.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:23:58.785936+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 5,
       "errors": []
     },
     "https://www.gat.ac.in/documents/ap.pdf": {
       "source_url": "https://www.gat.ac.in/documents/ap.pdf",
-      "title": "ap.pdf",
+      "title": "https://www.gat.ac.in/documents/ap.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:23:58.842582+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 1,
       "errors": []
     },
     "https://www.gat.ac.in/documents/Application for MBA_MTech_June 2026.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Application for MBA_MTech_June 2026.pdf",
-      "title": "Application for MBA_MTech_June 2026.pdf",
+      "title": "https://www.gat.ac.in/documents/Application for MBA_MTech_June 2026.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:23:58.896569+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
@@ -496,10 +496,10 @@
     },
     "https://www.gat.ac.in/documents/Application - Make-up_SEE_6th Semester_June 2026.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Application - Make-up_SEE_6th Semester_June 2026.pdf",
-      "title": "Application - Make-up_SEE_6th Semester_June 2026.pdf",
+      "title": "https://www.gat.ac.in/documents/Application - Make-up_SEE_6th Semester_June 2026.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:23:59.004968+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
@@ -547,10 +547,10 @@
     },
     "https://www.gat.ac.in/documents/Calender Of Eevents 2nd Semester.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Calender Of Eevents 2nd Semester.pdf",
-      "title": "Calender Of Eevents 2nd Semester.pdf",
+      "title": "https://www.gat.ac.in/documents/Calender Of Eevents 2nd Semester.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:23:59.204633+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
@@ -570,10 +570,10 @@
     },
     "https://www.gat.ac.in/documents/examination/Circular_Absentee_2nd_Sem_June 2026.pdf": {
       "source_url": "https://www.gat.ac.in/documents/examination/Circular_Absentee_2nd_Sem_June 2026.pdf",
-      "title": "Circular_Absentee_2nd_Sem_June 2026.pdf",
+      "title": "https://www.gat.ac.in/documents/examination/Circular_Absentee_2nd_Sem_June 2026.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:23:59.304178+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 1,
       "errors": []
     },
@@ -607,10 +607,10 @@
     },
     "https://www.gat.ac.in/documents/Circular_Absentee_6th_Sem_June 2026.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Circular_Absentee_6th_Sem_June 2026.pdf",
-      "title": "Circular_Absentee_6th_Sem_June 2026.pdf",
+      "title": "https://www.gat.ac.in/documents/Circular_Absentee_6th_Sem_June 2026.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:23:59.441371+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
@@ -686,10 +686,10 @@
     },
     "https://www.gat.ac.in/documents/CRV_Photocopy_6th Semester UG_June 2026 SEE.pdf": {
       "source_url": "https://www.gat.ac.in/documents/CRV_Photocopy_6th Semester UG_June 2026 SEE.pdf",
-      "title": "CRV_Photocopy_6th Semester UG_June 2026 SEE.pdf",
+      "title": "https://www.gat.ac.in/documents/CRV_Photocopy_6th Semester UG_June 2026 SEE.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:23:59.735690+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
@@ -765,28 +765,28 @@
     },
     "https://www.gat.ac.in/documents/DCS-EEE.pdf": {
       "source_url": "https://www.gat.ac.in/documents/DCS-EEE.pdf",
-      "title": "DCS-EEE.pdf",
+      "title": "https://www.gat.ac.in/documents/DCS-EEE.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:00.020070+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 46,
       "errors": []
     },
     "https://www.gat.ac.in/documents/DCS-ME.pdf": {
       "source_url": "https://www.gat.ac.in/documents/DCS-ME.pdf",
-      "title": "DCS-ME.pdf",
+      "title": "https://www.gat.ac.in/documents/DCS-ME.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:00.075979+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 69,
       "errors": []
     },
     "https://www.gat.ac.in/documents/EOA Report 2026-2027.PDF": {
       "source_url": "https://www.gat.ac.in/documents/EOA Report 2026-2027.PDF",
-      "title": "EOA Report 2026-2027.PDF",
+      "title": "https://www.gat.ac.in/documents/EOA Report 2026-2027.PDF",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:00.130596+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 12,
       "errors": []
     },
@@ -890,19 +890,19 @@
     },
     "https://www.gat.ac.in/documents/GAT_Autonomous_Exam Regulations_For website.pdf": {
       "source_url": "https://www.gat.ac.in/documents/GAT_Autonomous_Exam Regulations_For website.pdf",
-      "title": "GAT_Autonomous_Exam Regulations_For website.pdf",
+      "title": "https://www.gat.ac.in/documents/GAT_Autonomous_Exam Regulations_For website.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:00.534217+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 105,
       "errors": []
     },
     "https://www.gat.ac.in/documents/GAT Campus Broachure 2025-26.pdf": {
       "source_url": "https://www.gat.ac.in/documents/GAT Campus Broachure 2025-26.pdf",
-      "title": "GAT Campus Broachure 2025-26.pdf",
+      "title": "https://www.gat.ac.in/documents/GAT Campus Broachure 2025-26.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:00.587439+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 58,
       "errors": []
     },
@@ -922,28 +922,28 @@
     },
     "https://www.gat.ac.in/documents/Hostel-Management-Celll-GAT_new.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Hostel-Management-Celll-GAT_new.pdf",
-      "title": "Hostel-Management-Celll-GAT_new.pdf",
+      "title": "https://www.gat.ac.in/documents/Hostel-Management-Celll-GAT_new.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:00.702330+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 5,
       "errors": []
     },
     "https://www.gat.ac.in/documents/IIIC-Celll-GAT_new.pdf": {
       "source_url": "https://www.gat.ac.in/documents/IIIC-Celll-GAT_new.pdf",
-      "title": "IIIC-Celll-GAT_new.pdf",
+      "title": "https://www.gat.ac.in/documents/IIIC-Celll-GAT_new.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:00.754604+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
     "https://www.gat.ac.in/documents/IPR_cell.pdf": {
       "source_url": "https://www.gat.ac.in/documents/IPR_cell.pdf",
-      "title": "IPR_cell.pdf",
+      "title": "https://www.gat.ac.in/documents/IPR_cell.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:00.775228+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
@@ -963,37 +963,37 @@
     },
     "https://gat.ac.in/downloads/IR-E-C-1253.pdf": {
       "source_url": "https://gat.ac.in/downloads/IR-E-C-1253.pdf",
-      "title": "IR-E-C-1253.pdf",
+      "title": "https://gat.ac.in/downloads/IR-E-C-1253.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:00.881578+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 43,
       "errors": []
     },
     "https://gat.ac.in/downloads/IR-I-C-1253.pdf": {
       "source_url": "https://gat.ac.in/downloads/IR-I-C-1253.pdf",
-      "title": "IR-I-C-1253.pdf",
+      "title": "https://gat.ac.in/downloads/IR-I-C-1253.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:00.917284+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 43,
       "errors": []
     },
     "https://gat.ac.in/downloads/IR-M-C-1253.pdf": {
       "source_url": "https://gat.ac.in/downloads/IR-M-C-1253.pdf",
-      "title": "IR-M-C-1253.pdf",
+      "title": "https://gat.ac.in/downloads/IR-M-C-1253.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:00.955775+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 11,
       "errors": []
     },
     "https://gat.ac.in/downloads/IR-O-C-1253.pdf": {
       "source_url": "https://gat.ac.in/downloads/IR-O-C-1253.pdf",
-      "title": "IR-O-C-1253.pdf",
+      "title": "https://gat.ac.in/downloads/IR-O-C-1253.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:01.002686+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 50,
       "errors": []
     },
@@ -1027,10 +1027,10 @@
     },
     "https://www.gat.ac.in/documents/Magazine%20and%20Newsletter%20Cell_new.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Magazine%20and%20Newsletter%20Cell_new.pdf",
-      "title": "Magazine and Newsletter Cell_new.pdf",
+      "title": "https://www.gat.ac.in/documents/Magazine%20and%20Newsletter%20Cell_new.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:01.133848+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 4,
       "errors": []
     },
@@ -1190,82 +1190,82 @@
     },
     "https://www.gat.ac.in/documents/Malpractice Committee Notification - June 2026 SEE.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Malpractice Committee Notification - June 2026 SEE.pdf",
-      "title": "Malpractice Committee Notification - June 2026 SEE.pdf",
+      "title": "https://www.gat.ac.in/documents/Malpractice Committee Notification - June 2026 SEE.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:01.712692+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
     "https://www.gat.ac.in/documents/Master 20-21.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Master 20-21.pdf",
-      "title": "Master 20-21.pdf",
+      "title": "https://www.gat.ac.in/documents/Master 20-21.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:01.757186+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 23,
       "errors": []
     },
     "https://www.gat.ac.in/documents/Master 21-22.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Master 21-22.pdf",
-      "title": "Master 21-22.pdf",
+      "title": "https://www.gat.ac.in/documents/Master 21-22.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:01.812999+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 30,
       "errors": []
     },
     "https://www.gat.ac.in/documents/Master 22-23.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Master 22-23.pdf",
-      "title": "Master 22-23.pdf",
+      "title": "https://www.gat.ac.in/documents/Master 22-23.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:01.871593+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 28,
       "errors": []
     },
     "https://www.gat.ac.in/documents/Master 23-24.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Master 23-24.pdf",
-      "title": "Master 23-24.pdf",
+      "title": "https://www.gat.ac.in/documents/Master 23-24.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:01.916361+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 34,
       "errors": []
     },
     "https://www.gat.ac.in/documents/Master 24-25.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Master 24-25.pdf",
-      "title": "Master 24-25.pdf",
+      "title": "https://www.gat.ac.in/documents/Master 24-25.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:01.974683+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 44,
       "errors": []
     },
     "https://www.gat.ac.in/documents/Master 25-26.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Master 25-26.pdf",
-      "title": "Master 25-26.pdf",
+      "title": "https://www.gat.ac.in/documents/Master 25-26.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.023807+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 44,
       "errors": []
     },
     "https://www.gat.ac.in/documents/Master-AY 2020-21 to AY 2024-25.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Master-AY 2020-21 to AY 2024-25.pdf",
-      "title": "Master-AY 2020-21 to AY 2024-25.pdf",
+      "title": "https://www.gat.ac.in/documents/Master-AY 2020-21 to AY 2024-25.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.072442+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 62,
       "errors": []
     },
     "https://www.gat.ac.in/documents/Master-AY 2021-22 to AY 2025-26.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Master-AY 2021-22 to AY 2025-26.pdf",
-      "title": "Master-AY 2021-22 to AY 2025-26.pdf",
+      "title": "https://www.gat.ac.in/documents/Master-AY 2021-22 to AY 2025-26.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.116939+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 69,
       "errors": []
     },
@@ -1285,10 +1285,10 @@
     },
     "https://www.gat.ac.in/documents/mou.pdf": {
       "source_url": "https://www.gat.ac.in/documents/mou.pdf",
-      "title": "mou.pdf",
+      "title": "https://www.gat.ac.in/documents/mou.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.214586+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 7,
       "errors": []
     },
@@ -1308,163 +1308,163 @@
     },
     "https://www.gat.ac.in/documents/MTech 2nd Sem Tentative COE (2).pdf": {
       "source_url": "https://www.gat.ac.in/documents/MTech 2nd Sem Tentative COE (2).pdf",
-      "title": "MTech 2nd Sem Tentative COE (2).pdf",
+      "title": "https://www.gat.ac.in/documents/MTech 2nd Sem Tentative COE (2).pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.283143+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
     "https://www.gat.ac.in/documents/MTech 4th Sem Tentative COE (2).pdf": {
       "source_url": "https://www.gat.ac.in/documents/MTech 4th Sem Tentative COE (2).pdf",
-      "title": "MTech 4th Sem Tentative COE (2).pdf",
+      "title": "https://www.gat.ac.in/documents/MTech 4th Sem Tentative COE (2).pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.331486+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
     "https://www.gat.ac.in/documents/naac_cycle.pdf": {
       "source_url": "https://www.gat.ac.in/documents/naac_cycle.pdf",
-      "title": "naac_cycle.pdf",
+      "title": "https://www.gat.ac.in/documents/naac_cycle.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.386137+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 8,
       "errors": []
     },
     "https://www.gat.ac.in/documents/newNBA.pdf": {
       "source_url": "https://www.gat.ac.in/documents/newNBA.pdf",
-      "title": "newNBA.pdf",
+      "title": "https://www.gat.ac.in/documents/newNBA.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.434603+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 7,
       "errors": []
     },
     "https://gat.ac.in/downloads/NIRF-2024-Engineering.pdf": {
       "source_url": "https://gat.ac.in/downloads/NIRF-2024-Engineering.pdf",
-      "title": "NIRF-2024-Engineering.pdf",
+      "title": "https://gat.ac.in/downloads/NIRF-2024-Engineering.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.489389+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 45,
       "errors": []
     },
     "https://gat.ac.in/downloads/NIRF-2024-Management.pdf": {
       "source_url": "https://gat.ac.in/downloads/NIRF-2024-Management.pdf",
-      "title": "NIRF-2024-Management.pdf",
+      "title": "https://gat.ac.in/downloads/NIRF-2024-Management.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.539199+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 10,
       "errors": []
     },
     "https://gat.ac.in/downloads/NIRF-2025-Engineering.pdf": {
       "source_url": "https://gat.ac.in/downloads/NIRF-2025-Engineering.pdf",
-      "title": "NIRF-2025-Engineering.pdf",
+      "title": "https://gat.ac.in/downloads/NIRF-2025-Engineering.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.598437+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 38,
       "errors": []
     },
     "https://gat.ac.in/downloads/NIRF-2025-Management.pdf": {
       "source_url": "https://gat.ac.in/downloads/NIRF-2025-Management.pdf",
-      "title": "NIRF-2025-Management.pdf",
+      "title": "https://gat.ac.in/downloads/NIRF-2025-Management.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.642254+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 11,
       "errors": []
     },
     "https://gat.ac.in/downloads/NIRF-2025-Overall.pdf": {
       "source_url": "https://gat.ac.in/downloads/NIRF-2025-Overall.pdf",
-      "title": "NIRF-2025-Overall.pdf",
+      "title": "https://gat.ac.in/downloads/NIRF-2025-Overall.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.694016+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 44,
       "errors": []
     },
     "https://gat.ac.in/downloads/NIRF-Data-2022-Engineering.pdf": {
       "source_url": "https://gat.ac.in/downloads/NIRF-Data-2022-Engineering.pdf",
-      "title": "NIRF-Data-2022-Engineering.pdf",
+      "title": "https://gat.ac.in/downloads/NIRF-Data-2022-Engineering.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.744137+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 40,
       "errors": []
     },
     "https://gat.ac.in/downloads/NIRF-Data-2022-Management.pdf": {
       "source_url": "https://gat.ac.in/downloads/NIRF-Data-2022-Management.pdf",
-      "title": "NIRF-Data-2022-Management.pdf",
+      "title": "https://gat.ac.in/downloads/NIRF-Data-2022-Management.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.801679+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 10,
       "errors": []
     },
     "https://gat.ac.in/downloads/NIRF-Data-2022-Overall.pdf": {
       "source_url": "https://gat.ac.in/downloads/NIRF-Data-2022-Overall.pdf",
-      "title": "NIRF-Data-2022-Overall.pdf",
+      "title": "https://gat.ac.in/downloads/NIRF-Data-2022-Overall.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.853733+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 50,
       "errors": []
     },
     "https://gat.ac.in/downloads/NIRF-Data-2023-Engineering.pdf": {
       "source_url": "https://gat.ac.in/downloads/NIRF-Data-2023-Engineering.pdf",
-      "title": "NIRF-Data-2023-Engineering.pdf",
+      "title": "https://gat.ac.in/downloads/NIRF-Data-2023-Engineering.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.897042+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 44,
       "errors": []
     },
     "https://gat.ac.in/downloads/NIRF-Data-2023-Management.pdf": {
       "source_url": "https://gat.ac.in/downloads/NIRF-Data-2023-Management.pdf",
-      "title": "NIRF-Data-2023-Management.pdf",
+      "title": "https://gat.ac.in/downloads/NIRF-Data-2023-Management.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:02.952353+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 10,
       "errors": []
     },
     "https://gat.ac.in/downloads/NIRF-Data-2023-Overall-New.pdf": {
       "source_url": "https://gat.ac.in/downloads/NIRF-Data-2023-Overall-New.pdf",
-      "title": "NIRF-Data-2023-Overall-New.pdf",
+      "title": "https://gat.ac.in/downloads/NIRF-Data-2023-Overall-New.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:03.015135+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 47,
       "errors": []
     },
     "https://gat.ac.in/downloads/Nirf-Overall-2024.pdf": {
       "source_url": "https://gat.ac.in/downloads/Nirf-Overall-2024.pdf",
-      "title": "Nirf-Overall-2024.pdf",
+      "title": "https://gat.ac.in/downloads/Nirf-Overall-2024.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:03.066333+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 48,
       "errors": []
     },
     "https://www.gat.ac.in/documents/examination/Notification_Summer Semester Examination- 2024 Scheme.pdf": {
       "source_url": "https://www.gat.ac.in/documents/examination/Notification_Summer Semester Examination- 2024 Scheme.pdf",
-      "title": "Notification_Summer Semester Examination- 2024 Scheme.pdf",
+      "title": "https://www.gat.ac.in/documents/examination/Notification_Summer Semester Examination- 2024 Scheme.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:03.120234+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
     "https://www.gat.ac.in/documents/examination/Notification_Supplementary Examination- 2023 Scheme.pdf": {
       "source_url": "https://www.gat.ac.in/documents/examination/Notification_Supplementary Examination- 2023 Scheme.pdf",
-      "title": "Notification_Supplementary Examination- 2023 Scheme.pdf",
+      "title": "https://www.gat.ac.in/documents/examination/Notification_Supplementary Examination- 2023 Scheme.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:03.175215+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
@@ -1484,10 +1484,10 @@
     },
     "https://www.gat.ac.in/documents/NSS%20Cell_new.pdf": {
       "source_url": "https://www.gat.ac.in/documents/NSS%20Cell_new.pdf",
-      "title": "NSS Cell_new.pdf",
+      "title": "https://www.gat.ac.in/documents/NSS%20Cell_new.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:03.279435+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
@@ -1521,28 +1521,28 @@
     },
     "https://www.gat.ac.in/documents/PG MBA 2nd Sem COE.pdf": {
       "source_url": "https://www.gat.ac.in/documents/PG MBA 2nd Sem COE.pdf",
-      "title": "PG MBA 2nd Sem COE.pdf",
+      "title": "https://www.gat.ac.in/documents/PG MBA 2nd Sem COE.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:03.441071+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
     "https://www.gat.ac.in/documents/PG MBA 4th Sem COE.pdf": {
       "source_url": "https://www.gat.ac.in/documents/PG MBA 4th Sem COE.pdf",
-      "title": "PG MBA 4th Sem COE.pdf",
+      "title": "https://www.gat.ac.in/documents/PG MBA 4th Sem COE.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:03.488691+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
     "https://www.gat.ac.in/academic-notifications/Re-registration Courses 2020,2021,2022 scheme.pdf": {
       "source_url": "https://www.gat.ac.in/academic-notifications/Re-registration Courses 2020,2021,2022 scheme.pdf",
-      "title": "Re-registration Courses 2020,2021,2022 scheme.pdf",
+      "title": "https://www.gat.ac.in/academic-notifications/Re-registration Courses 2020,2021,2022 scheme.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:03.542210+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
@@ -1618,10 +1618,10 @@
     },
     "https://www.gat.ac.in/documents/SC-ST-Cell-GAT_new.pdf": {
       "source_url": "https://www.gat.ac.in/documents/SC-ST-Cell-GAT_new.pdf",
-      "title": "SC-ST-Cell-GAT_new.pdf",
+      "title": "https://www.gat.ac.in/documents/SC-ST-Cell-GAT_new.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:03.848071+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 7,
       "errors": []
     },
@@ -1697,19 +1697,19 @@
     },
     "https://www.gat.ac.in/documents/SEE Timetable for UG -June 2026 -BETCK24205F.pdf": {
       "source_url": "https://www.gat.ac.in/documents/SEE Timetable for UG -June 2026 -BETCK24205F.pdf",
-      "title": "SEE Timetable for UG -June 2026 -BETCK24205F.pdf",
+      "title": "https://www.gat.ac.in/documents/SEE Timetable for UG -June 2026 -BETCK24205F.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:04.116048+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
     "https://www.gat.ac.in/documents/SEE_Timetable_Missing_Subject_MCS24204A-compressed.pdf": {
       "source_url": "https://www.gat.ac.in/documents/SEE_Timetable_Missing_Subject_MCS24204A-compressed.pdf",
-      "title": "SEE_Timetable_Missing_Subject_MCS24204A-compressed.pdf",
+      "title": "https://www.gat.ac.in/documents/SEE_Timetable_Missing_Subject_MCS24204A-compressed.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:04.161568+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
@@ -1743,91 +1743,91 @@
     },
     "https://www.gat.ac.in/academic-notifications/Summer Sem Notification - 2023.pdf": {
       "source_url": "https://www.gat.ac.in/academic-notifications/Summer Sem Notification - 2023.pdf",
-      "title": "Summer Sem Notification - 2023.pdf",
+      "title": "https://www.gat.ac.in/academic-notifications/Summer Sem Notification - 2023.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:04.321431+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
     "https://www.gat.ac.in/documents/Tentative Calendar of Events of 8th Sem - Even.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Tentative Calendar of Events of 8th Sem - Even.pdf",
-      "title": "Tentative Calendar of Events of 8th Sem - Even.pdf",
+      "title": "https://www.gat.ac.in/documents/Tentative Calendar of Events of 8th Sem - Even.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:04.372813+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
     "https://www.gat.ac.in/documents/Timetable_SEE exam_June 2026_MBA_MTech.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Timetable_SEE exam_June 2026_MBA_MTech.pdf",
-      "title": "Timetable_SEE exam_June 2026_MBA_MTech.pdf",
+      "title": "https://www.gat.ac.in/documents/Timetable_SEE exam_June 2026_MBA_MTech.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:04.429038+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 16,
       "errors": []
     },
     "https://www.gat.ac.in/documents/examination/UG Application forms for CRV and Photocopy - 1st, 2nd, 3rd and 5th Semester.pdf": {
       "source_url": "https://www.gat.ac.in/documents/examination/UG Application forms for CRV and Photocopy - 1st, 2nd, 3rd and 5th Semester.pdf",
-      "title": "UG Application forms for CRV and Photocopy - 1st, 2nd, 3rd and 5th Semester.pdf",
+      "title": "https://www.gat.ac.in/documents/examination/UG Application forms for CRV and Photocopy - 1st, 2nd, 3rd and 5th Semester.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:04.483320+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
     "https://www.gat.ac.in/documents/examination/UG Application forms for Make-up SEE- 2nd Semester UG.pdf": {
       "source_url": "https://www.gat.ac.in/documents/examination/UG Application forms for Make-up SEE- 2nd Semester UG.pdf",
-      "title": "UG Application forms for Make-up SEE- 2nd Semester UG.pdf",
+      "title": "https://www.gat.ac.in/documents/examination/UG Application forms for Make-up SEE- 2nd Semester UG.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:04.540136+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
     "https://www.gat.ac.in/documents/ugc.pdf": {
       "source_url": "https://www.gat.ac.in/documents/ugc.pdf",
-      "title": "ugc.pdf",
+      "title": "https://www.gat.ac.in/documents/ugc.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:04.587869+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 6,
       "errors": []
     },
     "https://www.gat.ac.in/documents/Upskill-Celll-GAT_new.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Upskill-Celll-GAT_new.pdf",
-      "title": "Upskill-Celll-GAT_new.pdf",
+      "title": "https://www.gat.ac.in/documents/Upskill-Celll-GAT_new.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:04.644113+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 3,
       "errors": []
     },
     "https://www.gat.ac.in/documents/vtuAuto.pdf": {
       "source_url": "https://www.gat.ac.in/documents/vtuAuto.pdf",
-      "title": "vtuAuto.pdf",
+      "title": "https://www.gat.ac.in/documents/vtuAuto.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:04.689676+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 6,
       "errors": []
     },
     "https://www.gat.ac.in/documents/vtuRecog.pdf": {
       "source_url": "https://www.gat.ac.in/documents/vtuRecog.pdf",
-      "title": "vtuRecog.pdf",
+      "title": "https://www.gat.ac.in/documents/vtuRecog.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:04.738494+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 2,
       "errors": []
     },
     "https://www.gat.ac.in/documents/Women%20Empoerment%20cell_new.pdf": {
       "source_url": "https://www.gat.ac.in/documents/Women%20Empoerment%20cell_new.pdf",
-      "title": "Women Empoerment cell_new.pdf",
+      "title": "https://www.gat.ac.in/documents/Women%20Empoerment%20cell_new.pdf",
       "source_type": "official_pdf",
       "collection_date": "2026-08-09T12:24:04.788241+00:00",
-      "status": "chunked",
+      "status": "embedded",
       "chunk_count": 6,
       "errors": []
     },
@@ -2102,6 +2102,15 @@
           "message": "download failed: 403 Client Error: Forbidden"
         }
       ]
+    },
+    "https://www.gat.ac.in/img/Admission%202026.docx": {
+      "source_url": "https://www.gat.ac.in/img/Admission%202026.docx",
+      "title": "https://www.gat.ac.in/img/Admission%202026.docx",
+      "source_type": "official_pdf",
+      "collection_date": "2026-08-18T13:20:19.886210+00:00",
+      "status": "embedded",
+      "chunk_count": 19,
+      "errors": []
     }
   }
 }
