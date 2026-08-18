@@ -3,12 +3,14 @@
 import { motion } from "framer-motion";
 import { MapPin } from "lucide-react";
 
+import { useTranslation } from "@/hooks";
 import type { TourPanorama } from "@/types";
 
 export function TourTopBar({ panorama }: { panorama: TourPanorama }) {
-  const crumbs = [panorama.building, panorama.floor, panorama.room].filter(
-    (part): part is string => Boolean(part),
-  );
+  const { t } = useTranslation();
+  const crumbs = [panorama.building, panorama.floor, panorama.room]
+    .filter((part): part is string => Boolean(part))
+    .map((part) => t(part));
 
   return (
     <motion.div

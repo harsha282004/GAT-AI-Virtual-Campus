@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Crosshair, Target, Trash2 } from "lucide-react";
 
+import { useTranslation } from "@/hooks";
 import { cn } from "@/utils";
 import type { CrossFloorHotspotDto, TourPanorama } from "@/types";
 
@@ -50,6 +51,7 @@ export function CrossFloorHotspotPlacementPanel({
   onCancelEdit,
   onUpdate,
 }: CrossFloorHotspotPlacementPanelProps) {
+  const { t } = useTranslation();
   const [targetSceneId, setTargetSceneId] = useState("");
   const [label, setLabel] = useState("");
   const [saving, setSaving] = useState(false);
@@ -115,7 +117,7 @@ export function CrossFloorHotspotPlacementPanel({
       <div className="flex items-center justify-between gap-2">
         <span className="flex items-center gap-2 font-semibold uppercase tracking-wide text-sky-600">
           <Target className="h-4 w-4" />
-          Cross-Floor Hotspots
+          {t("Cross-Floor Hotspots")}
         </span>
         <button
           type="button"
@@ -127,17 +129,14 @@ export function CrossFloorHotspotPlacementPanel({
           )}
         >
           <Crosshair className="h-3.5 w-3.5" />
-          {placing ? "Cancel" : "Place"}
+          {placing ? t("Cancel") : t("Place")}
         </button>
       </div>
 
       {!editing && !placing && !pickedCoords && (
         <div className="space-y-1.5 text-xs leading-relaxed text-muted">
-          <p>
-            Click <span className="font-medium text-ink">Place</span> and then click
-            anywhere inside the panorama to create a new cross-floor hotspot.
-          </p>
-          <p>Click any existing hotspot marker inside the panorama to edit or delete it.</p>
+          <p>{t("Click Place and then click anywhere inside the panorama to create a new cross-floor hotspot.")}</p>
+          <p>{t("Click any existing hotspot marker inside the panorama to edit or delete it.")}</p>
         </div>
       )}
 
@@ -148,9 +147,9 @@ export function CrossFloorHotspotPlacementPanel({
             onChange={(event) => setTargetSceneId(event.target.value)}
             className="w-full rounded-lg border border-hairline bg-white px-2.5 py-2 text-sm dark:bg-[#0F172A]"
           >
-            <option value="">Select destination scene…</option>
+            <option value="">{t("Select destination scene…")}</option>
             {Array.from(floorGroups.entries()).map(([floor, scenes]) => (
-              <optgroup key={floor} label={floor}>
+              <optgroup key={floor} label={t(floor)}>
                 {scenes.map((scene) => (
                   <option key={scene.id} value={scene.id}>
                     {scene.name}
@@ -162,7 +161,7 @@ export function CrossFloorHotspotPlacementPanel({
           <input
             value={label}
             onChange={(event) => setLabel(event.target.value)}
-            placeholder="Label (optional)"
+            placeholder={t("Label (optional)")}
             className="w-full rounded-lg border border-hairline bg-white px-2.5 py-2 text-sm dark:bg-[#0F172A]"
           />
           <div className="flex gap-2">
@@ -172,13 +171,13 @@ export function CrossFloorHotspotPlacementPanel({
               disabled={!targetSceneId || saving}
               className="flex-1 rounded-full bg-sky-500 px-3.5 py-2 font-medium text-white transition-colors hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {saving ? "Saving…" : "Save Changes"}
+              {saving ? t("Saving…") : t("Save Changes")}
             </button>
             <button
               type="button"
               onClick={() => handleDelete(editing.id)}
               disabled={deletingId === editing.id}
-              aria-label="Delete hotspot"
+              aria-label={t("Delete hotspot")}
               className="rounded-full bg-red-500/10 px-3.5 py-2 text-red-600 transition-colors hover:bg-red-500/20 disabled:opacity-50"
             >
               <Trash2 className="h-4 w-4" />
@@ -188,7 +187,7 @@ export function CrossFloorHotspotPlacementPanel({
               onClick={onCancelEdit}
               className="rounded-full bg-white px-3.5 py-2 text-ink dark:bg-[#0F172A]"
             >
-              Cancel
+              {t("Cancel")}
             </button>
           </div>
         </div>
@@ -196,7 +195,7 @@ export function CrossFloorHotspotPlacementPanel({
 
       {!editing && placing && !pickedCoords && (
         <p className="rounded-lg bg-black/5 px-2.5 py-2 text-xs text-muted dark:bg-white/5">
-          Click on the panorama where another floor is visible.
+          {t("Click on the panorama where another floor is visible.")}
         </p>
       )}
 
@@ -210,9 +209,9 @@ export function CrossFloorHotspotPlacementPanel({
             onChange={(event) => setTargetSceneId(event.target.value)}
             className="w-full rounded-lg border border-hairline bg-white px-2.5 py-2 text-sm dark:bg-[#0F172A]"
           >
-            <option value="">Select destination scene…</option>
+            <option value="">{t("Select destination scene…")}</option>
             {Array.from(floorGroups.entries()).map(([floor, scenes]) => (
-              <optgroup key={floor} label={floor}>
+              <optgroup key={floor} label={t(floor)}>
                 {scenes.map((scene) => (
                   <option key={scene.id} value={scene.id}>
                     {scene.name}
@@ -224,7 +223,7 @@ export function CrossFloorHotspotPlacementPanel({
           <input
             value={label}
             onChange={(event) => setLabel(event.target.value)}
-            placeholder="Label (optional)"
+            placeholder={t("Label (optional)")}
             className="w-full rounded-lg border border-hairline bg-white px-2.5 py-2 text-sm dark:bg-[#0F172A]"
           />
           <div className="flex gap-2">
@@ -234,14 +233,14 @@ export function CrossFloorHotspotPlacementPanel({
               disabled={!targetSceneId || saving}
               className="flex-1 rounded-full bg-sky-500 px-3.5 py-2 font-medium text-white transition-colors hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {saving ? "Saving…" : "Save"}
+              {saving ? t("Saving…") : t("Save")}
             </button>
             <button
               type="button"
               onClick={onClearPick}
               className="rounded-full bg-white px-3.5 py-2 text-ink dark:bg-[#0F172A]"
             >
-              Cancel
+              {t("Cancel")}
             </button>
           </div>
         </div>

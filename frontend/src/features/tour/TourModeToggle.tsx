@@ -2,6 +2,7 @@
 
 import { Footprints, Sparkles } from "lucide-react";
 
+import { useTranslation } from "@/hooks";
 import { cn } from "@/utils";
 
 export type TourMode = "manual" | "guided";
@@ -14,6 +15,7 @@ interface TourModeToggleProps {
 /** Sprint 3 Step 1 — switches between Manual Tour (unchanged, Sprint 1/2
  * hotspot-driven walking) and Guided Tour (Sprint 3's automatic walk). */
 export function TourModeToggle({ mode, onChange }: TourModeToggleProps) {
+  const { t } = useTranslation();
   return (
     <div className="glass inline-flex items-center gap-1.5 rounded-full p-1.5 shadow-soft">
       <button
@@ -26,7 +28,7 @@ export function TourModeToggle({ mode, onChange }: TourModeToggleProps) {
         )}
       >
         <Footprints className="h-4 w-4" />
-        Manual Tour
+        {t("Manual Tour")}
       </button>
       <button
         type="button"
@@ -38,7 +40,7 @@ export function TourModeToggle({ mode, onChange }: TourModeToggleProps) {
         )}
       >
         <Sparkles className="h-4 w-4" />
-        Guided Tour
+        {t("Guided Tour")}
       </button>
     </div>
   );

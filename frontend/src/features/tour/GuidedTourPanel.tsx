@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { AlertTriangle, Building2, Layers, MapPin, Sparkles, Video } from "lucide-react";
 
+import { useTranslation } from "@/hooks";
+import { tScenesRemaining, tSceneOf } from "@/lib/i18n/translations";
 import { cn } from "@/utils";
 import type { PanoramaEngine, PanoramaNode } from "@/features/tour/engine";
 import { videoPortalButtonLabel } from "@/features/tour/engine";
@@ -33,6 +35,7 @@ interface GuidedTourPanelProps {
  */
 export function GuidedTourPanel({ currentNode, engine, status, phase, errorMessage }: GuidedTourPanelProps) {
   const [videoNotice, setVideoNotice] = useState<string | null>(null);
+  const { t, language } = useTranslation();
 
   const floorList = engine.getFloor(currentNode.floor);
   const sceneNumber = currentNode.sequenceIndex ?? null;
@@ -47,22 +50,22 @@ export function GuidedTourPanel({ currentNode, engine, status, phase, errorMessa
     <div className="glass flex w-full flex-col gap-3 rounded-3xl p-4 shadow-soft lg:w-72">
       <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-brand">
         <Sparkles className="h-3.5 w-3.5" />
-        AI Guide
+        {t("AI Guide")}
       </div>
 
       <div className="space-y-1 text-sm text-ink">
         <p className="flex items-center gap-1.5 font-medium">
           <Building2 className="h-3.5 w-3.5 text-brand/70" />
-          {currentNode.building}
+          {t(currentNode.building)}
         </p>
         <p className="flex items-center gap-1.5 text-ink/80">
           <Layers className="h-3.5 w-3.5 text-brand/70" />
-          {currentNode.floor}
+          {t(currentNode.floor)}
         </p>
         {currentNode.room && (
           <p className="flex items-center gap-1.5 text-ink/80">
             <MapPin className="h-3.5 w-3.5 text-brand/70" />
-            {currentNode.room}
+            {t(currentNode.room)}
           </p>
         )}
       </div>
@@ -70,9 +73,7 @@ export function GuidedTourPanel({ currentNode, engine, status, phase, errorMessa
       {hasProgress && (
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-[11px] text-muted">
-            <span>
-              Scene {sceneNumber} of {totalInFloor}
-            </span>
+            <span>{tSceneOf(language, sceneNumber!, totalInFloor!)}</span>
             <span>{percent}%</span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-brand/10">
@@ -81,9 +82,7 @@ export function GuidedTourPanel({ currentNode, engine, status, phase, errorMessa
               style={{ width: `${percent}%` }}
             />
           </div>
-          <p className="text-[11px] text-muted">
-            {remaining === 0 ? "Last scene on this floor" : `${remaining} scene${remaining === 1 ? "" : "s"} remaining`}
-          </p>
+          <p className="text-[11px] text-muted">{tScenesRemaining(language, remaining!)}</p>
         </div>
       )}
 
@@ -93,12 +92,12 @@ export function GuidedTourPanel({ currentNode, engine, status, phase, errorMessa
 
       {(status === "playing" || status === "paused") && phase && (
         <p className="text-[11px] font-medium text-brand">
-          {status === "paused" ? "Paused" : PHASE_LABEL[phase]}
+          {status === "paused" ? t("Paused") : t(PHASE_LABEL[phase])}
         </p>
       )}
 
       {status === "completed" && (
-        <p className="text-[11px] font-medium text-brand">Guided tour complete.</p>
+        <p className="text-[11px] font-medium text-brand">{t("Guided tour complete.")}</p>
       )}
 
       {status === "error" && errorMessage && (
