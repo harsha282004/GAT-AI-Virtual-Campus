@@ -34,6 +34,7 @@ from __future__ import annotations
 import os
 import threading
 import time
+from contextvars import ContextVar
 from typing import Any
 
 import ollama
@@ -93,6 +94,32 @@ contradicting each other; if they conflict, note the discrepancy rather than pic
 one arbitrarily.
 - Do not mention chunk IDs, retrieval scores, or internal system implementation \
 details in your answer — write for a prospective student or visitor, not a developer."""
+
+# Selected UI language for this request ("en"/"kn"/"hi") — set by
+# app.api.v1.chat.chat() at the top of each request (same thread, plain
+# synchronous call chain down to generate_answer() below, so no cross-
+# thread propagation concern) and read here only, to append a language
+# instruction to the system prompt. Never touches retrieval, embeddings,
+# the intent classifier, or navigation — this is the smallest change that
+# makes generation itself language-aware, per this phase's instruction.
+RESPONSE_LANGUAGE: ContextVar[str] = ContextVar("response_language", default="en")
+
+_LANGUAGE_INSTRUCTIONS: dict[str, str] = {
+    "kn": (
+        "\n\nRespond in natural, fluent Kannada (ಕನ್ನಡ) — not a literal "
+        "word-for-word translation. Keep proper nouns exactly as given in the "
+        "CONTEXT and untranslated: GAT, Global Academy of Technology, VTU, "
+        "department abbreviations (CSE, ISE, ECE, EEE, ME, CE), person names, "
+        "room/building numbers, and URLs."
+    ),
+    "hi": (
+        "\n\nRespond in natural, fluent Hindi (हिन्दी) — not a literal "
+        "word-for-word translation. Keep proper nouns exactly as given in the "
+        "CONTEXT and untranslated: GAT, Global Academy of Technology, VTU, "
+        "department abbreviations (CSE, ISE, ECE, EEE, ME, CE), person names, "
+        "room/building numbers, and URLs."
+    ),
+}
 
 MEDIUM_CONFIDENCE_ADDENDUM = (
     "\n\nThe retrieved context for this question is only moderately relevant. "
@@ -250,6 +277,9 @@ def generate_answer(
     system_prompt = SYSTEM_PROMPT
     if category == "MEDIUM":
         system_prompt += MEDIUM_CONFIDENCE_ADDENDUM
+    language_instruction = _LANGUAGE_INSTRUCTIONS.get(RESPONSE_LANGUAGE.get())
+    if language_instruction:
+        system_prompt += language_instruction
 
     context_block = _build_context_block(retrieved_context)
     user_prompt = (

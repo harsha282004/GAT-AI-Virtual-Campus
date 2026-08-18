@@ -31,6 +31,9 @@ export interface ChatMessage {
   navigation?: ChatNavigationInfo | null;
   panorama?: ChatPanoramaInfo | null;
   error?: boolean;
+  /** True on an assistant message that answers a voice-submitted query —
+   * ChatWindow uses this to auto-speak it via Text-to-Speech once. */
+  spokenQuery?: boolean;
 }
 
 // --- POST /api/v1/chat contract (Phase 7) — field names match the
@@ -40,6 +43,7 @@ export interface ChatMessage {
 export interface ChatApiRequest {
   message: string;
   session_id?: string | null;
+  language?: string | null;
 }
 
 export interface ChatApiSource {

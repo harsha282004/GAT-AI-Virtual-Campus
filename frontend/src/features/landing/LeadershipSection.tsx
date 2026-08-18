@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 
 import { SectionTitle } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // Intrinsic pixel dimensions of each existing image (frontend/public/images/) —
 // required by next/image to preserve each image's own aspect ratio. The
@@ -17,10 +18,11 @@ const LEADERSHIP_IMAGES = [
 ];
 
 export function LeadershipSection() {
+  const { t } = useTranslation();
   return (
     <section className="section-padding">
       <div className="container-page">
-        <SectionTitle eyebrow="Leadership" title="A Message from Our Leadership" />
+        <SectionTitle eyebrow={t("Leadership")} title={t("A Message from Our Leadership")} />
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
           {LEADERSHIP_IMAGES.map((image, index) => (

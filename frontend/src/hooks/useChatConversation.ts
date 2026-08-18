@@ -1,7 +1,7 @@
 "use client";
 
 import { getApiErrorMessage } from "@/api/client";
-import { useChatStore } from "@/store";
+import { useChatStore, useLanguageStore } from "@/store";
 import type { ChatApiSource, ChatMessage, ChatSource } from "@/types";
 
 import { useChatSend } from "./useChat";
@@ -45,13 +45,15 @@ export function useChatConversation() {
   const addMessage = useChatStore((state) => state.addMessage);
   const setAssistantTyping = useChatStore((state) => state.setAssistantTyping);
   const setSessionId = useChatStore((state) => state.setSessionId);
+  const language = useLanguageStore((state) => state.language);
   const chatSend = useChatSend();
 
-  function sendMessage(content: string) {
+  function sendMessage(content: string, options?: { viaVoice?: boolean }) {
     // Belt-and-braces guard — callers (ChatInput, SuggestedQuestions) also
     // disable their own controls while a request is in flight.
     const trimmed = content.trim();
     if (!trimmed || isAssistantTyping) return;
+    const viaVoice = options?.viaVoice ?? false;
 
     const userMessage: ChatMessage = {
       id: nextId("user"),
@@ -63,7 +65,7 @@ export function useChatConversation() {
     setAssistantTyping(true);
 
     chatSend.mutate(
-      { message: trimmed, sessionId },
+      { message: trimmed, sessionId, language },
       {
         onSuccess: (response) => {
           setSessionId(response.session_id);
@@ -75,6 +77,7 @@ export function useChatConversation() {
             sources: dedupeSources(response.sources, response.selected_agent),
             navigation: response.navigation,
             panorama: response.panorama,
+            spokenQuery: viaVoice,
           });
         },
         onError: (error) => {

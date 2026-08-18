@@ -1,13 +1,26 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Bot, Check, Copy, User } from "lucide-react";
+import { Bot, Check, Copy, User, Volume2, VolumeX } from "lucide-react";
 import { useState } from "react";
 
+import { useTranslation } from "@/hooks";
 import { cn } from "@/utils";
 import type { ChatMessage } from "@/types";
 
-export function ChatMessageBubble({ message }: { message: ChatMessage }) {
+interface ChatMessageBubbleProps {
+  message: ChatMessage;
+  /** Whether Text-to-Speech is currently reading THIS message aloud. */
+  isSpeaking?: boolean;
+  /** Toggles TTS playback for this message — starts it if idle, calls
+   * speechSynthesis.cancel() (via the parent's stop()) if already
+   * speaking. Omitted entirely (no button rendered) when TTS isn't
+   * supported in this browser. */
+  onToggleSpeak?: () => void;
+}
+
+export function ChatMessageBubble({ message, isSpeaking = false, onToggleSpeak }: ChatMessageBubbleProps) {
+  const { t } = useTranslation();
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
 
@@ -79,15 +92,32 @@ export function ChatMessageBubble({ message }: { message: ChatMessage }) {
         </div>
 
         {!isUser && (
-          <button
-            type="button"
-            onClick={handleCopy}
-            aria-label={copied ? "Copied" : "Copy message"}
-            className="flex items-center gap-1 self-start rounded-full px-2 py-1 text-[11px] text-muted opacity-0 transition-opacity duration-200 hover:text-brand group-hover/bubble:opacity-100"
-          >
-            {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-            {copied ? "Copied" : "Copy"}
-          </button>
+          <div className="flex items-center gap-1 self-start opacity-0 transition-opacity duration-200 group-hover/bubble:opacity-100">
+            <button
+              type="button"
+              onClick={handleCopy}
+              aria-label={copied ? t("Copied") : t("Copy")}
+              className="flex items-center gap-1 rounded-full px-2 py-1 text-[11px] text-muted hover:text-brand"
+            >
+              {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              {copied ? t("Copied") : t("Copy")}
+            </button>
+
+            {!message.error && onToggleSpeak && (
+              <button
+                type="button"
+                onClick={onToggleSpeak}
+                aria-label={isSpeaking ? t("Stop speaking") : t("Listen to answer")}
+                title={isSpeaking ? t("Stop speaking") : t("Listen to answer")}
+                className={cn(
+                  "flex items-center gap-1 rounded-full px-2 py-1 text-[11px] hover:text-brand",
+                  isSpeaking ? "text-brand" : "text-muted",
+                )}
+              >
+                {isSpeaking ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+              </button>
+            )}
+          </div>
         )}
       </div>
     </motion.div>

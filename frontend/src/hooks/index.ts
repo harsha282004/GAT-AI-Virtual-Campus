@@ -11,5 +11,7 @@ export * from "./usePanoramaPreloader";
 export * from "./usePanoramas";
 export * from "./useRooms";
 export * from "./useSpeechRecognition";
+export * from "./useSpeechSynthesis";
 export * from "./useTourKeyboardShortcuts";
 export * from "./useTourPanoramas";
+export * from "./useTranslation";

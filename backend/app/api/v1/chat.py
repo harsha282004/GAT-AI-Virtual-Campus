@@ -116,6 +116,7 @@ from conversation_context import (  # noqa: E402
     format_clarification_question,
     resolve_reference,
 )
+from llm_generator import RESPONSE_LANGUAGE  # noqa: E402
 
 # isort: on
 
@@ -379,6 +380,12 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)) -> ChatResponse:
     message = payload.message.strip()
     if not message:
         raise BadRequestError("message must not be empty")
+
+    # Selected UI language, threaded to llm_generator.generate_answer()
+    # via a ContextVar (same thread, plain synchronous call chain below —
+    # see RESPONSE_LANGUAGE's docstring) so the generated answer is
+    # produced in that language. Defaults to English when absent.
+    RESPONSE_LANGUAGE.set(payload.language or "en")
 
     # Session persistence is best-effort: a database problem here degrades
     # to Phase 7's original stateless behavior (a locally-generated,
