@@ -1,0 +1,35 @@
+query,true_intent,predicted_intent,confidence
+Where is the nearest toilet?,LABORATORY_LOCATION,DEPARTMENT_LOCATION,0.8206
+Where is the nearest washroom?,LABORATORY_LOCATION,DEPARTMENT_LOCATION,0.7899
+What is the syllabus for CSE?,ACADEMICS,ACADEMICS,0.7542
+What floor has room 417?,ROOM_LOCATION,ROOM_LOCATION,0.8553
+Show me the panorama for the library.,VIRTUAL_TOUR,VIRTUAL_TOUR,0.9211
+Give me a virtual walkthrough of the college.,VIRTUAL_TOUR,UNKNOWN,0.6669
+Who are the faculty members in ECE?,ACADEMICS,ACADEMICS,0.9417
+How do I apply for admission?,ADMISSIONS,ADMISSIONS,0.9862
+Where is the CSE department?,DEPARTMENT_LOCATION,DEPARTMENT_LOCATION,0.994
+What score do I need to get in?,ADMISSIONS,FACILITIES,0.9851
+Tell me about the campus infrastructure.,FACILITIES,FACILITIES,0.4627
+What is the capital of France?,UNKNOWN,CAMPUS_INFO,0.7167
+Is the college affiliated to VTU?,CAMPUS_INFO,COURSES,0.7388
+What sports facilities are available?,FACILITIES,FACILITIES,0.9768
+Point me to room 110A.,ROOM_LOCATION,FACILITIES,0.8562
+Who is the president of the United States?,UNKNOWN,VIRTUAL_TOUR,0.6518
+What branches of engineering are taught here?,DEPARTMENTS,DEPARTMENTS,0.9736
+Which floor is room 202 on?,ROOM_LOCATION,ROOM_LOCATION,0.9959
+What amenities are available for students?,FACILITIES,FACILITIES,0.2969
+What degrees does the college offer?,COURSES,COURSES,0.8987
+How do I join this college?,ADMISSIONS,CAMPUS_INFO,0.4448
+What is the cutoff for admission?,ADMISSIONS,VIRTUAL_TOUR,0.5544
+What is the population of Bangalore?,UNKNOWN,CAMPUS_INFO,0.9611
+Which floor has the Big Data lab?,LABORATORY_LOCATION,DEPARTMENT_LOCATION,0.7868
+Tell me the list of courses at GAT.,COURSES,COURSES,0.7522
+Where's room 213?,ROOM_LOCATION,ROOM_LOCATION,0.9561
+Does GAT offer an MBA program?,COURSES,DEPARTMENTS,0.982
+How many departments does the college have?,DEPARTMENTS,DEPARTMENTS,0.9979
+Where is room 202?,ROOM_LOCATION,ROOM_LOCATION,0.9857
+Where is room 303?,ROOM_LOCATION,ROOM_LOCATION,0.9907
+Which room is 419B?,ROOM_LOCATION,ROOM_LOCATION,0.9791
+What entrance exams are accepted?,ADMISSIONS,COURSES,0.7972
+What subjects are taught in first year?,COURSES,ACADEMICS,0.9851
+What can this chatbot do?,GENERAL,COURSES,0.9724
