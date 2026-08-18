@@ -30,15 +30,30 @@ sources by a small fixed amount, for the one domain with an established
 pattern. select_context()'s weak-chunk floor is then computed against the
 boosted scores, so a borderline same-domain chunk has a slightly better
 chance of surviving that floor than an equally-scored off-domain one.
+
+FEE/ADMISSIONS PHASE ADDITION — curated-answer fallback: when
+generate_answer() did NOT produce a confidently-grounded RAG answer —
+generation_status other than "generated", OR confidence_level below HIGH,
+OR (found via live testing) a "generated" HIGH-confidence answer whose
+own text is a hedge/refusal ("does not mention...", "cannot find...";
+retrieval scored the query well but the LLM still had nothing solid to
+say) — this falls through to curated_answers.find_curated_answer() BEFORE
+returning the existing LOW_CONFIDENCE_MESSAGE fallback. Priority is
+therefore exactly: confident grounded RAG answer > curated answer >
+existing fallback message — never the reverse, and a curated answer is
+never returned instead of a real, non-hedging RAG answer that already
+succeeded.
 """
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from _shared import configure_logging
 from confidence import compute_confidence
 from context_selection import apply_domain_boost, select_context
+from curated_answers import find_curated_answer
 from hybrid_retrieval import DEFAULT_CANDIDATE_N, hybrid_search
 from llm_generator import generate_answer
 from reranker import DEFAULT_TOP_K, rerank
@@ -72,6 +87,21 @@ _REFUSAL_REASONS = {
     ),
 }
 
+# Phrases the LLM tends to use when retrieval scored a query well enough
+# to reach generation (confidence_level HIGH) but the actual retrieved
+# text didn't really answer the question — a "generated" status alone
+# doesn't distinguish this from a genuinely good answer, so the answer
+# text itself is checked too before deciding whether curated_answers is
+# worth consulting.
+_HEDGE_PATTERN = re.compile(
+    r"does not (provide|contain|mention|specify)|"
+    r"doesn't (provide|contain|mention|specify|have)|"
+    r"cannot (find|determine|provide)|"
+    r"no (specific )?information (is )?(available|provided)|"
+    r"not (explicitly )?(stated|mentioned|specified) in the",
+    re.IGNORECASE,
+)
+
 
 def run_specialist(
     agent_name: str, query: str, top_k: int = DEFAULT_TOP_K, model: str = DEFAULT_AGENT_MODEL
@@ -88,6 +118,47 @@ def run_specialist(
     selected_context = select_context(reranked)
     confidence = compute_confidence(selected_context, query)
     generation = generate_answer(query, selected_context, confidence, model=model)
+
+    # Curated-answer fallback tier — only consulted when RAG itself did not
+    # produce a confidently-grounded answer (see this module's docstring
+    # for the exact priority order). A HIGH-confidence "generated" answer
+    # is never overridden. A LOW-confidence refusal (status != "generated")
+    # or a MEDIUM-confidence "generated" answer (the LLM was called but
+    # confidence was already uncertain — in practice these are often
+    # hedging non-answers, e.g. "the context does not mention...") both
+    # fall through to the curated check, since a genuinely matching
+    # curated answer (similarity >= SIMILARITY_THRESHOLD) is more useful
+    # than an uncertain generated one.
+    is_hedging_answer = bool(_HEDGE_PATTERN.search(generation.get("answer") or ""))
+    if (
+        generation["generation_status"] != "generated"
+        or generation.get("confidence_level") != "HIGH"
+        or is_hedging_answer
+    ):
+        curated = find_curated_answer(query)
+        if curated is not None:
+            logger.info(
+                "Using curated answer for query=%r (agent=%s, matched_question=%r, similarity=%.3f)",
+                query,
+                agent_name,
+                curated["question"],
+                curated["similarity"],
+            )
+            generation = {
+                **generation,
+                "answer": curated["answer"],
+                "confidence": curated["similarity"],
+                "confidence_level": "HIGH",
+                "generation_status": "curated_answer",
+                "sources": [
+                    {
+                        "title": curated.get("source") or "Curated Answer (GAT Admissions Office)",
+                        "source_url": None,
+                        "page": None,
+                    }
+                ],
+                "grounded": True,
+            }
 
     retrieved_context = [
         {

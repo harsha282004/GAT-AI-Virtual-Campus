@@ -100,6 +100,13 @@ class HybridRetriever:
         private attribute."""
         return self._chunks_by_id.get(chunk_id)
 
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        """Exposes the already-loaded embedding model to other same-process
+        consumers (curated_answers.py's semantic FAQ matching) so they
+        reuse this one model instance instead of loading a second copy —
+        no retrieval behavior lives here, purely an accessor."""
+        return self._model.encode(texts, normalize_embeddings=True).tolist()
+
     # ---- Step 3: dense semantic retrieval ----
     def dense_search(self, query: str, top_n: int = DEFAULT_CANDIDATE_N) -> dict[str, float]:
         """query -> {chunk_id: semantic_score}. semantic_score is cosine
