@@ -4,6 +4,11 @@ from pydantic import BaseModel
 class ChatRequest(BaseModel):
     message: str
     session_id: str | None = None
+    # Selected UI language ("en"/"kn"/"hi") — threaded through to
+    # llm_generator.RESPONSE_LANGUAGE so the generated answer is produced
+    # in that language. Optional/default "en" so existing callers that
+    # don't send it are unaffected.
+    language: str | None = None
 
 
 class ChatSourceOut(BaseModel):

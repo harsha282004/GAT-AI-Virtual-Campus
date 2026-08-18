@@ -4,11 +4,13 @@ import { Mic, SendHorizontal } from "lucide-react";
 import type { FormEvent, PointerEvent as ReactPointerEvent } from "react";
 import { useCallback, useRef, useState } from "react";
 
-import { useSpeechRecognition } from "@/hooks";
+import { useSpeechRecognition, useTranslation } from "@/hooks";
+import { SPEECH_LANG } from "@/lib/i18n/translations";
+import { useLanguageStore } from "@/store/languageStore";
 import { cn } from "@/utils";
 
 interface ChatInputProps {
-  onSend: (message: string) => void;
+  onSend: (message: string, options?: { viaVoice?: boolean }) => void;
   disabled?: boolean;
 }
 
@@ -24,6 +26,8 @@ const TAP_TOGGLE_THRESHOLD_MS = 350;
 const AUTO_SEND_DELAY_MS = 350;
 
 export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
+  const { t } = useTranslation();
+  const speechLang = useLanguageStore((state) => SPEECH_LANG[state.language]);
   const [value, setValue] = useState("");
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -32,20 +36,28 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
 
   // Voice only ever converts speech -> text. The transcript is fed into
   // the exact same onSend() the text form below uses — it never talks to
-  // the AI backend on its own (Section 6).
+  // the AI backend on its own (Section 6). Marked viaVoice so ChatWindow
+  // knows to speak the answer aloud once it arrives.
   const handleResult = useCallback(
     (transcript: string) => {
       setVoiceError(null);
       setValue(transcript);
       setIsProcessing(true);
       window.setTimeout(() => {
-        onSend(transcript);
+        onSend(transcript, { viaVoice: true });
         setValue("");
         setIsProcessing(false);
       }, AUTO_SEND_DELAY_MS);
     },
     [onSend],
   );
+
+  // Live preview only — never submitted. Lets the user see what's being
+  // heard while they're still speaking (flow: "Interim transcript updates
+  // while speaking").
+  const handleInterimResult = useCallback((transcript: string) => {
+    setValue(transcript);
+  }, []);
 
   const handleVoiceError = useCallback((message: string) => {
     setVoiceError(message);
@@ -54,7 +66,9 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
 
   const { isSupported, status, start, stop } = useSpeechRecognition({
     onResult: handleResult,
+    onInterimResult: handleInterimResult,
     onError: handleVoiceError,
+    lang: speechLang,
   });
   const isListening = status === "listening";
 
@@ -103,10 +117,10 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
   }
 
   const micTitle = !isSupported
-    ? "Voice input isn't supported in this browser"
+    ? t("Voice input isn't supported in this browser")
     : isListening
-      ? "Release to stop listening"
-      : "Press and hold, or tap, to ask by voice";
+      ? t("Release to stop listening")
+      : t("Press and hold, or tap, to ask by voice");
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -121,7 +135,7 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
           onPointerLeave={handleMicPointerLeave}
           disabled={disabled || !isSupported}
           title={micTitle}
-          aria-label={isListening ? "Stop voice input" : "Start voice input"}
+          aria-label={isListening ? t("Stop voice input") : t("Start voice input")}
           aria-pressed={isListening}
           className={cn(
             "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors",
@@ -138,10 +152,10 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
           onChange={(event) => setValue(event.target.value)}
           placeholder={
             isListening
-              ? "Listening…"
+              ? t("Listening…")
               : isProcessing
-                ? "Processing…"
-                : "Ask about admissions, academics, facilities…"
+                ? t("Processing…")
+                : t("Ask about admissions, academics, facilities…")
           }
           className="flex-1 bg-transparent px-1 text-sm text-ink placeholder:text-muted focus:outline-none"
         />
@@ -149,7 +163,7 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
         <button
           type="submit"
           disabled={!value.trim() || disabled}
-          aria-label="Send message"
+          aria-label={t("Send message")}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-40"
         >
           <SendHorizontal className="h-4 w-4" />
@@ -158,7 +172,7 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
 
       {voiceError && (
         <p role="alert" className="px-2 text-xs text-red-600 dark:text-red-400">
-          {voiceError}
+          {t(voiceError)}
         </p>
       )}
     </div>

@@ -3,6 +3,8 @@
 import { Camera, Languages, MapIcon, MessageSquare, Mic } from "lucide-react";
 
 import { FeatureCard, SectionTitle } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useLanguageStore } from "@/store/languageStore";
 
 const FEATURES = [
   {
@@ -45,23 +47,46 @@ const FEATURES = [
     title: "Multi-language Support",
     description: "Interact in English, Kannada, or Hindi as the platform expands.",
     accent: "gold" as const,
-    // Intentionally not linked — multilingual support isn't implemented yet.
+    // No dedicated page — clicking opens the navbar's Language dropdown
+    // (see FeatureCard's `onClick` prop and useOnClick below).
   },
 ];
 
 export function Features() {
+  const { t } = useTranslation();
+  const openPicker = useLanguageStore((state) => state.openPicker);
+
+  function handleLanguageCardClick() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    openPicker();
+  }
+
   return (
     <section className="section-padding">
       <div className="container-page">
         <SectionTitle
-          eyebrow="Platform"
-          title="Everything you need to explore GAT"
-          subtitle="One connected platform for prospective students, parents, and visitors to understand the campus before ever setting foot on it."
+          eyebrow={t("Platform")}
+          title={t("Everything you need to explore GAT")}
+          subtitle={t(
+            "One connected platform for prospective students, parents, and visitors to understand the campus before ever setting foot on it.",
+          )}
         />
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((feature, index) => (
-            <FeatureCard key={feature.title} index={index} {...feature} />
-          ))}
+          {FEATURES.map((feature, index) => {
+            const isLanguageCard = feature.title === "Multi-language Support";
+            return (
+              <FeatureCard
+                key={feature.title}
+                index={index}
+                icon={feature.icon}
+                title={t(feature.title)}
+                description={t(feature.description)}
+                accent={feature.accent}
+                href={feature.href}
+                onClick={isLanguageCard ? handleLanguageCardClick : undefined}
+              />
+            );
+          })}
         </div>
       </div>
     </section>

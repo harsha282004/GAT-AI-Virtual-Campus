@@ -8,16 +8,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/utils";
 
-const NAV_LINKS = [
+import { LanguageSwitcher } from "./LanguageSwitcher";
+
+const NAV_LINKS_BEFORE_LANGUAGE = [
   { label: "Home", href: "/" },
   { label: "Campus", href: "/campus" },
   { label: "Virtual Tour", href: "/tour" },
   { label: "Map", href: "/map" },
+];
+
+const NAV_LINKS_AFTER_LANGUAGE = [
   { label: "AI Assistant", href: "/chat" },
   { label: "About", href: "/#why-choose-gat" },
 ];
+
+type NavLink = (typeof NAV_LINKS_BEFORE_LANGUAGE)[number];
 
 export function Navbar() {
   const pathname = usePathname();
@@ -41,9 +49,38 @@ export function Navbar() {
   }, []);
 
   const toggleTheme = () => setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  const { t } = useTranslation();
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+  function renderDesktopLink(link: NavLink) {
+    const active = isActive(link.href);
+    return (
+      <Link
+        key={link.href}
+        href={link.href}
+        className={cn(
+          "relative px-4 py-2 text-[16px] font-medium text-[#2E4DB7] transition-colors duration-300 hover:text-[#2E4DB7] dark:text-[#5B8CFF] dark:hover:text-[#5B8CFF]",
+          active && "text-[#2E4DB7] dark:text-[#5B8CFF]",
+        )}
+      >
+        <span className="relative z-10">{t(link.label)}</span>
+
+        {active && (
+          <motion.span
+            layoutId="navbar-lamp"
+            className="absolute inset-0 -z-0 rounded-full bg-[#2E4DB7]/10 dark:bg-[#5B8CFF]/10"
+            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+          >
+            <span className="absolute -top-2 left-1/2 h-1 w-8 -translate-x-1/2 rounded-t-full bg-[#2E4DB7] dark:bg-[#5B8CFF]">
+              <span className="absolute -top-2 left-1/2 h-6 w-12 -translate-x-1/2 rounded-full bg-[#2E4DB7]/30 blur-md dark:bg-[#5B8CFF]/30" />
+            </span>
+          </motion.span>
+        )}
+      </Link>
+    );
+  }
 
   return (
     <header className="fixed inset-x-0 top-5 z-50 flex justify-center px-6">
@@ -73,33 +110,9 @@ export function Navbar() {
         {/* Desktop Menu */}
 
         <div className="hidden items-center gap-1 xl:flex">
-          {NAV_LINKS.map((link) => {
-            const active = isActive(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "relative px-4 py-2 text-[16px] font-medium text-[#2E4DB7] transition-colors duration-300 hover:text-[#2E4DB7] dark:text-[#5B8CFF] dark:hover:text-[#5B8CFF]",
-                  active && "text-[#2E4DB7] dark:text-[#5B8CFF]",
-                )}
-              >
-                <span className="relative z-10">{link.label}</span>
-
-                {active && (
-                  <motion.span
-                    layoutId="navbar-lamp"
-                    className="absolute inset-0 -z-0 rounded-full bg-[#2E4DB7]/10 dark:bg-[#5B8CFF]/10"
-                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                  >
-                    <span className="absolute -top-2 left-1/2 h-1 w-8 -translate-x-1/2 rounded-t-full bg-[#2E4DB7] dark:bg-[#5B8CFF]">
-                      <span className="absolute -top-2 left-1/2 h-6 w-12 -translate-x-1/2 rounded-full bg-[#2E4DB7]/30 blur-md dark:bg-[#5B8CFF]/30" />
-                    </span>
-                  </motion.span>
-                )}
-              </Link>
-            );
-          })}
+          {NAV_LINKS_BEFORE_LANGUAGE.map(renderDesktopLink)}
+          <LanguageSwitcher />
+          {NAV_LINKS_AFTER_LANGUAGE.map(renderDesktopLink)}
         </div>
 
         {/* Right Side */}
@@ -142,7 +155,7 @@ export function Navbar() {
             className="absolute top-[90px] w-[92%] rounded-3xl bg-white/95 p-4 shadow-xl backdrop-blur-xl xl:hidden dark:bg-slate-900/95 dark:shadow-black/30"
           >
             <div className="flex flex-col gap-1">
-              {NAV_LINKS.map((link) => (
+              {NAV_LINKS_BEFORE_LANGUAGE.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
@@ -154,7 +167,25 @@ export function Navbar() {
                       : "text-slate-700 hover:bg-[#2E4DB7]/5 dark:text-slate-300 dark:hover:bg-[#5B8CFF]/10",
                   )}
                 >
-                  {link.label}
+                  {t(link.label)}
+                </Link>
+              ))}
+              <div className="px-2 py-1">
+                <LanguageSwitcher />
+              </div>
+              {NAV_LINKS_AFTER_LANGUAGE.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className={cn(
+                    "rounded-xl px-5 py-3 text-[15px] font-medium transition-colors",
+                    isActive(link.href)
+                      ? "bg-[#2E4DB7]/10 text-[#2E4DB7] dark:bg-[#5B8CFF]/10 dark:text-[#5B8CFF]"
+                      : "text-slate-700 hover:bg-[#2E4DB7]/5 dark:text-slate-300 dark:hover:bg-[#5B8CFF]/10",
+                  )}
+                >
+                  {t(link.label)}
                 </Link>
               ))}
             </div>

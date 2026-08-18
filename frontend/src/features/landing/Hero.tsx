@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowDown, GraduationCap, MapPin, MessageSquare, PlayCircle, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const TRUST_STATS = [
   { icon: GraduationCap, label: "Est. 2001" },
@@ -12,6 +13,7 @@ const TRUST_STATS = [
 ];
 
 export function Hero() {
+  const { t } = useTranslation();
   return (
     <section className="relative overflow-hidden bg-[#F8FBFF] pt-24 pb-20 dark:bg-[#020617] lg:pt-28">
       {/* Full-bleed background video. poster is the video's own first frame
@@ -59,7 +61,7 @@ export function Hero() {
               transition={{ duration: 0.6 }}
               className="inline-flex items-center rounded-full border border-[#2E4DB7]/20 bg-white px-6 py-2 text-xs font-semibold tracking-[0.25em] text-[#2E4DB7] shadow-sm dark:border-[#5B8CFF]/30 dark:bg-[#0F172A] dark:text-[#5B8CFF]"
             >
-              EST. 2001 • VTU AFFILIATED • NAAC A GRADE
+              {t("EST. 2001 • VTU AFFILIATED • NAAC A GRADE")}
             </motion.div>
 
             <motion.h1
@@ -73,9 +75,9 @@ export function Hero() {
               of Technology,
               <br />
               <span className="text-[#2E4DB7] dark:text-[#5B8CFF]">
-                reimagined as
+                {t("reimagined as")}
                 <br />
-                a virtual campus.
+                {t("a virtual campus.")}
               </span>
             </motion.h1>
 
@@ -85,9 +87,9 @@ export function Hero() {
               transition={{ delay: 0.2 }}
               className="mt-8 max-w-lg text-lg leading-8 text-[#BFDBFE]"
             >
-              Growing Ahead Of Time — explore GAT&apos;s buildings, laboratories, classrooms and
-              facilities using an AI-guided assistant, indoor navigation, immersive 360° virtual
-              tours and an interactive 3D campus map.
+              {t(
+                "Growing Ahead Of Time — explore GAT's buildings, laboratories, classrooms and facilities using an AI-guided assistant, indoor navigation, immersive 360° virtual tours and an interactive 3D campus map.",
+              )}
             </motion.p>
 
             <motion.div
@@ -97,11 +99,11 @@ export function Hero() {
               className="mt-12 flex flex-wrap gap-5"
             >
               <Button href="/tour" size="lg" variant="primary" icon={<PlayCircle className="h-5 w-5" />}>
-                Explore Virtual Tour
+                {t("Explore Virtual Tour")}
               </Button>
 
               <Button href="/chat" size="lg" variant="secondary" icon={<MessageSquare className="h-5 w-5" />}>
-                Ask the AI Assistant
+                {t("Ask the AI Assistant")}
               </Button>
             </motion.div>
 
@@ -116,7 +118,7 @@ export function Hero() {
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2E4DB7]/10 text-white dark:bg-[#5B8CFF]/10">
                     <stat.icon className="h-4 w-4" />
                   </span>
-                  <span className="text-sm font-semibold text-white">{stat.label}</span>
+                  <span className="text-sm font-semibold text-white">{t(stat.label)}</span>
                 </div>
               ))}
             </motion.div>

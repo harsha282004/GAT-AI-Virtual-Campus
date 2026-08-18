@@ -22,6 +22,10 @@ interface FeatureCardProps {
    * so no extra styling is needed. Omit to keep a card purely
    * informational (e.g. Multi-language Support). */
   href?: string;
+  /** Alternative to `href` for a card that triggers an in-page action
+   * instead of navigating (e.g. Multi-language Support opening the
+   * navbar's language picker). Ignored if `href` is set. */
+  onClick?: () => void;
 }
 
 const ACCENT_STYLES: Record<FeatureAccent, { bg: string; text: string; glow: string }> = {
@@ -41,6 +45,7 @@ export function FeatureCard({
   className,
   index = 0,
   href,
+  onClick,
 }: FeatureCardProps) {
   const styles = ACCENT_STYLES[accent];
 
@@ -61,9 +66,10 @@ export function FeatureCard({
       style={{ "--spot-color": styles.glow } as CSSProperties}
       className={cn(
         "glass group relative overflow-hidden rounded-3xl p-8 shadow-soft transition-shadow duration-300 hover:shadow-glow",
-        href && "cursor-pointer",
+        (href || onClick) && "cursor-pointer",
         className,
       )}
+      {...(!href && onClick ? { onClick, role: "button", tabIndex: 0 } : {})}
     >
       <div
         aria-hidden="true"

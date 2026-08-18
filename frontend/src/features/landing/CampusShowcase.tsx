@@ -5,6 +5,7 @@ import { Compass } from "lucide-react";
 import Image from "next/image";
 
 import { Button, SectionTitle } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const CAMPUS_IMAGES = [
   { src: "/images/campus1.jpg", alt: "Global Academy of Technology campus view 1" },
@@ -20,13 +21,16 @@ const CAMPUS_IMAGES = [
  * content" discipline argued for replacing it rather than keeping it
  * around. */
 export function CampusShowcase() {
+  const { t } = useTranslation();
   return (
     <section className="section-padding">
       <div className="container-page">
         <SectionTitle
-          eyebrow="Campus Showcase"
-          title="See GAT's campus for yourself"
-          subtitle="A glimpse of the buildings and grounds you'll explore in the Virtual Tour and 3D map."
+          eyebrow={t("Campus Showcase")}
+          title={t("See GAT's campus for yourself")}
+          subtitle={t(
+            "A glimpse of the buildings and grounds you'll explore in the Virtual Tour and 3D map.",
+          )}
         />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-stretch">
@@ -76,7 +80,7 @@ export function CampusShowcase() {
 
         <div className="mt-12 flex justify-center">
           <Button href="/campus" variant="outline" icon={<Compass className="h-4 w-4" />}>
-            Explore Campus
+            {t("Explore Campus")}
           </Button>
         </div>
       </div>

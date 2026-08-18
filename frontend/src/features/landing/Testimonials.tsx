@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Quote, User } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { SectionTitle } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/utils";
 
 const TESTIMONIALS = [
@@ -29,6 +30,7 @@ const TESTIMONIALS = [
 ];
 
 export function Testimonials() {
+  const { t } = useTranslation();
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0);
 
@@ -52,9 +54,9 @@ export function Testimonials() {
     <section className="section-padding overflow-hidden">
       <div className="container-page">
         <SectionTitle
-          eyebrow="Student Voices"
-          title="What life at GAT looks like"
-          subtitle="Representative reflections from students across departments."
+          eyebrow={t("Student Voices")}
+          title={t("What life at GAT looks like")}
+          subtitle={t("Representative reflections from students across departments.")}
         />
 
         <div
@@ -85,15 +87,15 @@ export function Testimonials() {
               >
                 <Quote className="h-8 w-8 text-brand" />
                 <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink/85">
-                  &ldquo;{current.quote}&rdquo;
+                  &ldquo;{t(current.quote)}&rdquo;
                 </p>
                 <div className="mt-7 flex items-center gap-3 border-t border-hairline pt-6">
                   <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand/10 text-brand">
                     <User className="h-5 w-5" />
                   </span>
                   <div className="text-left">
-                    <p className="text-sm font-semibold text-ink">{current.name}</p>
-                    <p className="text-xs text-muted">{current.department}</p>
+                    <p className="text-sm font-semibold text-ink">{t(current.name)}</p>
+                    <p className="text-xs text-muted">{t(current.department)}</p>
                   </div>
                 </div>
               </motion.div>

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Award, BadgeCheck, Building2, CheckCircle2, GraduationCap, Home, ShieldCheck } from "lucide-react";
 
 import { SectionTitle } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const REASONS = [
   { icon: BadgeCheck, text: "VTU-affiliated engineering programs (BE, MTech, MSc, MBA)" },
@@ -15,13 +16,14 @@ const REASONS = [
 ];
 
 export function WhyChooseGAT() {
+  const { t } = useTranslation();
   return (
     <section id="why-choose-gat" className="section-padding">
       <div className="container-page grid grid-cols-1 gap-14 lg:grid-cols-2 lg:items-center">
         <div>
           <SectionTitle
-            eyebrow="About GAT"
-            title="Why students choose Global Academy of Technology"
+            eyebrow={t("About GAT")}
+            title={t("Why students choose Global Academy of Technology")}
             align="left"
             className="mb-8"
           />
@@ -38,7 +40,7 @@ export function WhyChooseGAT() {
                 <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand">
                   <reason.icon className="h-4 w-4" />
                 </span>
-                <span className="text-sm leading-relaxed text-ink/80">{reason.text}</span>
+                <span className="text-sm leading-relaxed text-ink/80">{t(reason.text)}</span>
               </motion.li>
             ))}
           </ul>
@@ -53,11 +55,11 @@ export function WhyChooseGAT() {
         >
           <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
           <CheckCircle2 className="h-10 w-10 text-white" strokeWidth={1.5} />
-          <p className="mt-6 font-display text-2xl font-semibold">Growing Ahead Of Time</p>
+          <p className="mt-6 font-display text-2xl font-semibold">{t("Growing Ahead Of Time")}</p>
           <p className="mt-3 text-sm leading-relaxed text-white/75">
-            Since 2001, GAT has trained engineers across Computer Science, Information Science,
-            Electronics, Electrical, Mechanical, and Civil Engineering — with admission through
-            KCET, COMEDK, PGCET, GATE, and KMAT.
+            {t(
+              "Since 2001, GAT has trained engineers across Computer Science, Information Science, Electronics, Electrical, Mechanical, and Civil Engineering — with admission through KCET, COMEDK, PGCET, GATE, and KMAT.",
+            )}
           </p>
         </motion.div>
       </div>

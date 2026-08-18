@@ -3,6 +3,8 @@
 import { motion, useInView } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
+import { useTranslation } from "@/hooks/useTranslation";
+
 const STATS = [
   { value: 2001, prefix: "Est. ", suffix: "", label: "Year Established" },
   { value: 10, prefix: "", suffix: "+ Acres", label: "Campus Area" },
@@ -36,6 +38,7 @@ function CountUp({ value }: { value: number }) {
 }
 
 export function CampusStatistics() {
+  const { t } = useTranslation();
   return (
     <section className="section-padding relative overflow-hidden bg-brand-gradient">
       <div
@@ -58,13 +61,13 @@ export function CampusStatistics() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
             </span>
-            At a Glance
+            {t("At a Glance")}
           </span>
           <h2 className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl">
-            GAT by the numbers
+            {t("GAT by the numbers")}
           </h2>
           <p className="mt-6 text-base leading-relaxed text-white/70">
-            A snapshot of the campus this platform is built to represent.
+            {t("A snapshot of the campus this platform is built to represent.")}
           </p>
         </motion.div>
 
@@ -83,7 +86,7 @@ export function CampusStatistics() {
                 <CountUp value={stat.value} />
                 {stat.suffix}
               </p>
-              <p className="mt-2 text-sm text-white/70">{stat.label}</p>
+              <p className="mt-2 text-sm text-white/70">{t(stat.label)}</p>
             </motion.div>
           ))}
         </div>
