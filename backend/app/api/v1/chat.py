@@ -147,14 +147,22 @@ def warmup() -> None:
     exceeds the frontend's 10s axios timeout (frontend/src/api/client.ts).
     Calling this during startup moves that cost to server boot, where a
     slow response doesn't strand a user.
+
+    Also preloads the Ollama model itself (llm_generator.warmup_model()) —
+    the same "pay the cold-start cost at boot, not inside a request" logic
+    applies to Ollama's own model-load time, which is the other real
+    contributor to the reported "timeout of 10000ms exceeded" on a fresh
+    backend restart.
     """
     from hybrid_retrieval import get_retriever
+    from llm_generator import warmup_model
     from reranker import get_reranker
 
     start = time.perf_counter()
     get_retriever()
     get_reranker()
-    logger.info("RAG pipeline warmup complete in %.1fs", time.perf_counter() - start)
+    warmup_model()
+    logger.info("RAG pipeline + LLM warmup complete in %.1fs", time.perf_counter() - start)
 
 
 def _log_rag_debug_trace(message: str, result: dict[str, Any], elapsed_ms: float) -> None:

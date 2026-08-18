@@ -134,6 +134,24 @@ LOW_CONFIDENCE_MESSAGE = (
 )
 
 
+def warmup_model(model: str = OLLAMA_MODEL) -> None:
+    """Preloads `model` into Ollama's memory with an empty-prompt generate
+    call (Ollama's documented warmup pattern — loads weights without
+    generating tokens) and keeps it resident for 30 minutes. Without this,
+    the FIRST real chat request after a backend restart pays Ollama's
+    multi-second model-load cost on top of normal generation latency,
+    which can push a single request past the frontend's 10s axios timeout
+    (frontend/src/api/client.ts) even though retrieval/confidence were
+    already fast. Called once at startup (see app.main's lifespan calling
+    app.api.v1.chat.warmup()), same spirit as that function's existing
+    retriever/reranker warmup. Never raises — if Ollama is unreachable at
+    boot, the first real request will surface that the normal way."""
+    try:
+        ollama.Client(host=OLLAMA_BASE_URL).generate(model=model, prompt="", keep_alive="30m")
+    except Exception as exc:  # noqa: BLE001 — warmup failing must not crash startup
+        logger.warning("Ollama model warmup failed (will retry on first real request): %s", exc)
+
+
 def check_ollama_availability(model: str = OLLAMA_MODEL) -> dict[str, Any]:
     """Probes the local Ollama service directly (cheaper and clearer than
     instantiating a ChatOllama and sending a full chat request just to test
