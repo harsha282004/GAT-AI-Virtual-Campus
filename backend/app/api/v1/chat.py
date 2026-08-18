@@ -154,6 +154,7 @@ def warmup() -> None:
     contributor to the reported "timeout of 10000ms exceeded" on a fresh
     backend restart.
     """
+    from agent_base import DEFAULT_AGENT_MODEL
     from hybrid_retrieval import get_retriever
     from llm_generator import warmup_model
     from reranker import get_reranker
@@ -161,7 +162,11 @@ def warmup() -> None:
     start = time.perf_counter()
     get_retriever()
     get_reranker()
-    warmup_model()
+    # Explicitly the same model agent_base.run_specialist() actually
+    # generates with — llm_generator.OLLAMA_MODEL defaults to this
+    # project's stale .env OLLAMA_MODEL=llama3 (never pulled), which
+    # would silently warm the wrong, nonexistent model otherwise.
+    warmup_model(DEFAULT_AGENT_MODEL)
     logger.info("RAG pipeline + LLM warmup complete in %.1fs", time.perf_counter() - start)
 
 
