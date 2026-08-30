@@ -32,6 +32,7 @@ LLM is even called, as it always has.
 from __future__ import annotations
 
 import os
+import re
 import threading
 import time
 from contextvars import ContextVar
@@ -49,11 +50,27 @@ from reranker import DEFAULT_TOP_K, rerank
 logger = configure_logging("llm_generator")
 
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
-# This phase's explicitly preferred model (not config.py's "llama3"
-# default) — but still reads the same OLLAMA_MODEL env var backend/app/
-# core/config.py uses, so a project .env can override both consistently.
+# PHASE A — single source of truth for the local model: the OLLAMA_MODEL
+# env var (see .env.example), defaulting to llama3.2 (the model this
+# project actually runs on). backend/app/core/config.py and
+# agent_base.DEFAULT_AGENT_MODEL read the same var with the same default,
+# so there is exactly one place to change the model.
 OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.2")
 REQUEST_TIMEOUT_S = 60
+
+# PHASE B — naturalization: when true (default), already-verified
+# deterministic/tool-resolved and curated answers are rephrased
+# conversationally by the same local Llama model before display. Facts are
+# never added or changed: naturalize_answer() only ever asks the model to
+# rephrase, re-runs the same numeric grounding check against the verified
+# source text, and falls straight back to that source text on any failure.
+# Set LLM_NATURALIZE=false to always return the raw templates.
+LLM_NATURALIZE = os.environ.get("LLM_NATURALIZE", "true").strip().lower() not in (
+    "0",
+    "false",
+    "no",
+    "off",
+)
 
 # Phase 10 timeout investigation: a single Ollama generation call on this
 # CPU-only setup already takes ~7-9s in isolation — already thin against a
@@ -131,6 +148,36 @@ LOW_CONFIDENCE_MESSAGE = (
     "The available official GAT information does not provide a reliable answer to this "
     "question. Please check the official GAT website (https://www.gat.ac.in/) or contact "
     "the institution directly for accurate information."
+)
+
+# PHASE B — naturalization system prompt. The first two sentences are
+# verbatim from this phase's specification; the third reinforces "do not
+# add/infer" against a small local model's tendency to pad with greetings
+# or made-up suggestions. A language instruction (_LANGUAGE_INSTRUCTIONS)
+# is appended per request so Kannada/Hindi output still works.
+NATURALIZE_SYSTEM_PROMPT = (
+    "Rephrase the following verified information as a natural, conversational "
+    "response in the user's language. Do not add, infer, remove, or change any "
+    "facts, numbers, names, room numbers, locations, URLs, or other factual "
+    "information. Keep the response to one or two sentences and do not add any "
+    "greeting, opinion, directions, or suggestion that is not present in the "
+    "verified information."
+)
+
+# A rephrase should never balloon; output much longer than the source
+# almost certainly means the model added content, so it is rejected in
+# favour of the verified template.
+_NATURALIZE_MAX_EXPANSION = 4.0
+
+# Cardinal number words. If a naturalized answer introduces one of these
+# that is not in the verified source (e.g. inventing "three installments"
+# for a "4-year" fee), the rephrase is rejected — the deterministic
+# numeric grounding check only sees digit strings, not spelled-out counts.
+_NUMBER_WORDS = frozenset(
+    "zero one two three four five six seven eight nine ten eleven twelve "
+    "thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty "
+    "thirty forty fifty sixty seventy eighty ninety hundred thousand "
+    "million billion".split()
 )
 
 
@@ -360,6 +407,116 @@ def generate_answer(
         "generation_status": "generated",
         "model": model,
     }
+
+
+def naturalize_answer(
+    query: str,
+    verified_text: str,
+    *,
+    model: str = OLLAMA_MODEL,
+) -> tuple[str, bool]:
+    """PHASE B — rephrase already-verified deterministic/curated text
+    conversationally via the local Llama model.
+
+    Returns ``(text, used_llm)``. The returned ``text`` is ALWAYS safe to
+    show: on any failure — LLM_NATURALIZE disabled, empty input, Ollama
+    unreachable, model missing, timeout, exception, empty output, output
+    that balloons past _NATURALIZE_MAX_EXPANSION, output that fails the
+    same numeric grounding check generate_answer() uses (here run BOTH
+    ways against ``verified_text``: no phone/currency/room/year detail may
+    be introduced, and none present in the source may be dropped or
+    altered), or output that introduces a spelled-out number word absent
+    from the source — this returns ``(verified_text, False)`` and the
+    caller shows the original template unchanged. It never raises.
+
+    Facts are neither added nor removed: the model is only asked to
+    rephrase (NATURALIZE_SYSTEM_PROMPT), its output is grounding-checked
+    both directions against the source text, and the source text is the
+    fallback.
+    """
+    if not LLM_NATURALIZE:
+        return verified_text, False
+    text = (verified_text or "").strip()
+    if not text:
+        return verified_text, False
+
+    try:
+        availability = check_ollama_availability(model)
+        if not (availability["reachable"] and availability["model_available"]):
+            logger.info(
+                "Naturalization skipped (ollama unavailable: %s); keeping template.",
+                availability["error"],
+            )
+            return verified_text, False
+
+        system_prompt = NATURALIZE_SYSTEM_PROMPT
+        language_instruction = _LANGUAGE_INSTRUCTIONS.get(RESPONSE_LANGUAGE.get())
+        if language_instruction:
+            system_prompt += language_instruction
+
+        user_prompt = (
+            f"USER QUESTION: {query}\n\n"
+            f"VERIFIED INFORMATION (rephrase this exactly, add nothing):\n{text}"
+        )
+
+        llm = ChatOllama(
+            base_url=OLLAMA_BASE_URL,
+            model=model,
+            client_kwargs={"timeout": REQUEST_TIMEOUT_S},
+        )
+        with _ollama_semaphore:
+            response = llm.invoke(
+                [SystemMessage(content=system_prompt), HumanMessage(content=user_prompt)]
+            )
+        candidate = (
+            response.content if isinstance(response.content, str) else str(response.content)
+        ).strip()
+
+        if not candidate:
+            return verified_text, False
+        if len(candidate) > _NATURALIZE_MAX_EXPANSION * max(len(text), 40):
+            logger.warning("Naturalization output ballooned for query=%r; keeping template.", query)
+            return verified_text, False
+
+        # Same deterministic grounding check generate_answer() applies, run
+        # BOTH directions: the rephrase may neither INTRODUCE a
+        # phone/currency/room/year detail absent from the source
+        # (candidate vs text) nor DROP OR ALTER one present in the source
+        # (text vs candidate). Either failure -> keep the verified template.
+        introduced = find_unsupported_claims(candidate, text)
+        dropped = find_unsupported_claims(text, candidate)
+        if introduced or dropped:
+            logger.warning(
+                "Naturalization changed a verifiable detail for query=%r "
+                "(introduced=%s dropped=%s); keeping template.",
+                query,
+                introduced,
+                dropped,
+            )
+            return verified_text, False
+
+        # find_unsupported_claims only sees digit strings — also reject a
+        # rephrase that introduces a spelled-out count absent from the
+        # source (e.g. "three installments" for a "4-year" fee).
+        src_words = set(re.findall(r"[a-z]+", text.lower()))
+        new_number_words = {
+            w for w in re.findall(r"[a-z]+", candidate.lower()) if w in _NUMBER_WORDS
+        } - src_words
+        if new_number_words:
+            logger.warning(
+                "Naturalization introduced number word(s) %s absent from the source "
+                "for query=%r; keeping template.",
+                sorted(new_number_words),
+                query,
+            )
+            return verified_text, False
+
+        return candidate, True
+    except Exception as exc:  # noqa: BLE001 — naturalization must never break a request
+        logger.warning(
+            "Naturalization failed (%s: %s); keeping template answer.", type(exc).__name__, exc
+        )
+        return verified_text, False
 
 
 def answer_question(

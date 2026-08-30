@@ -25,7 +25,10 @@ class Settings(BaseSettings):
     DB_ECHO: bool = False
 
     OLLAMA_BASE_URL: str = "http://localhost:11434"
-    OLLAMA_MODEL: str = "llama3"
+    # Single source of truth for the local Llama model. scripts/ai/
+    # (llm_generator.py, agent_base.py) read the same OLLAMA_MODEL var with
+    # the same default, so the model is changed in exactly one place.
+    OLLAMA_MODEL: str = "llama3.2"
 
     CHROMA_PERSIST_DIR: str = "./data/chroma_db"
     CHROMA_COLLECTION_NAME: str = "gat_kb"

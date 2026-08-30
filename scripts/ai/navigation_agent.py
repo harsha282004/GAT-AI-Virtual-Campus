@@ -72,6 +72,7 @@ from typing import Any
 from agent_base import run_specialist
 from campus_tools import hotspot_lookup, panorama_lookup, resolve_location
 from confidence import categorize as categorize_confidence
+from llm_generator import naturalize_answer
 from spatial_knowledge import extract_room_number, format_spatial_answer, search_spatial
 
 AGENT_NAME = "navigation_agent"
@@ -218,7 +219,14 @@ def _tool_response(
     this is a direct, deterministic database lookup, not a probabilistic
     retrieval score. sources/source_urls stay empty on purpose (no GAT
     website/PDF was involved); tool_used/tool_result carry the real
-    provenance instead, per Phase 6's source-traceability requirement."""
+    provenance instead, per Phase 6's source-traceability requirement.
+
+    PHASE B — `answer` is the verified deterministic template; it is passed
+    through naturalize_answer() so it reads conversationally. Facts are
+    never altered (grounding-checked against the template itself) and any
+    LLM failure returns the exact template, so status/confidence/provenance
+    are unchanged either way."""
+    display_answer, _ = naturalize_answer(query, answer)
     return {
         "original_query": query,
         "selected_agent": AGENT_NAME,
@@ -226,7 +234,7 @@ def _tool_response(
         "confidence_score": 1.0,
         "confidence_level": "HIGH",
         "generation_status": "tool_resolved",
-        "answer": answer,
+        "answer": display_answer,
         "sources": [],
         "source_urls": [],
         "refusal_reason": None,
@@ -245,6 +253,13 @@ def _spatial_response(query: str, spatial_result: dict[str, Any]) -> dict[str, A
     reported as ungrounded (no fabricated location), matching the same
     refusal shape the rest of the pipeline already uses."""
     answer, confidence, status = format_spatial_answer(spatial_result)
+    # PHASE B — spatial answers are deliberately NOT naturalized: each one
+    # carries an inline "Evidence: <raw panorama sign text>" provenance
+    # clause (the spatial equivalent of RAG's sources[]) and, for
+    # low_confidence, an explicit uncertainty hedge — both must survive
+    # verbatim, which a rephrase cannot guarantee. Clean, hedge-free
+    # tool_resolved answers (campus_lookup / panorama_lookup) ARE
+    # naturalized, in _tool_response() above.
     grounded = status in ("resolved", "low_confidence", "ambiguous")
     generation_status = {
         "resolved": "tool_resolved",
