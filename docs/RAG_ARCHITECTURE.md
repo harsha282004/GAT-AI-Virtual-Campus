@@ -1841,3 +1841,96 @@ UI interaction.
   any chat message — unchanged, not a Phase 8 regression.
 - No interactive browser-based UI testing was performed (same reason as
   Phase 7: no browser automation tool available in this environment).
+
+---
+
+# Phase A/B — Llama Integration Formalization + Answer Naturalization
+
+Meta's Llama has powered the RAG generator since Phase 4 (`llama3.2` via
+Ollama + LangChain). Phase A/B formalizes that integration and widens where
+the model is used, **without** replacing or weakening any existing stage.
+
+## Phase A — single source of truth for the model
+
+Before: `backend/app/core/config.py` and `.env.example` said `OLLAMA_MODEL=llama3`
+while `scripts/ai/agent_base.py` hardcoded `DEFAULT_AGENT_MODEL = "llama3.2"`
+and `llm_generator.warmup_model()` warmed `llama3.2` — the effective model
+was `llama3.2` but the config disagreed.
+
+After: `OLLAMA_MODEL` (default `llama3.2`) is authoritative and read
+identically in all three places:
+
+- `backend/app/core/config.py` → `OLLAMA_MODEL: str = "llama3.2"`
+- `.env.example` → `OLLAMA_MODEL=llama3.2`
+- `scripts/ai/agent_base.py` → `DEFAULT_AGENT_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.2")`
+- `scripts/ai/llm_generator.py` → `OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.2")` (already so)
+
+`README.md` / `CLAUDE.md` updated (`Llama 3` → `Meta Llama 3.2`,
+`ollama pull llama3` → `ollama pull llama3.2`). No runtime behaviour
+changed — the effective model was already `llama3.2`.
+
+## Phase B — naturalization of verified answers (`llm_generator.naturalize_answer`)
+
+Several answer paths returned hand-written templates verbatim and never
+reached the LLM: **tool-resolved** navigation/panorama answers and
+**curated** FAQ answers. Phase B routes the *phrasing* of those
+already-verified answers through the same local Llama model so replies read
+conversationally and honour the selected UI language — with no new
+hallucination surface.
+
+`naturalize_answer(query, verified_text) -> (text, used_llm)`:
+
+1. Disabled entirely when `LLM_NATURALIZE=false` (env, default `true`) — returns the template.
+2. `check_ollama_availability()` gate — Ollama down / model missing → template.
+3. System prompt = *"Rephrase the following verified information as a natural,
+   conversational response in the user's language. Do not add, infer,
+   remove, or change any facts, numbers, names, room numbers, locations,
+   URLs, or other factual information."* + the per-request
+   `_LANGUAGE_INSTRUCTIONS` (Kannada/Hindi).
+4. `ChatOllama` call under the existing `_ollama_semaphore`, same 60 s timeout.
+5. Output rejected (→ template) if empty; if it balloons past 4× the source
+   length; if it **fails `grounding.find_unsupported_claims()` run BOTH
+   ways** (`candidate` vs `verified_text` — no phone/currency/room/year
+   detail introduced; `verified_text` vs `candidate` — none dropped or
+   altered); or if it introduces a spelled-out cardinal number word
+   (`one`…`twelve`, `hundred`, `thousand`, …) absent from the source.
+6. Any exception → template. The function never raises.
+
+### Where it is applied
+
+| Path | Naturalized? |
+|---|---|
+| RAG `generated` (MEDIUM/HIGH) answer | already LLM-generated — unchanged |
+| Curated answer (`agent_base.run_specialist`, status `curated_answer`) | **yes** |
+| `navigation_agent._tool_response` (`campus_lookup`, `panorama_lookup`) | **yes** |
+| `navigation_agent._spatial_response` (all statuses) | no — carries an inline `Evidence:` provenance clause and a `low_confidence` hedge that must stay verbatim |
+| `academic_agent` `aggregated` department/program list | no — a list of proper names; a rephrase could silently omit one (the numeric grounding check would not catch it) |
+| Spatial `ambiguous` / clarification / `not_found` / "no current location" | no — clarification/refusal |
+| `low_confidence_refusal`, `no_context`, `grounding_check_failed`, Ollama errors | no — refusal/error |
+
+### Preserved
+
+Hybrid retrieval (dense + BM25 + normalization + fusion), reranking,
+context selection, confidence gating, grounding verification,
+deterministic-first routing, all five specialist agents, navigation,
+virtual tour, A* (`backend/app/navigation/`), multilingual generation,
+voice input/output, PostgreSQL session persistence, and the
+`POST /api/v1/chat` request/response contract (no field or status value
+added or removed).
+
+### Limitations
+
+- Naturalizing a tool-resolved navigation / curated answer adds one local
+  LLM call (~6–9 s on the CPU-only host) where the tool path was previously
+  instant; `LLM_NATURALIZE=false` restores the instant templated path.
+- The guards catch invented/dropped/altered **numbers** (digit strings and
+  spelled-out cardinals) but not an invented adjective or a dropped
+  non-numeric code (e.g. a building code like "LIB"). The rephrase stays
+  factually true in practice, but semantic equivalence is not proven.
+- `llama3.2` (3B) is a small model: Kannada/Hindi naturalizations
+  sometimes transliterate a room number into Devanagari digits, which the
+  bidirectional grounding check then rejects — so those requests fall back
+  to the (English) verified template. A larger model or a digit-
+  normalization step before the check would fix this.
+- The 4× length cap is a heuristic guard against added content, not a
+  semantic equivalence check.

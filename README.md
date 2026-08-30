@@ -10,7 +10,7 @@ See [`docs/architecture.md`](docs/architecture.md) for the full approved archite
 |---|---|
 | Frontend | Next.js 15, React, TypeScript, Tailwind CSS, App Router |
 | Backend | FastAPI, SQLAlchemy, Alembic, PostgreSQL, Pydantic |
-| AI | LangChain, ChromaDB, Ollama, Llama 3 |
+| AI | LangChain, ChromaDB, Ollama, Meta Llama 3.2 (local) |
 | Other | Docker, Git, Python virtual environment |
 
 ## Folder Structure
@@ -64,7 +64,7 @@ alembic upgrade head
 ### 5. Ollama (local LLM)
 
 ```bash
-ollama pull llama3
+ollama pull llama3.2
 ```
 
 ### 6. Full stack via Docker

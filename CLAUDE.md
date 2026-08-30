@@ -15,7 +15,7 @@ Architecture is approved and the project skeleton has been scaffolded (`frontend
 | Relational DB | PostgreSQL, via SQLAlchemy (ORM) + Alembic (migrations) |
 | Vector DB | ChromaDB (embedded/local-mode, persisted to disk) |
 | RAG orchestration | LangChain |
-| LLM (RAG generator, translation, judge) | Ollama running Llama 3, called via LangChain — local, no external API key |
+| LLM (RAG generator, translation, judge, answer naturalization) | Ollama running Meta Llama 3.2, called via LangChain — local, no external API key. Model set by the single `OLLAMA_MODEL` env var (default `llama3.2`). |
 | Intent classifier | PyTorch LSTM (embedding → LSTM → dense → softmax) |
 | Multi-agent orchestration | Hand-rolled Python router (Supervisor + specialists) — LangGraph is an optional future upgrade, not a dependency today |
 | 360° viewer | Pannellum |
@@ -68,7 +68,7 @@ uvicorn app.main:app --reload --app-dir backend
 alembic revision --autogenerate -m "message" && alembic upgrade head
 
 # local LLM
-ollama pull llama3
+ollama pull llama3.2
 
 # knowledge base build (Phase 2)
 python scripts/build_kb.py
