@@ -746,6 +746,40 @@ retrieves, never reranks, never scores confidence, and never calls the
 LLM — it has no code path that could bypass the confidence gate, because
 it never reaches the LLM directly at all.
 
+### Conversational layer (`smalltalk.py`) — runs first, before `classify()`
+
+A bare "Hi", "Thanks", "Bye", "How are you?", "What can you do?" or "ok" is
+not a knowledge-base question — routing it through retrieval returns the
+unhelpful "there is no relevant information". `route()` first calls
+`smalltalk.detect(query)`:
+
+- **Pattern-based, not a string list.** Eight categories (greeting /
+  how-are-you / capabilities / identity / nicety / gratitude / farewell /
+  acknowledgement), each a small regex of natural variations ("hi", "hii",
+  "hey there", "hello assistant" all match greeting; "thanks", "thank you",
+  "thanks a lot", "ty" all match gratitude).
+- **Strict full-coverage rule.** A message counts as small talk only when,
+  after known filler words ("there", "assistant", "please", "so much", ...)
+  are removed, the *entire* message is made of conversational fragments. So
+  "Where is the library?", "Who is the CSE HOD?" and even "Hi, where is the
+  library?" return `None` and fall straight through to `classify()` — the
+  campus pipeline, grounding, confidence gating and safe refusal are all
+  untouched.
+- **Deterministic reply, no LLM.** `build_response()` returns the Agent
+  Response Contract with `generation_status="conversational"`,
+  `selected_agent="conversation_agent"`, empty `sources`, and a fixed reply
+  in the request's selected language (`RESPONSE_LANGUAGE` — English is the
+  fallback, exactly as for RAG generation). No retrieval, no DB, no Ollama
+  call — instant.
+- `backend/app/api/v1/chat.py` skips the Phase 15 contextual-reference
+  resolution for a conversational message (so "hi there" / "see you" is
+  never mis-read as an ambiguous follow-up), then lets `route()` do the
+  actual reply — one implementation, two call sites.
+
+A greeting in Kannada/Hindi native script (`नमस्ते`, `ಧನ್ಯವಾದಗಳು`, …) is
+matched by a small exact-phrase table; anything else in those scripts
+falls through to normal routing.
+
 ## Specialized agents
 
 | Agent | Handles |
