@@ -27,6 +27,15 @@ The confidence gate that actually decides whether a grounded answer gets
 generated lives inside the shared Phase 2-4 pipeline (agent_base.py ->
 llm_generator.generate_answer), not here — the Supervisor cannot bypass
 it, because the Supervisor never talks to the LLM directly at all.
+
+CONVERSATIONAL LAYER — route() first asks smalltalk.detect() whether the
+message is ordinary conversation (greeting / thanks / farewell / "how are
+you" / "what can you do" / acknowledgement). If so it returns a short,
+fixed, language-aware reply with generation_status="conversational" and
+NO retrieval / DB / LLM call. smalltalk.detect() is deliberately strict —
+it returns None (so nothing changes) unless the ENTIRE message is
+conversational, so "Where is the library?" and even "Hi, where is the
+library?" still go through the normal routing below.
 """
 
 from __future__ import annotations
@@ -40,6 +49,7 @@ import admission_agent
 import facilities_agent
 import general_agent
 import navigation_agent
+import smalltalk
 from _shared import configure_logging
 from confidence import categorize as categorize_confidence
 
@@ -374,6 +384,23 @@ def route(query: str) -> dict[str, Any]:
     specialist untouched. Phase 13: first checks whether the query is a
     genuine multi-domain request (see detect_multi_domain() above); if not
     — the common case — behaves exactly as it did in Phase 5."""
+    # Conversational layer — a bare "Hi" / "Thanks" / "Bye" is not a
+    # knowledge-base question and must never reach retrieval or the LLM.
+    # smalltalk.detect() returns None for anything that isn't pure small
+    # talk (a campus question, a greeting bundled with a question), so this
+    # gate is opt-in and leaves every existing routing path untouched.
+    conversational_category = smalltalk.detect(query)
+    if conversational_category is not None:
+        logger.info(
+            "Routing decision: query=%r -> %s (conversational intent: %s)",
+            query,
+            smalltalk.CONVERSATION_AGENT,
+            conversational_category,
+        )
+        result = smalltalk.build_response(query, conversational_category)
+        result["agent_reason"] = f"conversational intent: {conversational_category}"
+        return result
+
     multi = detect_multi_domain(query)
     if multi is not None:
         return _run_multi_domain(query, multi)

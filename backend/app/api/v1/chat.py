@@ -110,6 +110,7 @@ _SCRIPTS_AI_DIR = Path(__file__).resolve().parents[4] / "scripts" / "ai"
 if str(_SCRIPTS_AI_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_AI_DIR))
 
+import smalltalk as _smalltalk  # noqa: E402
 import supervisor as _supervisor  # noqa: E402
 from conversation_context import (  # noqa: E402
     ResolutionResult,
@@ -423,7 +424,14 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)) -> ChatResponse:
     # proceeds through the ordinary pipeline unchanged.
     effective_message = message
     reference_result = ResolutionResult(status="independent")
-    if session is not None:
+    # A conversational message ("hi there", "thanks", "see you") can contain
+    # a word the contextual-reference resolver keys on ("there", "you"); skip
+    # that resolution entirely for small talk so it is never mis-read as an
+    # ambiguous follow-up. supervisor.route() below does the actual
+    # conversational handling (single source of truth), so nothing is
+    # answered here — the raw message just proceeds unresolved.
+    is_conversational = _smalltalk.detect(message) is not None
+    if not is_conversational and session is not None:
         try:
             active_entities = get_recent_active_entities(db, session)
             reference_result = resolve_reference(message, active_entities)
@@ -446,7 +454,7 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)) -> ChatResponse:
                 logger.warning("Failed to persist this chat turn.", exc_info=True)
         return _build_clarification_response(clarification, session_id)
 
-    if session is not None:
+    if not is_conversational and session is not None:
         try:
             effective_message = _resolve_followup_message(message, db, session, reference_result)
         except SQLAlchemyError:
