@@ -1,0 +1,114 @@
+\section{Experimental Methodology and Proposed Evaluation Protocol}
+\label{sec:eval}
+\input{tables/eval_protocol}
+
+The current artifact contains \emph{no} formal evaluation pipeline: there
+are no retrieval precision/recall figures, no answer-faithfulness scores,
+no reranker comparison, no full intent-classifier confusion matrix beyond
+the one reproduced in Section~\ref{sec:results}, no load-test results, no
+pathfinding benchmark, and no user study. Rather than fabricate any of
+these, this section specifies exactly how each should be measured. The
+protocol is summarized in Table~\ref{tab:evalprotocol}; the subsections
+below give the design detail. We distinguish \emph{implementation metrics}
+(Table~\ref{tab:counts}, already measured) from \emph{experimental
+performance metrics} (E1--E8 below, not yet measured).
+
+\subsection{E1 --- Retrieval Quality}
+\emph{Objective:} test whether hybrid fusion~\eqref{eq:fusion} outperforms
+its components on this corpus, and whether $\lambda = 0.6$ is well chosen.
+\emph{Apparatus:} construct a query set of at least $150$ realistic
+institution questions (admissions, academics, facilities, campus info,
+out-of-scope) and, for each, human-annotate graded relevance for the pooled
+top-$k$ of BM25, dense, and hybrid retrieval, following BEIR-style pooling
+practice~\cite{thakur2021beir}. \emph{Metrics:} precision@$\{1,3,5\}$,
+recall@$5$, MRR, and nDCG@$10$~\cite{jarvelin2002ndcg}. \emph{Conditions:}
+BM25 only; dense only; hybrid at
+$\lambda \in \{0.3, 0.5, 0.6, 0.7\}$; hybrid with and without query
+expansion. \emph{Expected finding form:} ``hybrid at $\lambda=x$ achieves
+nDCG@10 $= y$, a $\Delta$ of $z$ over the stronger single method
+($p < 0.05$, paired bootstrap).'' No such claim is made here.
+
+\subsection{E2 --- Reranker Ablation}
+\emph{Objective:} quantify the heuristic reranker's contribution and, once
+E1 has produced relevance labels, train and evaluate the currently-untrained
+SVR. \emph{Conditions:} no reranking; the four-feature heuristic of
+Eq.~\eqref{eq:rerank}; $\varepsilon$-SVR trained on E1 labels; a sensitivity
+sweep of the four heuristic weights. \emph{Metrics:} $\Delta$nDCG@$5$ and
+$\Delta$P@$5$ against the no-rerank baseline. Until the SVR is trained, no
+number for it may be reported.
+
+\subsection{E3 --- Intent Classification}
+\emph{Objective:} measure generalization on \emph{real} queries, not the
+synthetic seed set. \emph{Apparatus:} sample at least $600$ queries from
+the accumulated chat logs, have two annotators label them into the $12$
+classes (report inter-annotator $\kappa$), and split stratified by class.
+\emph{Conditions:} the current LSTM as-is; the LSTM retrained on the real
+labeled data; the deterministic keyword router alone; a zero-shot LLM
+classifier. \emph{Metrics:} accuracy, macro and weighted $F_1$, per-class
+$F_1$, and the full $12{\times}12$ confusion matrix. \emph{Framing:} the
+current $0.529$ validation accuracy on $34$ synthetic examples
+(Section~\ref{sec:results}) is explicitly \emph{not} a generalization
+estimate; E3 is what would produce one.
+
+\subsection{E4 --- Answer Faithfulness and Relevancy}
+\emph{Objective:} measure whether generated answers are entailed by their
+cited context and whether the safeguards matter. \emph{Apparatus:} a fixed
+question set of at least $120$ items spanning in-domain, out-of-scope, and
+deliberately ambiguous queries; scoring by an LLM judge for faithfulness,
+answer relevancy, and context relevancy~\cite{es2024ragas}, cross-checked
+by two human raters on a subset (report agreement); a manually adjudicated
+hallucination rate; and citation-correctness (does each cited source
+actually support the answer). \emph{Ablations:} full pipeline; remove the
+confidence gate; remove the post-generation grounding check; remove both.
+\emph{Correct-refusal behavior:} for out-of-scope and ambiguous items,
+score whether the system refused or asked a clarifying question rather than
+answering. This is the single highest-value missing measurement for a
+results section.
+
+\subsection{E5 --- Confidence-Threshold Calibration}
+\emph{Objective:} replace the nine-query threshold derivation
+(Table~\ref{tab:confsample}) with a statistically sized calibration.
+\emph{Apparatus:} the E4 question set with per-item correctness labels.
+\emph{Analysis:} sweep $(\theta_{\text{MED}}, \theta_{\text{HIGH}})$ on a
+grid and plot coverage, refusal rate, hallucination rate, and
+answered-accuracy; produce a reliability diagram and report expected
+calibration error. \emph{Additional condition:} repeat with the LSTM's
+$P(\text{intent})$ actually supplied to Eq.~\eqref{eq:conf} (closing the
+implementation gap noted in Section~\ref{sec:rag}), to test whether the
+intent term improves separation.
+
+\subsection{E6 --- Pathfinding Performance}
+\emph{Objective:} characterize A$^{\star}$ on the live graph and against
+Dijkstra. \emph{Apparatus:} the $180$-node/$325$-edge graph plus
+synthetically scaled graphs (up to $10^4$ nodes) and synthetic node
+coordinates so tiers~1 and~2 of the heuristic~\eqref{eq:heur} are
+exercised. \emph{Metrics:} route length (should be identical to Dijkstra,
+verifying optimality), wall-clock time, and expanded-node count as a
+function of graph size and heuristic tier; the marginal cost of rebuilding
+the graph per request vs.\ caching it.
+
+\subsection{E7 --- Tour Traversal Correctness}
+\emph{Objective:} verify the scene-graph mechanisms. \emph{Apparatus:}
+scripted traversals covering every one of the six floor buckets and every
+cross-floor boundary; fault-injected corrupt graphs (self-loops, dangling
+tails). \emph{Metrics:} cross-floor transition success rate, guided-tour
+completion rate, camera-orientation continuity error at transitions
+(deviation from the Street-View heading-preservation rule), and interaction
+errors; verification that the cycle guard aborts to \emph{error} rather
+than looping.
+
+\subsection{E8 --- Usability}
+\emph{Objective:} measure whether the integrated system helps real users.
+\emph{Apparatus:} at least $20$ prospective-student participants performing
+six tasks that each require both propositional and spatial information
+(e.g.\ ``find which floor the Power System Simulation Lab is on and view
+it''). \emph{Comparison:} \system{} vs.\ the institution's website plus PDF
+brochures. \emph{Metrics:} task completion rate, time-on-task, System
+Usability Scale, satisfaction, and a trust item (``I would rely on this
+system's answers''). \emph{Analysis:} paired tests with effect sizes.
+
+\subsection{Reproducibility Requirements}
+Any reported result must also record: exact hardware (CPU/GPU, RAM, whether
+Ollama ran on CPU or GPU); the Llama~3.2 quantization and Ollama version;
+the corpus snapshot (chunk count and manifest hash); and the random seeds.
+The current paper reports none of these because no experiment has been run.

@@ -137,6 +137,32 @@ export default function TourPage() {
 
   usePanoramaPreloader(allPanoramas, current?.id ?? "");
 
+  // Deep-link support: the Campus page (and any other entry point) can open
+  // the tour at a specific scene via `/tour?scene=<nodeId>` or a floor via
+  // `/tour?floor=<name>`. Read once, after the scene list has loaded so the
+  // target can be validated; falls through to the normal first-scene start
+  // when the param is missing or doesn't match. Read from window.location
+  // (not useSearchParams) to avoid a Suspense boundary requirement.
+  const deepLinkAppliedRef = useRef(false);
+  useEffect(() => {
+    if (deepLinkAppliedRef.current || allPanoramas.length === 0) return;
+    deepLinkAppliedRef.current = true;
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const scene = params.get("scene");
+    if (scene && allPanoramas.some((p) => p.id === scene)) {
+      setCurrentId(scene);
+      return;
+    }
+    const floor = params.get("floor");
+    if (floor) {
+      const match = allPanoramas.find(
+        (p) => p.floor.toLowerCase() === floor.toLowerCase(),
+      );
+      if (match) setCurrentId(match.id);
+    }
+  }, [allPanoramas]);
+
   // A picked-but-unsaved cross-floor coordinate only makes sense on the
   // scene it was picked on — clear it (and placement mode) on any
   // navigation so a stray click can't attribute a hotspot to the wrong node.
@@ -257,6 +283,19 @@ export default function TourPage() {
   // initial_yaw/initial_pitch or any Edge/Panorama row).
   async function handleSaveCrossFloorHotspot(targetSceneId: string, label: string) {
     if (!currentNodeOrFallback || !pickedCoords) return;
+    // Rapid-placement workflow: refetchCrossFloorHotspots() below rebuilds the
+    // scene engine, which changes <Pannellum>'s key (its hotspot fingerprint)
+    // and remounts the viewer — a remount that otherwise snaps the camera back
+    // to this scene's calibrated resting view, making it look like the tool
+    // dropped to preview. Freeze the live camera angle into entryOrientation
+    // (the same "keep facing this way across a re-render" mechanism hotspot-
+    // walk navigation already uses) so the viewer re-opens exactly where the
+    // admin left it and the next hotspot can be placed immediately — no
+    // Cancel, no re-enter, no re-drag. Purely a transient view: never
+    // persisted, never touches initial_yaw/initial_pitch, and cleared by the
+    // next scene navigation like any other entryOrientation.
+    const frozenView = viewerRef.current?.getCurrentView();
+    if (frozenView) setEntryOrientation(frozenView);
     await crossFloorHotspotsApi.create({
       source_node_id: Number(currentNodeOrFallback.sceneId),
       target_node_id: Number(targetSceneId),

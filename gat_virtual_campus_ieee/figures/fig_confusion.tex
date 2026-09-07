@@ -1,0 +1,29 @@
+\begin{figure}[!t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{2.2pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{@{}l|cccccccccccc@{}}
+\multicolumn{1}{c}{} & \multicolumn{12}{c}{\scriptsize predicted} \\
+\scriptsize true & \rotatebox{90}{ADM} & \rotatebox{90}{COU} & \rotatebox{90}{DEP} & \rotatebox{90}{ACA} & \rotatebox{90}{FAC} & \rotatebox{90}{ROOM} & \rotatebox{90}{DLOC} & \rotatebox{90}{LLOC} & \rotatebox{90}{VT} & \rotatebox{90}{CINF} & \rotatebox{90}{GEN} & \rotatebox{90}{UNK} \\
+\hline
+ADM   & \cellcolor{black!15}1 & 1 & . & . & 1 & . & . & . & 1 & 1 & . & . \\
+COU   & . & \cellcolor{black!15}2 & 1 & 1 & . & . & . & . & . & . & . & . \\
+DEP   & . & . & \cellcolor{black!15}2 & . & . & . & . & . & . & . & . & . \\
+ACA   & . & . & . & \cellcolor{black!15}2 & . & . & . & . & . & . & . & . \\
+FAC   & . & . & . & . & \cellcolor{black!15}3 & . & . & . & . & . & . & . \\
+ROOM  & . & . & . & . & 1 & \cellcolor{black!15}6 & . & . & . & . & . & . \\
+DLOC  & . & . & . & . & . & . & \cellcolor{black!15}1 & . & . & . & . & . \\
+LLOC  & . & . & . & . & . & . & 3 & \cellcolor{black!15}0 & . & . & . & . \\
+VT    & . & . & . & . & . & . & . & . & \cellcolor{black!15}1 & . & . & 1 \\
+CINF  & . & 1 & . & . & . & . & . & . & . & \cellcolor{black!15}0 & . & . \\
+GEN   & . & 1 & . & . & . & . & . & . & . & . & \cellcolor{black!15}0 & . \\
+UNK   & . & . & . & . & . & . & . & . & 1 & 2 & . & \cellcolor{black!15}0 \\
+\end{tabular}
+\caption{Intent classifier confusion matrix (raw counts) on the $34$-example
+validation split. Diagonal shaded. The classifier collapses
+\code{LABORATORY\_LOCATION} onto \code{DEPARTMENT\_LOCATION} and scatters
+\code{ADMISSIONS} and the low-support classes, consistent with overfitting
+on $168$ synthetic training utterances.}
+\label{fig:confusion}
+\end{figure}

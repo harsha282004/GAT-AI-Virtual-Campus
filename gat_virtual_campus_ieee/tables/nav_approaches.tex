@@ -1,0 +1,22 @@
+\begin{table}[!t]
+\centering
+\caption{Campus Navigation Approaches and the Implemented Choice.}
+\label{tab:nav}
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}p{1.7cm}p{2.0cm}p{1.5cm}p{1.9cm}@{}}
+\toprule
+\textbf{Approach} & \textbf{Optimality} & \textbf{Needs coords} & \textbf{Role in \system{}} \\
+\midrule
+BFS / DFS traversal & unweighted only & no & not used \\
+Dijkstra \cite{dijkstra1959note} & optimal (non-neg.\ weights) & no & single-source nearest-facility queries \\
+A$^{\star}$ \cite{hart1968astar} & optimal if $h$ admissible & optional & primary point-to-point pathfinder \\
+GPS turn-by-turn & n/a & yes (outdoor) & built, then removed from codebase \\
+Panorama link traversal & n/a & no & the tour (Section~\ref{sec:tour}), not routing \\
+\midrule
+\multicolumn{4}{@{}p{7.6cm}@{}}{\textbf{Implemented:} A$^{\star}$ with a three-tier
+degrading heuristic; at the zero tier it is provably identical to Dijkstra,
+so a single code path covers both. Back end complete; no UI consumer.} \\
+\bottomrule
+\end{tabular}
+\end{table}

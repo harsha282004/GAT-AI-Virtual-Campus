@@ -62,7 +62,14 @@ function describeSpeechError(code: string): string | null {
     case "no-speech":
       return "No speech detected. Please try again.";
     case "audio-capture":
-      return "No microphone was found on this device.";
+      // Reached only after our own getUserMedia preflight already
+      // confirmed a working microphone (see acquireMicStream) — so this
+      // is specifically the browser's voice-recognition engine failing to
+      // open its own (non-configurable) default input, most often because
+      // Windows' default *communication* device is set to something
+      // unavailable (e.g. a disconnected Bluetooth headset). "No
+      // microphone found" would be inaccurate and unhelpful here.
+      return "Your microphone works, but voice recognition couldn't use it — check that your laptop's built-in microphone (not a disconnected Bluetooth device) is set as the default input in your system's sound settings, then try again.";
     case "network":
       return "A network error interrupted voice recognition. Please try again.";
     case "aborted":
@@ -96,6 +103,67 @@ function describeMediaError(name: string): string {
     default:
       return "Voice input couldn't be processed. Please try typing your question instead.";
   }
+}
+
+const isDev = process.env.NODE_ENV !== "production";
+
+/** Acquires a microphone MediaStream robustly instead of a single
+ * getUserMedia({ audio: true }) attempt.
+ *
+ * ROOT CAUSE this addresses: an unconstrained getUserMedia({audio:true})
+ * asks the OS for whatever it currently considers the "default" input
+ * device. On Windows, that default can be stale — e.g. still pointing at
+ * a Bluetooth headset's mic definition even after it's disconnected —
+ * and the call fails with NotFoundError/NotReadableError even though the
+ * laptop's built-in microphone is present and perfectly usable as a
+ * *non-default* device. The previous implementation gave up on that
+ * first failure. This version falls through to enumerateDevices() and
+ * tries every real audioinput device in turn (never filtering by label —
+ * a built-in mic's label varies wildly by hardware/driver and is often
+ * generic or blank pre-permission) before concluding no microphone is
+ * available.
+ *
+ * Never retries on NotAllowedError/SecurityError (permission denied) —
+ * trying a different device can't fix that, and doing so would just
+ * re-trigger a confusing repeat permission prompt. */
+async function acquireMicStream(): Promise<MediaStream> {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (isDev) console.info("[voice] acquired default input device");
+    return stream;
+  } catch (err) {
+    const name = err instanceof DOMException ? err.name : "";
+    if (name !== "NotFoundError" && name !== "OverconstrainedError" && name !== "NotReadableError") {
+      throw err;
+    }
+    if (isDev) console.info(`[voice] default device failed (${name}); enumerating real devices`);
+  }
+
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const audioInputs = devices.filter((d) => d.kind === "audioinput");
+  if (isDev) console.info(`[voice] ${audioInputs.length} audioinput device(s) found`);
+  if (audioInputs.length === 0) {
+    throw new DOMException("No audio input devices enumerated", "NotFoundError");
+  }
+
+  let lastError: unknown = null;
+  for (const device of audioInputs) {
+    try {
+      // `ideal`, not `exact` — `exact` hard-fails (OverconstrainedError)
+      // if the browser can't satisfy that precise deviceId, which throws
+      // away a perfectly good fallback attempt for no reason; `ideal`
+      // lets Chrome substitute its own best match instead of rejecting
+      // the whole request outright.
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: { ideal: device.deviceId } },
+      });
+      if (isDev) console.info(`[voice] acquired explicit device ${device.deviceId.slice(0, 8)}…`);
+      return stream;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError ?? new DOMException("No working audio input device", "NotFoundError");
 }
 
 // Hard safety cap so a stuck recognition session (platform backend never
@@ -195,18 +263,18 @@ export function useSpeechRecognition({
     // Preflight mic acquisition (audio only — never requests camera) so we
     // can tell the user exactly what's wrong (permission vs missing
     // hardware vs a device that's currently unreachable) instead of
-    // relying solely on SpeechRecognition's own coarser error codes. This
-    // never pins a specific deviceId — { audio: true } always resolves to
-    // whatever the browser/OS currently considers the default input
-    // device (the laptop's built-in mic, unless the OS default has been
-    // pointed elsewhere), so it can't be the source of a "wrong device"
-    // bug on its own.
-    if (navigator.mediaDevices?.getUserMedia) {
+    // relying solely on SpeechRecognition's own coarser error codes.
+    // acquireMicStream() tries the OS default first, then falls back to
+    // every real enumerated device — see its own docstring for why that
+    // fallback is what makes the built-in mic work when it isn't the
+    // OS's current (possibly stale) default.
+    if (typeof navigator.mediaDevices?.getUserMedia === "function") {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await acquireMicStream();
         stream.getTracks().forEach((track) => track.stop());
       } catch (err) {
         const name = err instanceof DOMException ? err.name : "";
+        if (isDev) console.info(`[voice] mic acquisition failed: ${name || err}`);
         onError?.(describeMediaError(name));
         setStatus("idle");
         return;

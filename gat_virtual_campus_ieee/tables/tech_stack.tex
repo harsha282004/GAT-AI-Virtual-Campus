@@ -1,0 +1,35 @@
+\begin{table}[!t]
+\centering
+\caption{Implementation Technology Stack (Versions as Pinned in the Repository).}
+\label{tab:stack}
+\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}p{1.9cm}p{2.6cm}p{2.7cm}@{}}
+\toprule
+\textbf{Layer} & \textbf{Technology} & \textbf{Role} \\
+\midrule
+Front end & Next.js 15.5, React 19, TypeScript 5.9 & App-Router SPA, strict typing \\
+& Tailwind CSS 3.4, Framer Motion 11 & styling, animation \\
+& TanStack Query 5, Zustand 4.5 & server / client state \\
+& \code{pannellum-react} 1.3 & 360$^{\circ}$ viewer \\
+& \code{@vis.gl/react-google-maps} 1.9 & satellite map \\
+& Web Speech API & browser STT / TTS \\
+& custom dictionary + hook & EN/KN/HI UI translation \\
+\midrule
+API & FastAPI $\ge$0.115, Pydantic 2 & async framework, sync chat handler \\
+\midrule
+Data & PostgreSQL 16, SQLAlchemy 2 (sync), Alembic & campus schema, sessions, 14 migrations \\
+& ChromaDB $\ge$0.5 (\code{PersistentClient}) & vector store, HNSW cosine \\
+\midrule
+AI / RAG & LangChain + \code{langchain-ollama} & orchestration wrapper \\
+& Ollama, Llama~3.2 & local LLM (generation, translation) \\
+& \code{sentence-transformers}, \code{all-MiniLM-L6-v2} & 384-d embeddings \\
+& \code{rank\_bm25} (BM25Okapi) & lexical retrieval \\
+& scikit-learn \code{SVR} & reranker (implemented, untrained) \\
+& PyTorch $\ge$2.0 LSTM & intent classifier \\
+& BeautifulSoup4, \code{pypdf} & KB source acquisition \\
+\midrule
+Packaging & Docker Compose & 4 services; no cache/queue \\
+\bottomrule
+\end{tabular}
+\end{table}

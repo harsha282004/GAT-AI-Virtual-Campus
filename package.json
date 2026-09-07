@@ -1,0 +1,13 @@
+{
+  "name": "gat-ai-virtual-campus",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Repo-root convenience scripts for running the GAT AI Virtual Campus dev stack. The real app lives in frontend/ (Next.js) and backend/ (FastAPI).",
+  "scripts": {
+    "start:dev": "powershell -ExecutionPolicy Bypass -File scripts/start-project.ps1",
+    "start:backend": "powershell -ExecutionPolicy Bypass -File scripts/start-project.ps1 -BackendOnly",
+    "start:frontend": "powershell -ExecutionPolicy Bypass -File scripts/start-project.ps1 -FrontendOnly",
+    "start:dev:no-ollama": "powershell -ExecutionPolicy Bypass -File scripts/start-project.ps1 -SkipOllama",
+    "stop:dev": "powershell -ExecutionPolicy Bypass -File scripts/stop-project.ps1"
+  }
+}

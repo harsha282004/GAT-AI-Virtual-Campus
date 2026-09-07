@@ -1,0 +1,73 @@
+\begin{figure*}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize,
+  box/.style={draw, rounded corners=2pt, align=center, minimum height=7mm, inner sep=3pt, fill=black!3},
+  grp/.style={draw, dashed, rounded corners=4pt, inner sep=7pt},
+  flow/.style={-{Latex[length=2mm]}, thick}
+]
+% ---- Frontend ----
+\node[box] (home)  {Home / Campus};
+\node[box, right=4mm of home] (tour) {Virtual Tour\\(Pannellum)};
+\node[box, right=4mm of tour] (map) {Map\\(Google Satellite)};
+\node[box, right=4mm of map] (chat) {Chat + Floating\\Assistant};
+\node[box, right=4mm of chat] (voice) {Voice (Web\\Speech API)};
+\begin{scope}[on background layer]
+\node[grp, fit=(home)(tour)(map)(chat)(voice), label={[anchor=north west]north west:\textbf{Frontend --- Next.js 15 / React 19 / TypeScript}}] (fe) {};
+\end{scope}
+
+% ---- API layer ----
+\node[box, below=16mm of home, xshift=6mm] (chatapi) {\code{POST /api/v1/chat}\\(sync handler)};
+\node[box, right=6mm of chatapi] (tourapi) {\code{/api/v1/tour/*}\\scenes, neighbors};
+\node[box, right=6mm of tourapi] (navapi) {\code{GET /api/v1/navigate}\\(no FE consumer)};
+\node[box, right=6mm of navapi] (crud) {CRUD routers\\nodes, edges, \dots};
+\begin{scope}[on background layer]
+\node[grp, fit=(chatapi)(tourapi)(navapi)(crud), label={[anchor=north west]north west:\textbf{API --- FastAPI (Pydantic response models)}}] (api) {};
+\end{scope}
+
+% ---- Orchestration ----
+\node[box, below=14mm of chatapi, xshift=-4mm] (ctx) {Context resolver\\(follow-ups)};
+\node[box, right=5mm of ctx] (sup) {Supervisor\\(det.\ rules + LSTM)};
+\node[box, right=5mm of sup] (agents) {5 specialist agents\\(shared pipeline)};
+\begin{scope}[on background layer]
+\node[grp, fit=(ctx)(sup)(agents), label={[anchor=north west]north west:\textbf{Orchestration --- \code{scripts/ai/} (imported by API)}}] (orch) {};
+\end{scope}
+
+% ---- Services ----
+\node[box, below=14mm of ctx, xshift=-2mm] (retr) {Hybrid retrieval\\(dense + BM25)};
+\node[box, right=4mm of retr] (rr) {Reranker\\(4-feature)};
+\node[box, right=4mm of rr] (conf) {Confidence\\gate};
+\node[box, right=4mm of conf] (gen) {LLM generator\\+ grounding check};
+\node[box, right=4mm of gen] (nav) {A$^{\star}$ pathfinder\\+ graph builder};
+\node[box, right=4mm of nav] (lstm) {LSTM intent\\classifier};
+\begin{scope}[on background layer]
+\node[grp, fit=(retr)(rr)(conf)(gen)(nav)(lstm), label={[anchor=north west]north west:\textbf{Domain services}}] (svc) {};
+\end{scope}
+
+% ---- Data / infra ----
+\node[box, below=13mm of retr, xshift=6mm] (pg) {PostgreSQL 16\\campus schema, sessions};
+\node[box, right=8mm of pg] (chroma) {ChromaDB\\\code{gat\_kb} (HNSW cosine)};
+\node[box, right=8mm of chroma] (ollama) {Ollama\\Llama~3.2};
+\node[box, right=8mm of ollama] (files) {Panorama /\\media assets};
+\begin{scope}[on background layer]
+\node[grp, fit=(pg)(chroma)(ollama)(files), label={[anchor=north west]north west:\textbf{Data \& infrastructure (Docker Compose)}}] (data) {};
+\end{scope}
+
+% edges
+\draw[flow] (fe) -- node[right,font=\scriptsize]{HTTPS / axios (REST, no streaming)} (api);
+\draw[flow] (api) -- (orch);
+\draw[flow] (orch) -- (svc);
+\draw[flow] (retr) -- (chroma);
+\draw[flow] (retr.south west) to[bend right=12] (pg.north west);
+\draw[flow] (gen) -- (ollama);
+\draw[flow] (nav) -- (pg);
+\draw[flow] (tourapi.south) to[bend left=10] (pg.north);
+\end{tikzpicture}
+\caption{\system{} system architecture, reconstructed from the implemented
+import graph. The RAG/agent pipeline lives in \code{scripts/ai/} and is
+imported into the FastAPI process via a \code{sys.path} insertion; the
+navigation engine lives in \code{backend/app/navigation/}. The chat handler
+is a synchronous route dispatched on Starlette's thread pool. There is
+currently no front-end consumer of \code{/api/v1/navigate}.}
+\label{fig:arch}
+\end{figure*}

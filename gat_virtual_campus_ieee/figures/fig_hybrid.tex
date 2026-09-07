@@ -1,0 +1,27 @@
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize, node distance=5mm and 7mm,
+  b/.style={draw, rounded corners=2pt, align=center, minimum height=6mm, inner sep=3pt, fill=black!3, text width=2.6cm},
+  op/.style={draw, circle, inner sep=1pt, minimum size=5mm, fill=black!6},
+  pf/.style={-{Latex[length=1.6mm]}}
+]
+\node[b] (q) {user query $q$};
+\node[b, below=of q] (exp) {query expansion $q'=\textsc{Expand}(q)$ (candidate gen only)};
+\node[b, below left=8mm and 2mm of exp] (dense) {dense: encode $q'$, ChromaDB cosine, top-20 \\ $s^{\text{den}}=1-d_{\cos}$};
+\node[b, below right=8mm and 2mm of exp] (bm25) {BM25 (Okapi) over 1{,}507 chunks, top-20 \\ $s^{\text{lex}}$};
+\node[op, below=16mm of exp] (fuse) {$\oplus$};
+\node[b, below=6mm of fuse] (rank) {sort by $\hat s(q,d)$, take top-$k{=}5$};
+\draw[pf] (q)--(exp);
+\draw[pf] (exp)--(dense);
+\draw[pf] (exp)--(bm25);
+\draw[pf] (dense) -- node[left, align=center]{min--max\\norm.} (fuse);
+\draw[pf] (bm25) -- node[right, align=center]{min--max\\norm.} (fuse);
+\draw[pf] (fuse) -- node[right]{$\hat s = 0.6\,\tilde s^{\text{den}} + 0.4\,\tilde s^{\text{lex}}$} (rank);
+\end{tikzpicture}
+\caption{Hybrid retrieval. Query expansion widens only the candidate pool;
+all downstream stages see the user's unmodified query. Each method's own
+top-20 candidate scores are min--max normalized before the convex
+combination.}
+\label{fig:hybrid}
+\end{figure}

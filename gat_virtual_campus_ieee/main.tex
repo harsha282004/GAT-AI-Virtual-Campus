@@ -1,0 +1,111 @@
+%% ==========================================================================
+%%  GAT Virtual Campus -- IEEE journal-style manuscript
+%%  Compile with pdfLaTeX on Overleaf (see README.md).
+%%  Recommended: pdflatex -> bibtex -> pdflatex -> pdflatex
+%% ==========================================================================
+\documentclass[journal]{IEEEtran}
+
+% ---- Font encoding (T1 + Latin Modern; keeps <, >, | etc. correct in \texttt) ----
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+% ---- Math ----
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{bm}
+
+% ---- Algorithms ----
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+% ---- Float capacity (13 algorithms + 11 figures + 9 tables) ----
+\usepackage{morefloats}
+
+% ---- Tables / figures ----
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage[table]{xcolor}
+
+% ---- Diagrams (editable, self-contained) ----
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric,calc,fit,backgrounds,decorations.pathreplacing}
+
+% ---- Bibliography / links ----
+\usepackage{cite}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+% ---- Convenience macros ----
+% \textnormal wrapper keeps the small-caps name upright/medium even inside
+% \emph{}, \textbf{}, or IEEEtran's italic subsection headings, so NFSS is
+% never asked for the non-existent T1/lmr/bx/sc or T1/lmr/m/scit shapes.
+\newcommand{\system}{\textnormal{\textsc{GAT Virtual Campus}}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\kb}{knowledge base}
+\newcommand{\etal}{\textit{et al.}}
+
+% IEEEtran algorithm caption spacing
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+\begin{document}
+
+\title{An Integrated Retrieval-Augmented and Graph-Based Architecture for
+Virtual Campus Exploration: Grounded Multi-Agent Question Answering, 360$^{\circ}$
+Scene-Graph Navigation, and A$^{\star}$ Wayfinding}
+
+\author{
+        Author~One,
+        Author~Two,
+        and~Author~Three% <-- replace with real authors
+\thanks{Manuscript prepared \today. \emph{(Corresponding author: Author One.)}}
+\thanks{The authors are with the Department of Computer Science and
+Engineering, Global Academy of Technology, Bengaluru 560098, India
+(e-mail: author.one@example.com; author.two@example.com;
+author.three@example.com).}
+\thanks{Source code and reproduction artifacts for the implemented system are
+maintained in the project repository. This manuscript documents the system
+as implemented; components that are partially implemented, unused, or
+proposed for future evaluation are labeled as such throughout.}
+}
+
+\markboth{IEEE Transactions (Preprint), Vol.~XX, No.~X, Month~2026}%
+{Author \MakeLowercase{\textit{et al.}}: An Integrated RAG and Graph-Based Architecture for Virtual Campus Exploration}
+
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\begin{IEEEkeywords}
+Retrieval-augmented generation, virtual campus, 360$^{\circ}$ virtual tour,
+multi-agent systems, hybrid information retrieval, BM25, dense retrieval,
+sentence embeddings, A$^{\star}$ pathfinding, intent classification, large
+language models, grounded generation, hallucination mitigation, campus
+navigation, conversational assistant.
+\end{IEEEkeywords}
+
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/problem}
+\input{sections/architecture}
+\input{sections/dataset}
+\input{sections/virtual_tour}
+\input{sections/rag}
+\input{sections/multi_agent}
+\input{sections/navigation}
+\input{sections/voice}
+\input{sections/implementation}
+\input{sections/evaluation}
+\input{sections/results}
+\input{sections/limitations}
+\input{sections/future_work}
+\input{sections/conclusion}
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

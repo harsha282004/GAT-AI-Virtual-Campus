@@ -1,0 +1,66 @@
+\begin{table*}[!t]
+\centering
+\caption{Proposed Evaluation Protocol. None of These Experiments Has Been
+Run; They Are Specified Here as the Required Next Step, Not Reported as
+Results.}
+\label{tab:evalprotocol}
+\footnotesize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}p{2.5cm}p{3.4cm}p{4.0cm}p{4.7cm}@{}}
+\toprule
+\textbf{Experiment} & \textbf{Metrics} & \textbf{Data / apparatus} & \textbf{Baselines / conditions} \\
+\midrule
+E1 Retrieval quality &
+P@1, P@3, P@5, R@5, MRR, nDCG@10 \cite{jarvelin2002ndcg} &
+$\ge$150 institution queries with graded relevance judgments over the
+$1{,}507$-chunk corpus &
+BM25 only; dense only; hybrid $\lambda\!\in\!\{0.3,0.5,0.6,0.7\}$; effect of
+query expansion \\
+
+E2 Reranker ablation &
+$\Delta$ nDCG@5, P@5 vs.\ no rerank &
+E1 query set + feature vectors &
+no rerank; heuristic (Eq.~\eqref{eq:rerank}); trained SVR (after labeling);
+weight sensitivity \\
+
+E3 Intent classification &
+accuracy, macro/weighted $F_1$, per-class $F_1$, $12{\times}12$ confusion &
+$\ge$600 real logged queries, human-labeled, stratified split &
+current LSTM (as-is); LSTM retrained on real data; keyword-rule router;
+zero-shot LLM classifier \\
+
+E4 Answer faithfulness &
+faithfulness, answer relevancy, context relevancy \cite{es2024ragas};
+manual hallucination rate; citation correctness &
+$\ge$120 questions (in-domain / out-of-scope / ambiguous); LLM judge +
+2 human raters, report $\kappa$ &
+full pipeline; ablate confidence gate; ablate grounding check; ablate both \\
+
+E5 Confidence calibration &
+coverage, refusal rate, hallucination rate, answered-accuracy vs.\
+$(\theta_{\text{MED}}, \theta_{\text{HIGH}})$; reliability diagram, ECE &
+E4 question set with correctness labels &
+sweep $\theta$ on a grid; with vs.\ without LSTM $P(\text{intent})$ in
+Eq.~\eqref{eq:conf} \\
+
+E6 Pathfinding &
+path length, wall-clock, expanded-node count vs.\ graph size &
+the $180$/$325$ graph + synthetically scaled graphs; synthetic coordinates
+for tier-1/2 heuristic &
+A$^{\star}$ (3 heuristic tiers) vs.\ Dijkstra; cached vs.\ rebuilt graph \\
+
+E7 Tour traversal &
+cross-floor transition success, guided-tour completion rate, orientation
+continuity error, interaction errors &
+scripted traversals over all $6$ floor buckets; fault-injected corrupt
+graphs &
+manual vs.\ guided; with vs.\ without cycle guard \\
+
+E8 Usability &
+task completion rate, time-on-task, SUS, satisfaction, trust &
+$\ge$20 participants (prospective students), $6$ tasks spanning QA + tour +
+(future) routing &
+\system{} vs.\ institution website + PDF brochures \\
+\bottomrule
+\end{tabular}
+\end{table*}

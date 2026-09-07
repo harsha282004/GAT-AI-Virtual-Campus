@@ -1,0 +1,41 @@
+\section{Conclusion}
+\label{sec:conclusion}
+This paper documented \system{}, an integrated platform that brings
+grounded conversational question answering, 360$^{\circ}$ scene-graph tour
+navigation, and graph-based wayfinding for a single institution into one
+web application over one shared relational campus model. The contribution
+is at the level of \emph{system architecture} and \emph{algorithmic
+design}, not experimental performance: we described, with reference to the
+implemented source, a hybrid dense--lexical retriever with convex score
+fusion over per-method normalized candidates; a deterministic four-feature
+reranker; a two-term confidence gate that can refuse before invoking the
+model; a grounding-only prompt; an independent post-generation
+numeric-claim verification pass; a deterministic-primary, LSTM-fallback
+multi-agent router with full decision logging; a per-floor doubly-linked-list
+panorama scene graph with a tail-to-head cross-floor stitching pass that
+renders floor boundaries transparent to traversal code; a six-phase
+guided-tour automaton with cancellation-token and cycle-guard safety; an
+SVG minimap projection that never invents a coordinate; and an A$^{\star}$
+search whose heuristic degrades gracefully from planar coordinates to a
+great-circle approximation to zero, at which tier it is provably Dijkstra's
+algorithm.
+
+We reported the measurements that exist --- a $1{,}507$-chunk knowledge
+base from $128$ official PDFs and $42$ web pages, a $180$-node/$325$-edge
+campus graph, $161$ panorama scenes, and an intent classifier with training
+accuracy $1.00$ and held-out validation accuracy $0.529$ over $168$
+synthetic examples --- and were explicit that these are implementation-scale
+figures and an overfit classifier, not evidence of answer quality. We were
+equally explicit about what is partial (an untrained reranker, an unwired
+intent term in the confidence formula, a wayfinding engine with no UI) and
+about what is entirely absent (any formal retrieval, faithfulness,
+calibration, pathfinding, or usability evaluation).
+
+The layered hallucination-mitigation design and the deterministic-first
+routing are, we argue, the right shape for an institutional assistant
+deployed on local inference under a groundedness-over-coverage constraint,
+and the doubly-linked-list scene graph is a concrete, reproducible
+data-structure choice for cross-floor 360$^{\circ}$ navigation. Whether the
+system \emph{works well} for its users is a question the proposed
+evaluation protocol (Section~\ref{sec:eval}) is designed to answer, and
+which we identify as the essential next step.

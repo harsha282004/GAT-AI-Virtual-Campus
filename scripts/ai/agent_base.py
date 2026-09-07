@@ -165,9 +165,14 @@ def run_specialist(
     # Only the curated path is touched here: RAG "generated" answers already
     # come from the LLM, and every refusal/error status is left untouched.
     # naturalize_answer() never raises and returns the original text on any
-    # failure, so this cannot break the request or alter a fact.
+    # failure, so this cannot break the request or alter a fact. (The
+    # aggregated department/program list has its own exact entity guard in
+    # academic_agent.py; curated answers rely on the shared numeric /
+    # number-word grounding checks plus the "include every item" prompt.)
     if generation.get("generation_status") == "curated_answer":
-        natural, used_llm = naturalize_answer(query, generation["answer"], model=model)
+        natural, used_llm = naturalize_answer(
+            query, generation["answer"], model=model, context="curated"
+        )
         if used_llm:
             logger.info("Naturalized curated answer for query=%r (agent=%s)", query, agent_name)
             generation = {**generation, "answer": natural}

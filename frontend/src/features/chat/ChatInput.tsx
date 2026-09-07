@@ -9,6 +9,10 @@ import { SPEECH_LANG } from "@/lib/i18n/translations";
 import { useLanguageStore } from "@/store/languageStore";
 import { cn } from "@/utils";
 
+import { MicDiagnosticPanel } from "./MicDiagnosticPanel";
+
+const isDev = process.env.NODE_ENV !== "production";
+
 interface ChatInputProps {
   onSend: (message: string, options?: { viaVoice?: boolean }) => void;
   disabled?: boolean;
@@ -175,6 +179,8 @@ export function ChatInput({ onSend, disabled = false }: ChatInputProps) {
           {t(voiceError)}
         </p>
       )}
+
+      {voiceError && isDev && <MicDiagnosticPanel />}
     </div>
   );
 }

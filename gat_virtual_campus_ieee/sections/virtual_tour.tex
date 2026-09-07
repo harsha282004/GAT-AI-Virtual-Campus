@@ -1,0 +1,200 @@
+\section{Virtual Campus and 360$^{\circ}$ Tour Engine}
+\label{sec:tour}
+\input{figures/fig_scene_graph}
+\input{figures/fig_guided_state}
+
+The tour is not merely a set of 360$^{\circ}$ images: it is a data
+structure over which two traversal modes operate. This section describes
+the scene graph, the cross-floor stitching pass, the manual and guided
+traversal algorithms, and the minimap projection, all as implemented in
+\code{frontend/src/features/tour/engine/}.
+
+\subsection{Scene-Graph Data Structure}
+The overall structure is shown in Fig.~\ref{fig:scenegraph}. Each panorama
+scene is a \code{PanoramaNode} object holding an image path,
+a preview path, a resting orientation $(\mathrm{yaw}, \mathrm{pitch},
+\mathrm{hfov})$, a $1$-based per-floor sequence index, \code{previous} and
+\code{next} links, a \code{crossReferences} record, and a list of
+hand-authored \code{crossFloorHotspots}. A link
+$\ell = (\text{node}, \mathrm{entryYaw}, \mathrm{entryPitch})$ carries the
+camera heading the target should open with when reached \emph{via that
+link}, in the Street-View style~\cite{anguelov2010streetview} of preserving
+the direction of travel.
+
+Each floor is a \code{PanoramaLinkedList}: a doubly linked list with
+\code{head}/\code{tail} pointers and a \code{Map}$\langle$id$,$node$\rangle$
+for $O(1)$ random access. Sequential traversal is $O(1)$ per step; the
+list's \code{toArray()} deliberately stops at its own \code{tail} rather
+than following \code{next} indefinitely, because after stitching a tail's
+\code{next} points into another floor. The whole building is a
+\code{PanoramaEngine}: a \code{Map}$\langle$floorName$,$list$\rangle$ plus a
+flat node index, built once per tour-page render by \code{useMemo} directly
+from the backend \code{/tour/scenes} response --- never a hardcoded array.
+
+\emph{Why a doubly linked list.} A flat array with \code{findIndex} (the
+prior design) makes ``next scene'' an $O(n)$ scan and couples every
+consumer to array positions; a modulo wraparound over the array also
+produces an artificial jump from the last scene back to the first. A
+general graph structure would support the branch connections but makes
+``the next scene in the walking sequence'' ill-defined. The doubly linked
+list gives $O(1)$ ordered traversal, a natural place to attach
+per-direction entry orientation, and a per-floor \code{size} for the
+``scene $x$ of $y$'' indicator; branch and vertical connections that are
+\emph{not} part of the walking sequence are held separately in
+\code{crossReferences} (opposite corridor, floor up/down, lift array, room
+entry, return-to-corridor). This separation is the core data-structure
+decision.
+
+\subsection{Engine Construction}
+\code{buildPanoramaEngine} runs four passes. \emph{Pass~1} groups scenes by
+floor, sorts each group by stored sequence index, and appends nodes to that
+floor's list; forward entry orientation is the target's own calibrated
+$(\mathrm{yaw},\mathrm{pitch})$ and backward entry orientation is the
+source's yaw $+180^{\circ}$ --- both read live from calibration, never from
+a stored (possibly stale) edge value. \emph{Pass~2} converts each scene's
+non-chain hotspots into \code{crossReferences} pointers (an
+\code{elevator} hotspot appends to the \code{lift} array; \code{upstairs}
+sets \code{floorUp}; etc.). \emph{Pass~3} is cross-floor stitching
+(Algorithm~\ref{alg:crossfloor}). \emph{Pass~4} attaches each
+hand-authored cross-floor sightline hotspot to exactly the node it was
+authored on, skipping rows whose source node cannot be resolved.
+
+A read-time reclassification moves the ground floor's calibrated scene~$5$
+--- a standalone courtyard view --- into its own single-scene floor bucket
+``Central Quadrangle,'' closing the gap in the ground-floor sequence around
+it. The underlying scene object is untouched; only its floor grouping
+changes. This is why the tour's floor sequence has six entries over five
+physical floor directories.
+
+\subsection{Cross-Floor Stitching}
+\begin{algorithm}[!t]
+\caption{Cross-Floor Panorama Stitching (Pass 3)}
+\label{alg:crossfloor}
+\begin{algorithmic}[1]
+\Require engine $\mathcal{E}$; ordered floor sequence
+$\Phi = \langle\text{Entrance},\text{Ground},\text{First},\text{Second},\text{Third},\text{Quadrangle}\rangle$
+\Ensure each floor's tail linked to the next floor's head
+\For{$i \gets 1$ \textbf{to} $|\Phi|-1$}
+  \State $L \gets \mathcal{E}.\text{getFloor}(\Phi_i)$;\ \ $U \gets \mathcal{E}.\text{getFloor}(\Phi_{i+1})$
+  \If{$L{.}\text{tail} = \varnothing \ \lor\ U{.}\text{head} = \varnothing$} \textbf{continue} \EndIf
+  \State $a \gets L{.}\text{tail}$;\ \ $b \gets U{.}\text{head}$
+  \State $a{.}\text{next} \gets (\,b,\ \mathrm{entryYaw}{=}b{.}\text{yaw},\ \mathrm{entryPitch}{=}b{.}\text{pitch}\,)$
+  \State $b{.}\text{previous} \gets (\,a,\ \mathrm{entryYaw}{=}a{.}\text{yaw}{+}180^{\circ},\ \mathrm{entryPitch}{=}a{.}\text{pitch}\,)$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+Algorithm~\ref{alg:crossfloor} runs \emph{after} all six per-floor lists
+exist. It wires a lower floor's tail to an upper floor's head using exactly
+the same link shape and the same entry-orientation rule as an ordinary
+same-floor link. Because manual \code{goToOffset($\pm1$)} and guided
+auto-advance both read only \code{node.next}/\code{node.previous}, a scene
+at the end of its floor transparently continues into the next floor's first
+scene, \emph{with no code path aware that a boundary was crossed}. Each
+floor's own list (\code{head}/\code{tail}/\code{size}) is untouched, so
+``scene $x$ of $y$'' still counts within a floor. By design there is no
+wraparound from the last floor back to the first.
+
+\subsection{Manual Traversal}
+\begin{algorithm}[!t]
+\caption{Manual Tour Hotspot Derivation and Step}
+\label{alg:tourwalk}
+\begin{algorithmic}[1]
+\Require current node $v$; requested offset $\Delta\in\{-1,+1\}$ or hotspot $k$
+\Ensure next scene id and entry orientation
+\State $H \gets \emptyset$ \Comment{navigable hotspots, derived, never stored}
+\If{$v{.}\text{next} \ne \varnothing$}\ $H \mathrel{+}= (\text{forward},\ v{.}\text{next})$ at yaw $v{.}\text{yaw}$ \EndIf
+\If{$v{.}\text{previous} \ne \varnothing$}\ $H \mathrel{+}= (\text{back},\ v{.}\text{previous})$ at yaw $v{.}\text{yaw}{+}180^{\circ}$ \EndIf
+\ForAll{$c \in \{$oppositeCorridor, floorUp, floorDown, lift$[\,]$, roomEntry, returnTo$\}$}
+  \If{$v{.}\text{crossReferences}[c] \ne \varnothing$ \textbf{and} a raw edge angle exists}
+     \State $H \mathrel{+}= (c,\ \text{target})$ at that edge's $(\mathrm{yaw},\mathrm{pitch})$
+  \EndIf
+\EndFor
+\ForAll{$s \in v{.}\text{crossFloorHotspots}$}\ $H \mathrel{+}= (\text{crossFloor},\ s.\text{target})$ at $(s.\text{yaw},s.\text{pitch})$ \EndFor
+\If{step is $\Delta$}
+  \State $\ell \gets (\Delta = +1)\ ?\ v{.}\text{next} : v{.}\text{previous}$;\ \textbf{return} $(\ell{.}\text{node.id},\ \ell{.}\text{entryYaw},\ \ell{.}\text{entryPitch})$
+\Else
+  \State \textbf{return} target of hotspot $k$ with its authored entry orientation
+\EndIf
+\end{algorithmic}
+\end{algorithm}
+Every navigable hotspot is derived from the node's own links and
+cross-references on each render (Algorithm~\ref{alg:tourwalk}); there is no
+stored hotspot array and no manual enable/disable switch. Forward/back
+hotspots are placed at the node's calibrated yaw and yaw~$+180^{\circ}$;
+junction hotspots use the real edge angle because a corridor branch has no
+fixed offset from ``forward.'' A lift with more than one reachable floor
+renders a floor-select submenu.
+
+\subsection{Guided Tour}
+The guided tour is an automatic node-to-node walk driven entirely by
+\code{node.next} object references (Fig.~\ref{fig:guided},
+Algorithm~\ref{alg:guided}). At each node a fixed six-phase sequence runs:
+\emph{pause} ($900$\,ms) $\to$ \emph{look-left} ($900$\,ms, $-40^{\circ}$)
+$\to$ \emph{recenter} ($800$\,ms) $\to$ \emph{look-right} ($900$\,ms,
+$+40^{\circ}$) $\to$ \emph{recenter} ($800$\,ms) $\to$ \emph{move}
+($400$\,ms), with all durations scaled by a speed factor
+($\times1.6$ slow, $\times1$ normal, $\times0.55$ fast). Correctness relies
+on two mechanisms: a monotonically increasing \emph{cancellation token}
+that is incremented on every \code{stop}/\code{restart}/unmount so that any
+in-flight timer continuation observes a token mismatch and returns; and a
+per-run \emph{visited set} that aborts the walk to an \emph{error} state if
+\code{node.next} ever points to an already-visited scene (a corrupt-graph
+guard). Pause freezes at a phase boundary after the in-flight camera
+animation completes; resume continues from exactly that phase index;
+restart rewinds to the node the tour was seeded on. Advancing uses the same
+\code{goToScene} path as a manual hotspot click, so the fade transition is
+identical between modes.
+
+\begin{algorithm}[!t]
+\caption{Guided Tour Execution at a Node}
+\label{alg:guided}
+\begin{algorithmic}[1]
+\Require node $v$; start phase index $j$; run token $\tau$
+\Ensure camera walk; advance or terminate
+\For{$i \gets j$ \textbf{to} $5$}
+  \If{$\tau \ne \tau_{\text{current}}$}\ \textbf{return} \Comment{stopped/restarted} \EndIf
+  \If{status $=$ \emph{paused}}\ save $i$;\ \textbf{return} \EndIf
+  \State render phase $\phi_i$;\ \textbf{await} camera animation for
+         $\lceil \text{base}(\phi_i)\cdot \text{scale(speed)}\rceil$ ms
+\EndFor
+\State $w \gets v{.}\text{next.node}$
+\If{$w = \varnothing$}\ status $\gets$ \emph{completed};\ \textbf{return} \EndIf
+\If{$\neg\textsc{Usable}(w)$ \textbf{or} $w{.}\text{id} \in \text{visited}$}\ status $\gets$ \emph{error};\ \textbf{return} \EndIf
+\State visited $\gets$ visited $\cup\ \{w{.}\text{id}\}$
+\State \textsc{Advance}$(w{.}\text{id},\ v{.}\text{next.entryYaw},\ v{.}\text{next.entryPitch})$
+\State \textbf{recurse} with $(w, 0, \tau)$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Minimap Projection}
+The minimap (Algorithm~\ref{alg:minimap}) is inline SVG. For the current
+floor it collects scenes whose backing node has real
+$(\text{pos\_x},\text{pos\_y})$ coordinates; if at least two exist it
+fits their bounding box into an on-card plot region with an
+aspect-preserving scale and draws the real edges between them. If fewer
+than two positioned scenes exist it falls back to an evenly spaced strip
+inside the same region --- it \emph{never invents a coordinate}. A live
+heading needle reads the panorama viewer's yaw once per animation frame and
+is rotated by direct DOM mutation, bypassing React state to avoid 60\,Hz
+re-renders. The outer ``entrance zone / building zone'' frame is explicitly
+decorative and not survey-derived.
+
+\begin{algorithm}[!t]
+\caption{Minimap Coordinate Projection}
+\label{alg:minimap}
+\begin{algorithmic}[1]
+\Require current floor scenes $F$; node positions $\text{pos}[\cdot]$; plot rect $Z=(x,y,w,h)$; pad $p$
+\Ensure screen points for markers and edges
+\State $S \gets \{(s,\text{pos}[s]) : s\in F,\ \text{pos}[s]\ \text{defined}\}$
+\If{$|S| \ge 2$}
+  \State $(x_{\min},x_{\max},y_{\min},y_{\max}) \gets$ bounding box of $S$
+  \State $\sigma \gets \min\!\big(\tfrac{w-2p}{\max(x_{\max}-x_{\min},1)},\ \tfrac{h-2p}{\max(y_{\max}-y_{\min},1)}\big)$
+  \State center the scaled box in $Z$; \textbf{for each} $(s,(a,b))$:
+         $c_x \gets o_x + (a-x_{\min})\sigma$, $c_y \gets o_y + (b-y_{\min})\sigma$
+  \State draw edge $(u,v)$ iff both endpoints are in $S$
+\Else
+  \State place $|F|$ markers evenly on the horizontal midline of $Z$ \Comment{no coordinate invented}
+\EndIf
+\end{algorithmic}
+\end{algorithm}

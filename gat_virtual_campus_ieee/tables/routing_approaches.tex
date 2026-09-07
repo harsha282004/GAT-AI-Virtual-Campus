@@ -1,0 +1,24 @@
+\begin{table}[!t]
+\centering
+\caption{Query-Routing Approaches and the Implemented Hybrid.}
+\label{tab:routing}
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}p{1.55cm}p{1.55cm}p{1.55cm}p{2.2cm}@{}}
+\toprule
+\textbf{Property} & \textbf{Rule / keyword} & \textbf{Learned classifier} & \textbf{LLM router} \\
+\midrule
+Latency & negligible & ms (LSTM) & seconds \\
+Cost & none & training only & per-query inference \\
+Auditability & full (literal match) & partial (weights) & low \\
+Unseen phrasing & misses & generalizes (if trained well) & robust \\
+Cold-start data need & none & labeled corpus & none \\
+Determinism & total & total at inference & low \\
+\midrule
+\multicolumn{4}{@{}p{7.6cm}@{}}{\textbf{Implemented:} deterministic phrase/keyword cascade
+\emph{first}; trained LSTM ($12$ classes) consulted only on no-match, accepted
+only if $P(\text{intent})\ge 0.6$; \code{general\_agent} otherwise. Combines
+rule auditability with a learned safety net for uncovered phrasings.} \\
+\bottomrule
+\end{tabular}
+\end{table}

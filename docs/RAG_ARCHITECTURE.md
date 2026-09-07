@@ -1878,11 +1878,16 @@ UI interaction.
 
 ---
 
-# Phase A/B — Llama Integration Formalization + Answer Naturalization
+# Phase A/B/C — Llama Integration Formalization + Dynamic Answer Naturalization
 
 Meta's Llama has powered the RAG generator since Phase 4 (`llama3.2` via
-Ollama + LangChain). Phase A/B formalizes that integration and widens where
-the model is used, **without** replacing or weakening any existing stage.
+Ollama + LangChain). Phases A/B/C formalize that integration and widen
+where the model is used — **without** replacing or weakening any existing
+stage. RAG / retrieval / database / campus tools / spatial evidence /
+grounding / confidence / refusal / clarification all remain authoritative;
+Llama is only ever the natural-language phrasing layer over information the
+existing system has already verified, and every rephrase is re-validated
+before it is shown.
 
 ## Phase A — single source of truth for the model
 
@@ -1938,7 +1943,7 @@ hallucination surface.
 | Curated answer (`agent_base.run_specialist`, status `curated_answer`) | **yes** |
 | `navigation_agent._tool_response` (`campus_lookup`, `panorama_lookup`) | **yes** |
 | `navigation_agent._spatial_response` (all statuses) | no — carries an inline `Evidence:` provenance clause and a `low_confidence` hedge that must stay verbatim |
-| `academic_agent` `aggregated` department/program list | no — a list of proper names; a rephrase could silently omit one (the numeric grounding check would not catch it) |
+| `academic_agent` `aggregated` department/program list | **yes (Phase C)** — with a deterministic entity-preservation guard: every grounded department/program name must survive the rephrase (`_canon_entity` membership) or the exact template stands |
 | Spatial `ambiguous` / clarification / `not_found` / "no current location" | no — clarification/refusal |
 | `low_confidence_refusal`, `no_context`, `grounding_check_failed`, Ollama errors | no — refusal/error |
 
@@ -1961,10 +1966,91 @@ added or removed).
   spelled-out cardinals) but not an invented adjective or a dropped
   non-numeric code (e.g. a building code like "LIB"). The rephrase stays
   factually true in practice, but semantic equivalence is not proven.
-- `llama3.2` (3B) is a small model: Kannada/Hindi naturalizations
-  sometimes transliterate a room number into Devanagari digits, which the
-  bidirectional grounding check then rejects — so those requests fall back
-  to the (English) verified template. A larger model or a digit-
-  normalization step before the check would fix this.
 - The 4× length cap is a heuristic guard against added content, not a
   semantic equivalence check.
+
+## Phase C — dynamic academic / institutional answers + drift guards
+
+Phase C extends naturalization to the last verified path that still
+returned a raw template — `academic_agent`'s `aggregated` department /
+program list — and adds three deterministic guards to `naturalize_answer`
+so a small local model cannot turn "rephrase this" into "answer from your
+own knowledge":
+
+1. **Entity-preservation guard** (`required_entities`): the caller passes
+   the exact grounded list (`_aggregate_departments` hands over
+   `_required_entities`, the real page `<title>`s). Every name must appear
+   in the rephrase under `_canon_entity` folding (`&`↔`and`, punctuation
+   and case ignored) or the verified template is returned unchanged. A
+   deterministic membership test, not a similarity score.
+2. **Localized-digit normalization** (`_normalize_grounded_digits`): before
+   any grounding check, decimal digits in Devanagari / Kannada / Telugu /
+   Tamil / Bengali / Gurmukhi / Gujarati / Arabic-Indic / full-width blocks
+   are folded to ASCII (digit codepoints only — never letters, never
+   meaning). A Kannada/Hindi rephrase that writes "Room ೨೦೪" now verifies
+   against the source "Room 204" instead of falling back. The normalized
+   form is what gets returned.
+3. **Invented-number guard** (`_introduced_digit_runs`): any digit run of
+   ≥ 3 digits present in the rephrase but not in the source → template.
+   This backs up `find_unsupported_claims` for identifiers that carry no
+   `room`/phone/year keyword (`LIB 204` → `LIB 205`, `Block 3` → `Block 5`).
+4. **Invented-/dropped-number and grounded-token guard**
+   (`_introduced_digit_runs`, `_missing_grounded_tokens`): a rephrase must
+   not add a standalone ≥ 3-digit number absent from the source (`LIB 204`
+   → `LIB 205`, `Block 3` → `Block 5`), and — in **every** language — must
+   keep every grounded *hard token* the source contains: standalone
+   ≥ 3-digit numbers, pure ALL-CAPS acronyms/codes (`GAT`, `VTU`, `CSE`,
+   `LIB`, `KCET`, …), URLs and emails. This is the one guard that also
+   protects Kannada/Hindi output — it catches a rephrase that silently
+   dropped `LIB 204` or produced an entirely different answer, which the
+   keyword-scoped `find_unsupported_claims` and the English-only drift
+   check both miss.
+5. **English drift guard** (`_english_answer_drifts`): if an English
+   rephrase is mostly (> 50%, ≥ 4 words) content words that never occur in
+   the verified source, the model has stopped rephrasing and started
+   answering from training data → template. Observed live: a contact-office
+   curated answer rephrased into an invented list of departments, which no
+   numeric or entity guard caught. Skipped for kn/hi (a non-English
+   rephrase shares almost no tokens with the English source by design; the
+   grounded-hard-token guard covers those instead).
+
+Flow for an aggregated academic query: deterministic page enumeration →
+verified list + entity set → `naturalize_answer(..., required_entities=…)`
+→ Llama rephrase → digit-normalize → bidirectional `find_unsupported_claims`
+→ number-word guard → grounded-hard-token guard → invented-number guard →
+English-drift guard → entity guard → accept, else return the verified
+template. `generation_status` stays `aggregated` either way; the contract
+is unchanged.
+
+### Fallback (unchanged contract, widened triggers)
+
+`naturalize_answer` still never raises and still returns
+`(verified_text, False)` on: `LLM_NATURALIZE=false`, empty input, Ollama
+unreachable, model not pulled, timeout / exception, empty output, > 4×
+length, bidirectional grounding-check failure, introduced number word —
+plus, from Phase C: an introduced ≥ 3-digit number, a **dropped** grounded
+hard token (number / acronym / URL / email, any language), an English
+rephrase that drifts off-source, or a missing `required_entities` item.
+The caller always has a safe verified answer to show.
+
+### Phase C limitations
+
+- The English drift guard is lexical (token overlap), not semantic — a
+  rephrase that stays on-topic but swaps in many synonyms could trip it and
+  fall back to the template (safe, not wrong). It does not run for
+  Kannada/Hindi, where the grounded-hard-token guard, the digit /
+  number-word / entity / length guards and the prompt instruction carry the
+  load — in practice llama3.2 (3B) falls back to the English template for a
+  non-trivial share of Kannada/Hindi rephrases rather than risk a fact.
+- The grounded-hard-token guard keys on standalone ≥ 3-digit numbers and
+  pure ALL-CAPS tokens, so a mixed code like a `C103` room label or a
+  1–2 digit floor number is not individually enforced (the bidirectional
+  `find_unsupported_claims` still covers `room NNN` phrasings).
+- The invented-number guard uses a ≥ 3-digit threshold (matching
+  `grounding.MIN_DIGIT_RUN_LENGTH`), so a drifted 1–2 digit number
+  ("Block 3" → "Block 5" is caught; "Room 3" → "Room 5" is not).
+- Curated-answer similarity matching is unchanged from Phase 2 — a loosely
+  related curated answer can still be selected for an out-of-scope question
+  (e.g. a "nuclear engineering department?" query matching the admission-
+  office contact entry); Phase C only guarantees the *rephrase* of whatever
+  verified text is chosen introduces no new facts.

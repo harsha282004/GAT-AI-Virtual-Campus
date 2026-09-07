@@ -1,0 +1,28 @@
+\begin{table}[!t]
+\centering
+\caption{Confidence Values on the 9-Query Development Sample Used to Set the
+Category Thresholds. This is a Calibration Artifact, \emph{Not} a Validated
+Evaluation; $n=9$.}
+\label{tab:confsample}
+\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}p{5.2cm}rl@{}}
+\toprule
+\textbf{Query} & \textbf{conf.} & \textbf{cat.} \\
+\midrule
+Undergraduate programs offered at GAT? & 0.6907 & HIGH \\
+What facilities are available on the campus? & 0.6747 & HIGH \\
+What is the admission process? & 0.6466 & HIGH \\
+Where is the college located? & 0.6410 & HIGH \\
+What departments are available at GAT? & 0.5159 & MEDIUM \\
+What is the official contact information? & 0.4827 & MEDIUM \\
+What is the capital of France? (out of domain) & 0.4687 & LOW \\
+What is the population of Bangalore? (out of domain) & 0.4538 & LOW \\
+How do I bake a chocolate cake? (out of domain) & 0.4392 & LOW \\
+\midrule
+\multicolumn{3}{@{}p{7.4cm}@{}}{\itshape Thresholds set in the observed gaps:
+$\theta_{\text{HIGH}}=0.58$ (between $0.5159$ and $0.6410$),
+$\theta_{\text{MED}}=0.48$ (between $0.4687$ and $0.4827$).} \\
+\bottomrule
+\end{tabular}
+\end{table}

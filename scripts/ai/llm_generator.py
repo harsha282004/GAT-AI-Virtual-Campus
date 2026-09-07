@@ -150,18 +150,23 @@ LOW_CONFIDENCE_MESSAGE = (
     "the institution directly for accurate information."
 )
 
-# PHASE B — naturalization system prompt. The first two sentences are
-# verbatim from this phase's specification; the third reinforces "do not
-# add/infer" against a small local model's tendency to pad with greetings
-# or made-up suggestions. A language instruction (_LANGUAGE_INSTRUCTIONS)
-# is appended per request so Kannada/Hindi output still works.
+# PHASE B/C — the ONE naturalization system prompt, reused by every caller
+# (agent_base curated answers, navigation_agent tool answers, academic_agent
+# aggregated lists). The first two sentences are verbatim from the Phase B
+# specification; the rest reinforces "rephrase only, invent nothing" against
+# a small local model's tendencies. A language instruction
+# (_LANGUAGE_INSTRUCTIONS) is appended per request so Kannada/Hindi work.
 NATURALIZE_SYSTEM_PROMPT = (
+    "You are the response-generation layer of a grounded campus assistant. "
     "Rephrase the following verified information as a natural, conversational "
     "response in the user's language. Do not add, infer, remove, or change any "
-    "facts, numbers, names, room numbers, locations, URLs, or other factual "
-    "information. Keep the response to one or two sentences and do not add any "
+    "facts, numbers, names, room numbers, building codes, locations, URLs, "
+    "dates, timings, contact details, or other factual information. If the "
+    "verified information is a list, include every item exactly once and change "
+    "none of the item names. Keep the response short and do not add any "
     "greeting, opinion, directions, or suggestion that is not present in the "
-    "verified information."
+    "verified information. Never use your own knowledge about this or any "
+    "college."
 )
 
 # A rephrase should never balloon; output much longer than the source
@@ -179,6 +184,133 @@ _NUMBER_WORDS = frozenset(
     "thirty forty fifty sixty seventy eighty ninety hundred thousand "
     "million billion".split()
 )
+
+# PHASE C — localized decimal digits -> ASCII. A small local model in
+# Kannada/Hindi mode sometimes renders a grounded identifier ("Room 204")
+# with Devanagari/Kannada digits, which then fails the digit-based
+# grounding check. Normalizing digit CODEPOINTS only (never letters, never
+# meaning) lets the identifier verify against the source instead of forcing
+# a fall back to the English template. Covers Devanagari, Kannada, Telugu,
+# Tamil, Bengali, Gurmukhi, Gujarati, Arabic-Indic and full-width digits.
+_LOCALIZED_DIGIT_RANGES = (
+    0x0660,  # Arabic-Indic
+    0x06F0,  # Extended Arabic-Indic
+    0x0966,  # Devanagari
+    0x09E6,  # Bengali
+    0x0A66,  # Gurmukhi
+    0x0AE6,  # Gujarati
+    0x0BE6,  # Tamil
+    0x0C66,  # Telugu
+    0x0CE6,  # Kannada
+    0xFF10,  # Full-width
+)
+_DIGIT_TRANSLATION = {base + d: ord("0") + d for base in _LOCALIZED_DIGIT_RANGES for d in range(10)}
+
+
+def _normalize_grounded_digits(text: str) -> str:
+    """Map localized decimal digits to ASCII 0-9. Digit characters only."""
+    return text.translate(_DIGIT_TRANSLATION)
+
+
+# PHASE C — generic "did the rephrase invent a number" guard. A drifted
+# identifier digit ("LIB 204" -> "LIB 205", "Block 3" -> "Block 5") carries
+# no "room"/phone/year keyword for grounding.find_unsupported_claims() to
+# key on, so that check alone would miss it. Digit runs shorter than this
+# are ignored for the same reason grounding.py ignores them (incidental list
+# counts, single/two-digit numbers coincidentally matching).
+_MIN_GROUNDED_DIGIT_RUN = 3
+
+
+def _introduced_digit_runs(candidate: str, source: str) -> set[str]:
+    """Digit runs of >= _MIN_GROUNDED_DIGIT_RUN digits that appear in
+    ``candidate`` but nowhere in ``source`` (thousand-separator commas
+    stripped first, so "50,000" == "50000")."""
+
+    def runs(value: str) -> set[str]:
+        value = re.sub(r"(?<=\d),(?=\d)", "", value)
+        return {r for r in re.findall(r"\d+", value) if len(r) >= _MIN_GROUNDED_DIGIT_RUN}
+
+    return runs(candidate) - runs(source)
+
+
+# PHASE C — "hard" grounded tokens that must survive a rephrase VERBATIM in
+# every language. The naturalization prompt already tells the model to keep
+# proper nouns / codes / numbers / URLs untranslated; this verifies it
+# actually did. Without it, a Kannada/Hindi rephrase that silently drops
+# "LIB 204" (or invents a whole new answer) passes every other guard,
+# because those are English-only or digit-in-a-keyword-context only.
+_URL_OR_EMAIL = re.compile(r"https?://\S+|\b[\w.+-]+@[\w-]+\.[\w.-]+\b", re.IGNORECASE)
+_ACRONYM = re.compile(r"\b[A-Z]{2,}\b")  # GAT, VTU, CSE, ISE, LIB, KCET, AI, ML...
+# a digit run standing on its own — not the "103" inside a "C103" room code,
+# which the model may legitimately reword, and not a 1-2 digit incidental.
+_STANDALONE_NUMBER = re.compile(r"(?<![A-Za-z0-9])\d{3,}(?![A-Za-z0-9])")
+
+
+def _missing_grounded_tokens(candidate: str, source: str) -> list[str]:
+    """Tokens present in ``source`` that a faithful rephrase must still
+    contain — standalone >= _MIN_GROUNDED_DIGIT_RUN-digit numbers, pure
+    ALL-CAPS acronyms / codes (GAT, LIB, CSE, ...), and URLs / emails —
+    that are absent from ``candidate`` (compared case-insensitively; digits
+    already ASCII-normalized by the caller). A non-empty list means a
+    grounded identifier was dropped or the model wandered off the source
+    entirely -> keep the verified template."""
+    cand_low = candidate.lower()
+    no_thousands = re.sub(r"(?<=\d),(?=\d)", "", source)
+    required = (
+        _STANDALONE_NUMBER.findall(no_thousands)
+        + _ACRONYM.findall(source)
+        + _URL_OR_EMAIL.findall(source)
+    )
+    seen: set[str] = set()
+    missing: list[str] = []
+    for tok in required:
+        key = tok.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        if key not in cand_low:
+            missing.append(tok)
+    return missing
+
+
+# PHASE C — words too common to signal "the model wandered off the source".
+# Used only by _english_answer_drifts() below.
+_DRIFT_STOPWORDS = frozenset(
+    "this that these those there their they them then than with without into "
+    "onto from your yours will would shall should must have here does did "
+    "done been being also more most some such only just very much many both "
+    "each what when where which while about above below because however "
+    "therefore please note information following provide contact located "
+    "location".split()
+)
+
+
+def _english_answer_drifts(candidate: str, source: str) -> bool:
+    """True when an English rephrase is *mostly* words that never occur in
+    the verified source — the signature of a small local model answering
+    from its own knowledge instead of rephrasing (observed live: a
+    contact-office answer rephrased into an invented list of departments,
+    which no numeric/entity guard caught because it introduced no numbers
+    and had no required_entities).
+
+    English only. A Kannada/Hindi rephrase shares almost no tokens with the
+    English source by design, so this is skipped for those languages and the
+    digit / number-word / entity / length guards carry the load there."""
+    source_low = source.lower()
+    tokens = [w for w in re.findall(r"[a-z]{4,}", candidate.lower()) if w not in _DRIFT_STOPWORDS]
+    if len(tokens) < 6:
+        return False
+    novel = [w for w in tokens if w not in source_low]
+    return len(novel) >= 4 and len(novel) / len(tokens) > 0.5
+
+
+def _canon_entity(value: str) -> str:
+    """Fold a list-item name to a comparison key: lowercase, ``&`` -> ``and``,
+    every run of non-alphanumerics -> a single space. So
+    'Computer Science & Engineering (AI & ML)' and
+    'computer science and engineering, ai and ml' compare equal."""
+    value = value.lower().replace("&", " and ")
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9]+", " ", value)).strip()
 
 
 def warmup_model(model: str = OLLAMA_MODEL) -> None:
@@ -414,20 +546,33 @@ def naturalize_answer(
     verified_text: str,
     *,
     model: str = OLLAMA_MODEL,
+    required_entities: list[str] | None = None,
+    context: str = "naturalize",
 ) -> tuple[str, bool]:
-    """PHASE B — rephrase already-verified deterministic/curated text
-    conversationally via the local Llama model.
+    """PHASE B/C — rephrase already-verified deterministic/curated/aggregated
+    text conversationally via the local Llama model.
+
+    ``required_entities`` (PHASE C): every string here must still appear in
+    the rephrase (``&``/punctuation/whitespace-folded, case-insensitive).
+    Used for aggregated lists so the model cannot silently drop a
+    department/program. ``context`` only tags log lines.
 
     Returns ``(text, used_llm)``. The returned ``text`` is ALWAYS safe to
     show: on any failure — LLM_NATURALIZE disabled, empty input, Ollama
     unreachable, model missing, timeout, exception, empty output, output
     that balloons past _NATURALIZE_MAX_EXPANSION, output that fails the
-    same numeric grounding check generate_answer() uses (here run BOTH
-    ways against ``verified_text``: no phone/currency/room/year detail may
-    be introduced, and none present in the source may be dropped or
-    altered), or output that introduces a spelled-out number word absent
-    from the source — this returns ``(verified_text, False)`` and the
-    caller shows the original template unchanged. It never raises.
+    numeric grounding check generate_answer() uses (run BOTH ways against
+    ``verified_text`` after localized digits are normalized to ASCII: no
+    phone/currency/room/year detail introduced, none dropped or altered),
+    output that introduces a spelled-out number word absent from the
+    source, output that introduces any other >=3-digit number absent from
+    the source (a drifted identifier), output that DROPS a grounded hard
+    token present in the source (a >=3-digit number, an ALL-CAPS acronym /
+    building code, a URL / email — checked in every language), an English
+    rephrase that is mostly wording absent from the source (the model
+    answered from its own knowledge), or output missing a
+    ``required_entities`` item — this returns ``(verified_text, False)``
+    and the caller shows the original template unchanged. It never raises.
 
     Facts are neither added nor removed: the model is only asked to
     rephrase (NATURALIZE_SYSTEM_PROMPT), its output is grounding-checked
@@ -444,7 +589,8 @@ def naturalize_answer(
         availability = check_ollama_availability(model)
         if not (availability["reachable"] and availability["model_available"]):
             logger.info(
-                "Naturalization skipped (ollama unavailable: %s); keeping template.",
+                "[%s] naturalization skipped (ollama unavailable: %s); keeping template.",
+                context,
                 availability["error"],
             )
             return verified_text, False
@@ -464,18 +610,28 @@ def naturalize_answer(
             model=model,
             client_kwargs={"timeout": REQUEST_TIMEOUT_S},
         )
+        started = time.perf_counter()
         with _ollama_semaphore:
             response = llm.invoke(
                 [SystemMessage(content=system_prompt), HumanMessage(content=user_prompt)]
             )
+        elapsed_ms = (time.perf_counter() - started) * 1000
         candidate = (
             response.content if isinstance(response.content, str) else str(response.content)
         ).strip()
+        # PHASE C — fold localized digits in a grounded identifier back to
+        # ASCII (digit codepoints only) BEFORE every check, and return this
+        # normalized form.
+        candidate = _normalize_grounded_digits(candidate)
 
         if not candidate:
             return verified_text, False
         if len(candidate) > _NATURALIZE_MAX_EXPANSION * max(len(text), 40):
-            logger.warning("Naturalization output ballooned for query=%r; keeping template.", query)
+            logger.warning(
+                "[%s] naturalization output ballooned for query=%r; keeping template.",
+                context,
+                query,
+            )
             return verified_text, False
 
         # Same deterministic grounding check generate_answer() applies, run
@@ -487,8 +643,9 @@ def naturalize_answer(
         dropped = find_unsupported_claims(text, candidate)
         if introduced or dropped:
             logger.warning(
-                "Naturalization changed a verifiable detail for query=%r "
+                "[%s] naturalization changed a verifiable detail for query=%r "
                 "(introduced=%s dropped=%s); keeping template.",
+                context,
                 query,
                 introduced,
                 dropped,
@@ -504,17 +661,92 @@ def naturalize_answer(
         } - src_words
         if new_number_words:
             logger.warning(
-                "Naturalization introduced number word(s) %s absent from the source "
+                "[%s] naturalization introduced number word(s) %s absent from the source "
                 "for query=%r; keeping template.",
+                context,
                 sorted(new_number_words),
                 query,
             )
             return verified_text, False
 
+        # PHASE C — every grounded "hard" token (>=3-digit number, ALL-CAPS
+        # acronym / building code, URL / email) in the source must survive
+        # the rephrase verbatim, in ANY language. This is the one guard that
+        # also protects Kannada/Hindi output: it catches a rephrase that
+        # dropped "LIB 204" or wandered off the source entirely, which the
+        # English-only drift check and the keyword-scoped
+        # find_unsupported_claims both miss.
+        missing_tokens = _missing_grounded_tokens(candidate, text)
+        if missing_tokens:
+            logger.warning(
+                "[%s] naturalization dropped grounded token(s) %s for query=%r; "
+                "keeping template.",
+                context,
+                missing_tokens,
+                query,
+            )
+            return verified_text, False
+
+        # PHASE C — a rephrase must not invent a number that has no
+        # room/phone/year keyword for the check above to catch (drifted
+        # identifiers, "Block 3" -> "Block 5", an invented count).
+        invented_numbers = _introduced_digit_runs(candidate, text)
+        if invented_numbers:
+            logger.warning(
+                "[%s] naturalization introduced number(s) %s absent from the source "
+                "for query=%r; keeping template.",
+                context,
+                sorted(invented_numbers),
+                query,
+            )
+            return verified_text, False
+
+        # PHASE C — an English rephrase that is mostly words absent from the
+        # verified source means the model answered from its own knowledge
+        # (observed: a contact answer rephrased into an invented department
+        # list). Skipped for kn/hi, where token overlap with the English
+        # source is near zero by design.
+        if RESPONSE_LANGUAGE.get() == "en" and _english_answer_drifts(candidate, text):
+            logger.warning(
+                "[%s] naturalization drifted off the verified source (mostly new "
+                "wording) for query=%r; keeping template.",
+                context,
+                query,
+            )
+            return verified_text, False
+
+        # PHASE C — deterministic entity-preservation guard for lists.
+        if required_entities:
+            cand_key = _canon_entity(candidate)
+            missing = [
+                e
+                for e in required_entities
+                if _canon_entity(e) and _canon_entity(e) not in cand_key
+            ]
+            if missing:
+                logger.warning(
+                    "[%s] naturalization dropped required list item(s) %s for query=%r; "
+                    "keeping template.",
+                    context,
+                    missing,
+                    query,
+                )
+                return verified_text, False
+
+        logger.info(
+            "[%s] naturalized answer for query=%r in %.0f ms (%d required entities checked)",
+            context,
+            query,
+            elapsed_ms,
+            len(required_entities or []),
+        )
         return candidate, True
     except Exception as exc:  # noqa: BLE001 — naturalization must never break a request
         logger.warning(
-            "Naturalization failed (%s: %s); keeping template answer.", type(exc).__name__, exc
+            "[%s] naturalization failed (%s: %s); keeping template answer.",
+            context,
+            type(exc).__name__,
+            exc,
         )
         return verified_text, False
 

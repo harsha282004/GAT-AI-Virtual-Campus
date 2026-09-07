@@ -1,0 +1,135 @@
+\section{Introduction}
+\IEEEPARstart{T}{he} decision to enrol at a particular engineering college
+is made, in large part, before the applicant ever sets foot on the campus.
+Prospective students and their families gather information from institutional
+websites, PDF brochures, ranking portals, and word of mouth, and they form
+a mental model of the campus --- its departments, laboratories, hostel,
+library, transport, and physical layout --- from fragmentary and often
+inconsistent sources. Two information needs dominate this process. The
+first is \emph{propositional}: what are the admission routes, the eligibility
+criteria, the fee structure, the programs on offer, the accreditation
+status? The second is \emph{spatial}: where is the Computer Science block,
+which floor is a given laboratory on, what does the central quadrangle
+actually look like, and how would one walk from the main gate to the
+auditorium?
+
+Digital campus experiences typically serve one of these needs well and the
+other poorly. Institutional websites and chatbots answer propositional
+questions but present the campus as a list of building names. Virtual-tour
+products render 360$^{\circ}$ imagery but carry no queryable knowledge and
+no notion of a route. Interactive campus maps show geography but not the
+institution's policies or its interiors. A visitor who wants to know
+\emph{``which floor is the Power System Simulation Lab on, and can I see
+it?''} is served by neither category alone.
+
+At the same time, the natural technology for a unified conversational
+interface --- a large language model (LLM) --- introduces a well-documented
+failure mode. LLMs asked institution-specific questions readily produce
+fluent but fabricated answers: invented faculty names, wrong phone numbers,
+plausible-sounding but incorrect fee figures~\cite{ji2023hallucination}.
+For a system whose entire value proposition is being an authoritative
+substitute for the official sources, an ungrounded answer is worse than no
+answer. Retrieval-augmented generation (RAG)~\cite{lewis2020rag} mitigates
+this by conditioning the model on retrieved evidence, but a naive RAG
+pipeline still hallucinates when retrieval is weak, when the evidence is
+thin, or when the model over-extrapolates from a partially relevant
+passage~\cite{shuster2021retrieval,gao2023ragsurvey}.
+
+\subsection{The \system{} System}
+This paper describes \system{}, an integrated platform developed for the
+Global Academy of Technology (GAT), Bengaluru, that combines the
+propositional and spatial modalities in a single web application and treats
+groundedness as a first-class engineering requirement. The system comprises
+three cooperating subsystems:
+
+\begin{enumerate}
+\item A \textbf{grounded RAG assistant} that answers natural-language
+questions using a knowledge base built exclusively from official
+institutional sources ($128$ PDFs and $42$ web pages, $1{,}507$ text
+chunks). Retrieval is hybrid (dense embeddings plus BM25); generation is
+performed by a locally hosted Llama~3.2 model constrained by a
+grounding-only system prompt, a confidence gate that can refuse before the
+model is ever called, and a post-generation verification pass that
+withholds answers containing unverifiable numeric or contact details.
+\item A \textbf{360$^{\circ}$ virtual tour} of the institution's main
+building, structured as a per-floor doubly linked list of panorama scenes
+with graph-derived branch connections and a construction pass that stitches
+floor boundaries so that both manual and automatic (``guided'') traversal
+cross between floors with no floor-boundary-specific code.
+\item A \textbf{campus navigation engine} implementing A$^{\star}$ shortest
+paths over a $180$-node, $325$-edge graph that is rebuilt on demand from
+the live PostgreSQL relational schema, with a heuristic that adapts to the
+coordinate information actually available for each node pair.
+\end{enumerate}
+
+Query routing between the RAG assistant's specialist agents is performed by
+a deterministic phrase- and keyword-matching supervisor, with a small
+trained LSTM intent classifier consulted only as a fallback for phrasings
+the deterministic rules do not cover. Voice input is provided through the
+browser-native Web Speech API and feeds the same text pipeline as typed
+input.
+
+\subsection{Contributions}
+This work makes the following contributions, stated conservatively and
+tied directly to the implemented artifact:
+
+\begin{enumerate}
+\item A \textbf{system-level architecture} that unifies grounded
+conversational question answering, 360$^{\circ}$ scene-graph tour
+navigation, and graph-based wayfinding for a single institution, with all
+three subsystems sharing one relational campus model and one web/service
+stack (Section~\ref{sec:architecture}).
+\item A detailed, \textbf{code-verified algorithmic description} of a
+layered hallucination-mitigation design for institutional RAG: query
+expansion for candidate generation, weighted dense--lexical score fusion,
+a deterministic reranker, a two-term confidence gate, a grounding-only
+prompt, and an independent post-generation numeric-claim check
+(Section~\ref{sec:rag}, Algorithms~\ref{alg:kb}--\ref{alg:grounding}).
+\item A \textbf{deterministic-primary, ML-fallback multi-agent routing}
+scheme with full decision logging, and an honest account of a trained
+LSTM intent classifier integrated as a subordinate signal rather than the
+primary router (Section~\ref{sec:agents},
+Algorithms~\ref{alg:routing}--\ref{alg:lstm}).
+\item A \textbf{doubly-linked-list panorama scene graph} with a
+tail-to-head cross-floor stitching mechanism that renders floor-boundary
+traversal transparent to every consumer, and a six-phase guided-tour
+traversal automaton with cancellation-token and cycle-guard safety
+(Section~\ref{sec:tour}, Algorithms~\ref{alg:tourwalk}--\ref{alg:guided}).
+\item A \textbf{database-backed A$^{\star}$ wayfinding engine} with a
+three-tier degrading heuristic, together with a graph-construction
+procedure that treats a normalized relational schema as the live source of
+truth for the navigation graph (Section~\ref{sec:nav},
+Algorithms~\ref{alg:graphbuild}--\ref{alg:astar}).
+\item A set of \textbf{verified implementation-scale measurements} and a
+\textbf{proposed evaluation protocol} (Section~\ref{sec:eval}) covering
+retrieval quality, reranker ablation, intent-classifier generalization,
+answer faithfulness, confidence-threshold calibration, pathfinding
+performance, and usability --- experiments that the current artifact does
+not yet include and that this paper does not pre-empt with fabricated
+numbers.
+\end{enumerate}
+
+\subsection{Scope and Honesty Statement}
+Consistent with reproducible-systems practice, we distinguish throughout
+between (a)~what is implemented, (b)~what has been measured, (c)~what is
+proposed for evaluation, and (d)~what is future work. Several components are
+partial: the support-vector reranker is implemented but never trained and
+is not the production path; the LSTM classifier's probability is not yet
+wired into the confidence estimator; the A$^{\star}$ engine has no
+front-end consumer; and a previously built three-dimensional map and
+GPS turn-by-turn interface were deliberately removed from the codebase.
+These facts are reported where relevant rather than elided.
+
+The remainder of the paper is organized as follows.
+Section~\ref{sec:related} surveys related work across ten areas and
+positions \system{} against it. Section~\ref{sec:problem} formalizes the
+problem and objectives. Section~\ref{sec:architecture} presents the system
+architecture. Sections~\ref{sec:dataset}--\ref{sec:nav} detail the campus
+knowledge representation, the virtual tour engine, the RAG pipeline, the
+multi-agent and intent-classification subsystem, and the navigation engine.
+Section~\ref{sec:voice} covers voice interaction and
+Section~\ref{sec:impl} the implementation and technology stack.
+Section~\ref{sec:eval} defines the proposed experimental methodology;
+Section~\ref{sec:results} reports the measurements that currently exist and
+discusses them. Sections~\ref{sec:limitations}--\ref{sec:conclusion} give
+limitations, future work, and conclusions.

@@ -1,0 +1,340 @@
+\section{Intelligent RAG-Based Campus Assistant}
+\label{sec:rag}
+\input{figures/fig_hybrid}
+\input{tables/retrieval_methods}
+
+The assistant answers a query $q$ through the pipeline
+retrieval~$\to$~reranking~$\to$~context selection~$\to$~confidence
+estimation~$\to$~grounded generation~$\to$~post-hoc verification. Every
+stage is implemented in \code{scripts/ai/} and reused unmodified by all
+five specialist agents (Section~\ref{sec:agents}).
+
+\subsection{Dense Semantic Retrieval}
+Let $\phi:\text{text}\to\mathbb{R}^{384}$ be the \code{all-MiniLM-L6-v2}
+encoder with L2-normalized output, $\|\phi(\cdot)\|_2 = 1$. For a query
+$q$ and chunk $d$, the cosine similarity is
+\begin{equation}
+\mathrm{sim}(q,d) \;=\; \phi(q)^{\!\top}\phi(d)
+\;=\; 1 - d_{\cos}\big(\phi(q),\phi(d)\big),
+\label{eq:cos}
+\end{equation}
+where $d_{\cos}$ is the cosine distance returned by the ChromaDB HNSW
+index~\cite{malkov2020hnsw}. The dense stage returns the top-$20$ chunks by
+\eqref{eq:cos} as $\{(d, s^{\mathrm{den}}_d)\}$ with
+$s^{\mathrm{den}}_d = \mathrm{sim}(q,d)$. The encoder is used as an adopted
+pretrained component~\cite{reimers2019sbert,wang2020minilm}; no fine-tuning
+is performed.
+
+\subsection{BM25 Lexical Retrieval}
+The lexical stage indexes all $N = 1{,}507$ chunks with Okapi
+BM25~\cite{robertson1994okapi,robertson2009bm25}. For query terms
+$t \in q$ and chunk $d$ of length $|d|$ with average chunk length
+$\overline{L}$,
+\begin{equation}
+s^{\mathrm{lex}}(q,d) \;=\; \sum_{t \in q}
+\mathrm{IDF}(t)\;
+\frac{f(t,d)\,(k_1 + 1)}
+{f(t,d) + k_1\!\left(1 - b + b\,\dfrac{|d|}{\overline{L}}\right)},
+\label{eq:bm25}
+\end{equation}
+\begin{equation}
+\mathrm{IDF}(t) \;=\; \ln\!\left(
+\frac{N - n(t) + 0.5}{n(t) + 0.5} + 1 \right),
+\label{eq:idf}
+\end{equation}
+where $f(t,d)$ is the frequency of $t$ in $d$, $n(t)$ is the number of
+chunks containing $t$, and $(k_1, b)$ are the Okapi free parameters left at
+the \code{rank\_bm25} library defaults ($k_1 = 1.5$, $b = 0.75$). The
+IDF form~\eqref{eq:idf} follows Sp\"arck~Jones's term-specificity
+principle~\cite{sparckjones1972idf}. Tokenization is a lowercase
+alphanumeric split (\code{[a-z0-9]+}) with \emph{no} stemming or stop-word
+removal, so ``CSE'', ``VTU'', ``202'', and ``419B'' are preserved exactly
+--- essential for an institutional corpus where such tokens are the answer.
+Chunks with zero lexical overlap are excluded rather than padding the
+candidate set. Both the BM25 index and the encoder are process singletons,
+explicitly warmed at server startup because a cold start exceeded the
+front-end HTTP timeout.
+
+\emph{Why combine the two.} Dense retrieval captures meaning without shared
+vocabulary but can miss the exact right passage on a term technicality;
+BM25 rewards exact overlap but surfaces keyword-coincidental
+noise~\cite{wang2021interpolation}. The project's own development notes
+record a concrete case: for ``Where is the college located?'', BM25 alone
+ranked an unrelated committee PDF first (shared generic terms), while the
+dense and hybrid rankers both surfaced the campus-address document.
+Table~\ref{tab:retrieval} summarizes the trade-offs qualitatively; a
+quantitative comparison is proposed in Section~\ref{sec:eval}.
+
+\subsection{Score Normalization and Fusion}
+Dense scores are bounded in $[-1,1]$ (in practice $[0,1]$) while BM25
+scores are unbounded and corpus-dependent, so the two are not directly
+comparable~\cite{bruch2023fusion}. Each method's own top-$20$ candidate
+set is independently min--max normalized:
+\begin{equation}
+\tilde s_d \;=\;
+\begin{cases}
+\dfrac{s_d - \min_j s_j}{\max_j s_j - \min_j s_j}, & \max_j s_j \ne \min_j s_j,\\[2ex]
+1, & \text{otherwise.}
+\end{cases}
+\label{eq:norm}
+\end{equation}
+The fused score over the \emph{union} of both candidate sets is the convex
+combination
+\begin{equation}
+\hat s(q,d) \;=\; \lambda\,\tilde s^{\mathrm{den}}_d
+\;+\; (1-\lambda)\,\tilde s^{\mathrm{lex}}_d,
+\qquad \lambda = 0.6,
+\label{eq:fusion}
+\end{equation}
+where a candidate absent from one method's set contributes $0$ for that
+method (an explicit ``computed as absent'', distinct from ``not
+computed''). The top $k=5$ by $\hat s$ are returned
+(Algorithm~\ref{alg:hybrid}, Fig.~\ref{fig:hybrid}). The weight
+$\lambda$ and the candidate count are module constants and can be
+overridden per call; retuning never touches the fusion logic. We do not
+claim $\lambda = 0.6$ is optimal --- it has not been swept against a
+labeled set.
+
+\begin{algorithm}[!t]
+\caption{Hybrid Dense + BM25 Retrieval}
+\label{alg:hybrid}
+\begin{algorithmic}[1]
+\Require query $q$; weight $\lambda{=}0.6$; candidates $n{=}20$; final $k{=}5$
+\Ensure ranked list of $\le k$ chunks with provenance
+\State $q' \gets \textsc{ExpandQuery}(q)$ \Comment{synonym widening, candidate gen only}
+\State $D \gets \textsc{DenseTopN}(q', n)$;\ \ $B \gets \textsc{BM25TopN}(q', n)$
+\State $\tilde D \gets \textsc{MinMaxNorm}(D)$;\ \ $\tilde B \gets \textsc{MinMaxNorm}(B)$
+\State $C \gets \mathrm{keys}(D) \cup \mathrm{keys}(B)$;\ \ $R \gets \emptyset$
+\ForAll{$d \in C$}
+   \State $\hat s_d \gets \lambda\,\tilde D.\text{get}(d,0) + (1-\lambda)\,\tilde B.\text{get}(d,0)$
+   \State $R \gets R \cup \{(d,\ \text{text}_d,\ \text{meta}_d,\ s^{\mathrm{den}}_d,\ s^{\mathrm{lex}}_d,\ \hat s_d)\}$
+\EndFor
+\State \textbf{return} top-$k$ of $R$ sorted by $\hat s$ descending
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Query Expansion}
+\code{ExpandQuery} is a deterministic, hand-curated symmetric synonym map
+(e.g.\ \{department, branch\}, \{lab, laboratory\}, \{washroom, restroom,
+toilet\}) applied by plain token matching, appending at most four extra
+terms. It is \emph{not} an LLM call and \emph{not} a second embedding call.
+Critically, it widens only the candidate pool: reranking, confidence
+scoring, and the LLM prompt all use the user's unmodified $q$. A query with
+no in-domain vocabulary --- which includes every out-of-domain query --- is
+returned unchanged, so the empirically tuned confidence thresholds are not
+disturbed for anything outside the small vocabulary.
+
+\subsection{Deterministic Reranking}
+The reranker refines the fused shortlist with signals $\hat s$ does not see
+directly. For each $(q,d)$ it computes seven inspectable features; the
+production scoring path is a fixed weighted sum over four of them that are
+already bounded in $[0,1]$:
+\begin{equation}
+\mathrm{rr}(q,d) = 0.55\,\hat s(q,d)
++ 0.25\,\rho(q,d)
++ 0.10\,\chi(q,d)
++ 0.10\,\ell(d),
+\label{eq:rerank}
+\end{equation}
+where $\rho$ is query-term coverage $|\mathcal{T}(q)\cap\mathcal{T}(d)| /
+|\mathcal{T}(q)|$ over token sets $\mathcal{T}(\cdot)$, $\chi\in\{0,1\}$
+indicates a verbatim tokenized-phrase match, and
+$\ell(d) = \min(1, |d|/400)$ penalizes fragment-length chunks. The raw
+\code{semantic\_score}, \code{bm25\_score}, and \code{lexical\_overlap} are
+computed and reported but excluded from~\eqref{eq:rerank} because they live
+on unnormalized scales --- the same reasoning as~\eqref{eq:norm}. The
+weights sum to $1$, so $\mathrm{rr}\in[0,1]$
+(Algorithm~\ref{alg:rerank}).
+
+\begin{algorithm}[!t]
+\caption{Heuristic Context Reranking}
+\label{alg:rerank}
+\begin{algorithmic}[1]
+\Require query $q$; fused candidates $R$; final $k{=}5$
+\Ensure top-$k$ reranked, provenance preserved, tagged \code{rerank\_mode}
+\If{trained SVR model file exists on disk}
+  \State score each $d$ by $\mathrm{SVR}(\mathbf{x}(q,d))$;\ mode $\gets$ \code{svr\_trained}
+\Else \Comment{always, in the current system}
+  \ForAll{$d \in R$}
+     \State $\mathbf{x} \gets \{\hat s, \rho, \chi, \ell, \text{semantic}, \text{bm25}, \text{overlap}\}$
+     \State $\mathrm{rr}_d \gets 0.55\hat s + 0.25\rho + 0.10\chi + 0.10\ell$ \Comment{Eq.~\eqref{eq:rerank}}
+  \EndFor
+  \State mode $\gets$ \code{heuristic\_fallback}
+\EndIf
+\State \textbf{return} top-$k$ of $R$ by $\mathrm{rr}$, each carrying its
+$\hat s$, raw scores, feature vector, and \code{rerank\_mode}
+\end{algorithmic}
+\end{algorithm}
+
+\emph{Support-vector reranker (implemented, unevaluated).} An
+$\varepsilon$-SVR~\cite{smola2004svr} with RBF kernel is implemented behind
+the same interface with working \code{fit}/\code{predict}/\code{save}/
+\code{load}. It is \emph{never trained}: no labeled $(q,d)\to$relevance
+dataset exists for this institution, and \code{fit} refuses fewer than ten
+examples specifically to prevent fabricated labels. Every reranked result
+is tagged \code{rerank\_mode}; in the current system that tag is always
+\code{heuristic\_fallback}. We report the SVR path as an extension point,
+not a result.
+
+\subsection{Context Selection}
+Between reranking and generation, a filter drops near-duplicate chunks and
+chunks scoring far below the top result, and applies a small fixed
+domain-affinity boost keyed on the routing agent so that a borderline
+same-domain chunk is slightly favored over an equally scored off-domain
+one. The filter only removes and re-weights; it never fabricates or
+reorders content, and the reranker's own scores are untouched.
+
+\subsection{Confidence Estimation and Gating}
+\input{tables/confidence_sample}
+Before any generation, a confidence score is computed from the reranked
+context:
+\begin{equation}
+\mathrm{conf}(q) \;=\; 0.4\,\underbrace{c_{\mathrm{int}}(q)}_{\text{intent}}
+\;+\; 0.6\,\underbrace{c_{\mathrm{ret}}(q)}_{\text{retrieval}}.
+\label{eq:conf}
+\end{equation}
+The retrieval component blends the best reranked score with an agreement
+term that discounts a lone high scorer:
+\begin{equation}
+c_{\mathrm{ret}} = \mathrm{clip}_{[0,1]}\!\Big(
+0.7\,r_1 + 0.3\,\max\!\big(0,\; r_1 - \overline{g}\big)\Big),
+\label{eq:cret}
+\end{equation}
+where $r_1$ is the top reranked score and
+$\overline{g} = \frac{1}{2}\sum_{i\in\{2,3\}}\max(0, r_1 - r_i)$ is the
+mean gap to the runners-up. The intent component $c_{\mathrm{int}}$ is
+\emph{intended} to be the LSTM's $P(\text{intent})$, and
+\code{compute\_confidence} accepts an \code{intent\_probability} argument
+for exactly that purpose; but that argument is never supplied by the
+current call sites, so a documented fallback sets
+$c_{\mathrm{int}} \equiv c_{\mathrm{ret}}$ and tags the result
+\code{intent\_source = retrieval\_fallback}. \textbf{This is a real,
+current implementation gap:} a trained LSTM exists but its probability is
+not wired into~\eqref{eq:conf}. In effect the current confidence is a
+monotone function of $c_{\mathrm{ret}}$ alone.
+
+The score is bucketed by two thresholds derived empirically from the
+nine-query development sample in Table~\ref{tab:confsample}:
+\begin{equation}
+\mathrm{cat}(q) =
+\begin{cases}
+\text{HIGH}, & \mathrm{conf}(q) \ge 0.58,\\
+\text{MEDIUM}, & 0.48 \le \mathrm{conf}(q) < 0.58,\\
+\text{LOW}, & \mathrm{conf}(q) < 0.48.
+\end{cases}
+\label{eq:cat}
+\end{equation}
+On that sample all three out-of-domain queries fell to LOW and all six
+in-domain queries to MEDIUM or HIGH. We stress that $n=9$; these thresholds
+are a calibration artifact, not a validated boundary
+(Section~\ref{sec:eval}).
+
+\subsection{Confidence-Gated Grounded Generation}
+Generation is performed by \code{ChatOllama} against a locally served
+Llama~3.2~\cite{grattafiori2024llama3,ollama2023} through
+LangChain~\cite{langchain2022}, serialized by a semaphore (default width
+$1$) because two concurrent generations on the CPU-only host degraded
+super-linearly (Section~\ref{sec:results}). A fixed system prompt instructs
+the model to answer only from the supplied context; never to invent GAT
+facts (faculty, phone numbers, fees, timings, locations, courses); to state
+explicitly when the context is insufficient rather than guess; and to
+preserve numeric details verbatim. Context chunks are rendered as
+\code{[i] (Source: title)} blocks; the user turn is
+\code{CONTEXT:\{block\} QUESTION:\{q\} Answer using only the CONTEXT above.}
+
+The gate (Algorithm~\ref{alg:gen}) has three cases:
+\begin{itemize}
+\item \textbf{LOW} or \emph{no context}: the LLM is \emph{never called}; a
+fixed refusal string is returned with any available sources attached but
+not asserted as the answer.
+\item \textbf{MEDIUM}: generation proceeds with an appended instruction to
+hedge if the context does not clearly answer the question.
+\item \textbf{HIGH}: normal grounded generation.
+\end{itemize}
+Ollama reachability and model availability are probed before generation;
+each failure mode returns a distinct typed status
+(\code{ollama\_unreachable}, \code{model\_unavailable},
+\code{generation\_failed}) rather than a fabricated answer. The
+\code{sources} list is built solely from retrieved-chunk metadata and is
+never parsed from the model's text --- a citation cannot exist without a
+real retrieved chunk behind it.
+
+\begin{algorithm}[!t]
+\caption{Confidence-Gated RAG Generation}
+\label{alg:gen}
+\begin{algorithmic}[1]
+\Require query $q$; reranked context $X$; confidence result $\kappa$
+\Ensure grounded answer or typed refusal, with sources
+\State $S \gets \textsc{SourcesFromMetadata}(X)$
+\If{$X = \varnothing$} \textbf{return} $(\text{refusal},\ \text{status}{=}\code{no\_context},\ S)$ \EndIf
+\If{$\kappa.\text{category} = \text{LOW}$}
+  \State \textbf{return} $(\text{fixed refusal},\ \code{low\_confidence\_refusal},\ S)$ \Comment{LLM not called}
+\EndIf
+\If{$\neg\textsc{OllamaReachable}()$} \textbf{return} $(\varnothing,\ \code{ollama\_unreachable},\ S)$ \EndIf
+\State $p \gets \textsc{SystemPrompt}$;\ \textbf{if} $\kappa.\text{category}=\text{MEDIUM}$ \textbf{then} $p \mathrel{+}= \textsc{HedgeAddendum}$
+\State $p \mathrel{+}= \textsc{LanguageInstruction}(\text{locale})$
+\State $a \gets \textsc{ChatOllama}_{\text{llama3.2}}(p,\ \textsc{RenderContext}(X)\Vert q)$ \Comment{under semaphore}
+\State $U \gets \textsc{FindUnsupportedClaims}(a,\ \textsc{RenderContext}(X))$ \Comment{Alg.~\ref{alg:grounding}}
+\If{$U \ne \varnothing$} \textbf{return} $(\text{fixed refusal},\ \code{grounding\_check\_failed},\ S,\ U)$ \EndIf
+\State \textbf{return} $(a,\ \code{generated},\ S)$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Post-Generation Grounding Verification}
+Every successfully generated answer passes through an independent,
+deterministic check (Algorithm~\ref{alg:grounding}). Four regular
+expressions extract candidate factual spans --- phone numbers
+(\code{\textbackslash b(?:\textbackslash+?91[-\textbackslash s]?)?[6-9]\textbackslash d\{9\}\textbackslash b}),
+currency amounts, room numbers, and four-digit years --- from the generated
+text. Each span is reduced to its maximal digit runs of length
+$\ge 3$ (thousands separators stripped, so ``50,000'' and ``50000'' match).
+A span is \emph{unsupported} if none of its digit runs appears among the
+digit runs of the rendered context. If any unsupported span is found, the
+\emph{entire} answer is discarded and replaced with a fixed
+withhold-and-redirect message tagged \code{grounding\_check\_failed}.
+
+\begin{algorithm}[!t]
+\caption{Grounding-Based Claim Verification}
+\label{alg:grounding}
+\begin{algorithmic}[1]
+\Require answer text $a$; rendered context text $x$
+\Ensure map of unsupported spans by claim type (empty $\Rightarrow$ accept)
+\State $G_x \gets \{\,\text{digit runs of } x \text{ with length} \ge 3\,\}$
+\State $U \gets \emptyset$
+\ForAll{claim type $\theta \in \{\text{phone},\text{currency},\text{room},\text{year}\}$}
+  \ForAll{span $m$ matched by pattern$(\theta)$ in $a$}
+     \State $G_m \gets \{\,\text{digit runs of } m \text{ with length} \ge 3\,\}$
+     \If{$G_m \ne \varnothing$ \textbf{and} $G_m \cap G_x = \varnothing$}
+        \State $U[\theta] \gets U[\theta] \cup \{m\}$
+     \EndIf
+  \EndFor
+\EndFor
+\State \textbf{return} $U$
+\end{algorithmic}
+\end{algorithm}
+
+This check is narrow by construction: it targets exactly the checkable
+numeric failure modes (invented phone numbers, wrong fees, fabricated room
+numbers, wrong founding years) and cannot catch a wrong \emph{sentence}
+with no numeric pattern. It is a targeted safety net on top of the
+confidence gate, not a general hallucination detector, and it adds no model
+call --- appropriate for local inference. Its effectiveness has not been
+quantified (Section~\ref{sec:eval}).
+
+\subsection{Curated-Answer Fallback and Conversational Context}
+When the RAG path does not yield a confidently grounded answer
+(status other than \code{generated}, or a HIGH-confidence answer whose text
+is itself a hedge), a curated-answer tier is consulted: the user query is
+embedded with the \emph{same} loaded encoder and matched by cosine
+similarity against a small store of hand-written question/answer pairs; a
+match above $0.55$ is returned, otherwise the fixed fallback stands. The
+priority is strictly \emph{confident grounded RAG $>$ curated $>$ fallback
+message}.
+
+Multi-turn context is handled deterministically before routing. A
+follow-up with a pronominal or possessive cue (``its'', ``that one'',
+``what about the AI course'') is reformulated into a self-contained query
+when exactly one active entity is carried from recent turns; when two or
+more equally plausible entities exist, the system asks a clarifying
+question and \emph{does not} route or generate. There is no LLM call in
+context resolution.
