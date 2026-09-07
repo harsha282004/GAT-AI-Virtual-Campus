@@ -1,0 +1,136 @@
+\section{Graph-Based Campus Navigation}
+\label{sec:nav}
+\input{figures/fig_astar}
+\input{tables/nav_approaches}
+
+The wayfinding engine (\code{backend/app/navigation/}) computes shortest
+walking routes over the campus graph; Table~\ref{tab:nav} situates the
+implemented A$^{\star}$ choice among alternative routing approaches. It has
+been intact and unit-tested since an early project phase; a later scope
+revision removed its natural-language chat entry point but kept the engine,
+which is now exposed only through \code{GET /api/v1/navigate} and internal
+nearest-panorama lookups. It currently has \textbf{no front-end consumer} --- a
+previously built map UI with GPS turn-by-turn guidance was deliberately
+removed from the codebase.
+
+\subsection{Database-Backed Graph Construction}
+The navigation graph is \emph{not} stored as a file; it is rebuilt on every
+request from the live relational schema (Algorithm~\ref{alg:graphbuild}).
+\code{build\_graph} loads all $\textsf{Node}$ rows and all $\textsf{Edge}$
+rows (filtering out non-accessible edges when \code{accessible\_only} is
+set), then constructs an adjacency list $A: \mathrm{id} \to
+[\textsf{GraphEdge}]$ in which each directed edge $(u,v)$ contributes
+$A[u] \mathrel{+}= (v, \text{dist}, e)$ and, if
+\code{is\_bidirectional}, also $A[v] \mathrel{+}= (u, \text{dist}, e)$.
+
+\begin{algorithm}[!t]
+\caption{Database-Backed Graph Construction}
+\label{alg:graphbuild}
+\begin{algorithmic}[1]
+\Require DB session; flag \code{accessible\_only}
+\Ensure \code{CampusGraph}$(A,\ \text{nodesById})$
+\State $\text{nodesById} \gets \{\, n.\text{id} \mapsto n : n \in \textsc{SelectAll}(\textsf{Node}) \,\}$
+\State $Q \gets \textsc{Select}(\textsf{Edge})$;\ \textbf{if} \code{accessible\_only} \textbf{then} $Q \gets Q\ \textbf{where}\ e.\text{accessible}$
+\State $A \gets \{\, i \mapsto [\,] : i \in \text{nodesById} \,\}$
+\ForAll{$e \in Q$}
+  \State $A[e.\text{src}] \mathrel{+}= (e.\text{tgt},\ e.\text{distance},\ e)$
+  \If{$e.\text{is\_bidirectional}$}\ $A[e.\text{tgt}] \mathrel{+}= (e.\text{src},\ e.\text{distance},\ e)$ \EndIf
+\EndFor
+\State \textbf{return} \code{CampusGraph}$(A,\ \text{nodesById})$
+\end{algorithmic}
+\end{algorithm}
+
+Using the normalized relational schema as the live source of truth has
+three benefits for this project: the graph is always consistent with the
+tour and the minimap (which read the same tables); edits go through the
+same CRUD/migration tooling as every other campus fact; and accessibility
+filtering is a query predicate rather than a separate data set. The cost is
+that each route request pays an $O(|V| + |E|)$ rebuild ($180 + 325$ rows);
+Section~\ref{sec:eval} proposes measuring whether this warrants a cache.
+
+\subsection{A$^{\star}$ Shortest Path}
+The search (Algorithm~\ref{alg:astar}, Fig.~\ref{fig:astar}) is textbook
+A$^{\star}$~\cite{hart1968astar,russell2020aima} with a binary heap. It
+expands the node minimizing
+\begin{equation}
+f(n) \;=\; g(n) + h(n, t),
+\label{eq:fn}
+\end{equation}
+where $t$ is the goal node. The accumulated cost uses the stored edge
+distance,
+\begin{equation}
+g(v) \;=\; g(u) + \mathrm{dist}(u,v), \qquad (u,v) \in E,
+\label{eq:gn}
+\end{equation}
+and $\mathrm{dist}(u,v)$ is the \code{Edge.distance} column (a surveyed or
+authored float, not derived from coordinates). Path reconstruction walks a
+\code{came\_from} map from goal to start. The equal-node fast path returns
+immediately; a start or goal absent from the graph raises a typed
+no-path error.
+
+\begin{algorithm}[!t]
+\caption{A$^{\star}$ Campus Pathfinding}
+\label{alg:astar}
+\begin{algorithmic}[1]
+\Require graph $(A, \text{nodesById})$; start $s$; goal $t$
+\Ensure path node ids, edge list, total distance
+\If{$s \notin \text{nodesById}$ \textbf{or} $t \notin \text{nodesById}$}\ \textbf{raise} NoPath \EndIf
+\If{$s = t$}\ \textbf{return} $([s],\ [\,],\ 0)$ \EndIf
+\State open $\gets$ min-heap $\{(0, s)\}$;\ $g[s] \gets 0$;\ visited $\gets \emptyset$;\ came $\gets \{\}$
+\While{open $\ne \emptyset$}
+  \State $(\cdot,u) \gets \textsc{HeapPop}(\text{open})$
+  \If{$u \in$ visited}\ \textbf{continue} \EndIf
+  \State visited $\gets$ visited $\cup \{u\}$
+  \If{$u = t$}\ \textbf{return} \textsc{Reconstruct}(came, $s$, $t$, $g[t]$) \EndIf
+  \ForAll{$(v, w, e) \in A[u]$}
+    \State $g' \gets g[u] + w$
+    \If{$g' < g.\text{get}(v, \infty)$}
+       \State $g[v] \gets g'$;\ came$[v] \gets (u, e)$
+       \State \textsc{HeapPush}$\big(\text{open},\ (g' + h(\text{nodesById}[v], \text{nodesById}[t]),\ v)\big)$
+    \EndIf
+  \EndFor
+\EndWhile
+\State \textbf{raise} NoPath
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Three-Tier Degrading Heuristic}
+The heuristic adapts to whatever spatial information the two nodes share:
+\begin{equation}
+h(a,b) =
+\begin{cases}
+\sqrt{(a_x - b_x)^2 + (a_y - b_y)^2}, & \text{planar coords on both,}\\[1.2ex]
+\sqrt{(\Delta\!X)^2 + (\Delta\!Y)^2}, & \text{geographic coords on both,}\\[1.2ex]
+0, & \text{otherwise,}
+\end{cases}
+\label{eq:heur}
+\end{equation}
+with the equirectangular approximation
+\begin{align}
+\Delta\!X &= (a_{\text{lon}} - b_{\text{lon}})\cdot 111{,}320 \cdot \cos\!\Big(\tfrac{a_{\text{lat}} + b_{\text{lat}}}{2}\Big),\\
+\Delta\!Y &= (a_{\text{lat}} - b_{\text{lat}})\cdot 110{,}540,
+\end{align}
+adequate at campus scale. All three tiers are \emph{admissible}: tiers~1
+and~2 are straight-line lower bounds on any walk, and $h \equiv 0$ trivially
+never overestimates. At tier~3 the priority in~\eqref{eq:fn} reduces to
+$f(n) = g(n)$, i.e.\ the search \emph{is} Dijkstra's
+algorithm~\cite{dijkstra1959note}. A separate \code{single\_source\_distances}
+routine runs plain Dijkstra for nearest-facility queries (nearest room,
+nearest panorama), where there is no single fixed goal for a heuristic to
+aim at. Because all building \code{latitude}/\code{longitude} values and
+most node coordinates are currently null, the system in its present state
+runs predominantly at tier~3 (Dijkstra behavior); this is correct, just
+uninformed, and improves automatically as real coordinates are surveyed.
+
+\subsection{Turn-by-Turn Directions}
+\code{format\_directions} converts the node/edge path into template-based
+steps with no LLM involvement: a movement verb keyed on \code{edge\_type}
+(``Walk through the corridor'', ``Take the stairs'', ``Take the
+elevator''), a turn cue keyed on the relative \code{direction} enumeration
+(``Turn left.''), a floor-name cue on floor-transition edges, and, on the
+final step into a room, a ``\emph{Room X} is on your left/right'' cue. The
+\code{RouteResponse} carries the ordered node ids and names, total
+distance, an estimated walk time (summed per-edge \code{walking\_time}, or
+distance $/\,1.2\,\text{m\,s}^{-1}$), and a whole-path accessibility flag
+(true iff every edge on the path is wheelchair-passable, independent of
+whether accessible-only routing was requested).

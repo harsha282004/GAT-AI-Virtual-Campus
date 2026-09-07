@@ -1,0 +1,42 @@
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize,
+  node distance=3.2mm,
+  b/.style={draw, rounded corners=2pt, align=center, text width=6.1cm, minimum height=6mm, inner sep=3pt, fill=black!3},
+  d/.style={draw, diamond, aspect=2.2, align=center, inner sep=1pt, text width=2.6cm, fill=black!5},
+  pf/.style={-{Latex[length=1.8mm]}}
+]
+\node[b] (inp) {Browser: \code{axios POST /api/v1/chat} $\{message, session\_id?\}$};
+\node[b, below=of inp] (sess) {Resolve / create session (PostgreSQL, best-effort)};
+\node[d, below=of sess] (amb) {ambiguous\\follow-up?};
+\node[b, below=6mm of amb] (route) {\code{supervisor.route(effective\_message)}: classify $\rightarrow$ dispatch};
+\node[b, below=of route] (retr) {Hybrid retrieval (top-20$\times$2) $\rightarrow$ rerank (top-5) $\rightarrow$ context selection};
+\node[d, below=of retr] (cat) {confidence\\category?};
+\node[b, below=8mm of cat] (llm) {Ollama \code{ChatOllama(llama3.2)} with grounding-only prompt};
+\node[d, below=of llm] (grd) {numeric claims\\grounded?};
+\node[b, below=8mm of grd] (out) {\code{ChatResponse}: answer, confidence, agent, sources[], nav?, panorama?};
+\node[b, right=5mm of cat, text width=1.9cm, yshift=-2mm] (refuse) {LOW $\Rightarrow$ fixed refusal (LLM \emph{not} called)};
+\node[b, right=5mm of grd, text width=1.9cm] (with) {withhold $\Rightarrow$ substitute refusal};
+\node[b, right=5mm of amb, text width=1.9cm] (clar) {clarifying question; skip router};
+
+\draw[pf] (inp)--(sess);
+\draw[pf] (sess)--(amb);
+\draw[pf] (amb)-- node[left]{no} (route);
+\draw[pf] (amb)-- node[above]{yes} (clar);
+\draw[pf] (route)--(retr);
+\draw[pf] (retr)--(cat);
+\draw[pf] (cat)-- node[left]{MED/HIGH} (llm);
+\draw[pf] (cat)-- node[above]{LOW} (refuse);
+\draw[pf] (llm)--(grd);
+\draw[pf] (grd)-- node[left]{yes} (out);
+\draw[pf] (grd)-- node[above]{no} (with);
+\draw[pf] (clar) |- (out);
+\draw[pf] (refuse) |- (out);
+\draw[pf] (with) |- (out);
+\end{tikzpicture}
+\caption{End-to-end request flow for a chat query. The confidence gate and
+the post-generation grounding check are two independent points at which the
+system substitutes a fixed refusal for a generated answer.}
+\label{fig:reqflow}
+\end{figure}

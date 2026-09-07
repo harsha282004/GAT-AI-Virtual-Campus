@@ -1,0 +1,52 @@
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize, node distance=8mm,
+  n/.style={draw, circle, minimum size=6mm, inner sep=0pt, fill=black!5},
+  chain/.style={-{Latex[length=1.6mm]}, thick},
+  xref/.style={-{Latex[length=1.6mm]}, densely dashed, gray},
+  cf/.style={-{Latex[length=1.6mm]}, dash dot, black!60}
+]
+% ground floor chain
+\node[n] (g1) {$g_1$};
+\node[n, right=of g1] (g2) {$g_2$};
+\node[n, right=of g2] (g3) {$g_3$};
+\node[n, right=of g3] (g4) {$g_4$};
+\node[left=1mm of g1] {head};
+\node[right=1mm of g4] {tail};
+\draw[chain, transform canvas={yshift=1pt}] (g1)--(g2);
+\draw[chain, transform canvas={yshift=-1pt}] (g2)--(g1);
+\draw[chain, transform canvas={yshift=1pt}] (g2)--(g3);
+\draw[chain, transform canvas={yshift=-1pt}] (g3)--(g2);
+\draw[chain, transform canvas={yshift=1pt}] (g3)--(g4);
+\draw[chain, transform canvas={yshift=-1pt}] (g4)--(g3);
+\node[above=5mm of g2, font=\scriptsize\itshape] {Ground Floor list (\code{previous}$\leftrightarrows$\code{next})};
+
+% first floor chain
+\node[n, below=16mm of g1] (f1) {$f_1$};
+\node[n, right=of f1] (f2) {$f_2$};
+\node[n, right=of f2] (f3) {$f_3$};
+\node[left=1mm of f1] {head};
+\draw[chain, transform canvas={yshift=1pt}] (f1)--(f2);
+\draw[chain, transform canvas={yshift=-1pt}] (f2)--(f1);
+\draw[chain, transform canvas={yshift=1pt}] (f2)--(f3);
+\draw[chain, transform canvas={yshift=-1pt}] (f3)--(f2);
+\node[below=5mm of f2, font=\scriptsize\itshape] {First Floor list};
+
+% cross-floor stitch tail(g)->head(f)
+\draw[cf, bend right=25] (g4) to node[right, font=\scriptsize] {stitch: \code{tail.next}$=f_1$} (f1);
+\draw[cf, bend left=25] (f1) to node[left, font=\scriptsize] {\code{head.previous}$=g_4$} (g4);
+
+% cross references
+\node[n, above=8mm of g3, fill=black!12] (up) {$u$};
+\draw[xref] (g3) to node[right, font=\scriptsize] {\code{crossReferences.floorUp}} (up);
+\node[n, below right=5mm and 3mm of g4, fill=black!12] (room) {$r$};
+\draw[xref] (g4) to node[below, font=\scriptsize] {\code{roomEntry}} (room);
+\end{tikzpicture}
+\caption{Panorama scene graph. Each floor is a doubly linked list (solid);
+branch and vertical connections are separate cross-reference pointers
+(dashed); a construction pass stitches each floor's tail to the next
+floor's head (dash-dot), so sequential traversal crosses floors with no
+boundary-aware code.}
+\label{fig:scenegraph}
+\end{figure}

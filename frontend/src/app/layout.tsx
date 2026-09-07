@@ -3,6 +3,7 @@ import { Inter, Poppins } from "next/font/google";
 
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
+import { FloatingAssistant } from "@/features/chat";
 
 import { Providers } from "./providers";
 import "./globals.css";
@@ -38,6 +39,7 @@ export default function RootLayout({
           <Navbar />
           <main className="min-h-screen">{children}</main>
           <Footer />
+          <FloatingAssistant />
         </Providers>
       </body>
     </html>

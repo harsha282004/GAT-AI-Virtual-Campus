@@ -1,0 +1,38 @@
+\begin{table}[!t]
+\centering
+\caption{Verified Implementation-Scale Measurements. These are
+\emph{dataset/implementation} metrics, not performance results.}
+\label{tab:counts}
+\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}p{5.4cm}r@{}}
+\toprule
+\textbf{Asset / quantity} & \textbf{Value} \\
+\midrule
+Knowledge-base text chunks (\code{chunks.jsonl}, embedded) & 1{,}507 \\
+Source PDFs on disk & 128 \\
+Source website pages on disk & 42 \\
+Cumulative unique source URLs ever attempted & 186 \\
+\quad PDFs chunked / failed & 70 / 71 \\
+\quad Website pages chunked / failed & 40 / 5 \\
+Chunk size / overlap (characters) & 800 / 120 \\
+Embedding model / dimension & MiniLM-L6 / 384 \\
+\midrule
+Campus graph nodes & 180 \\
+Campus graph edges & 325 \\
+Panorama scenes (database rows) & 161 \\
+Panorama image files (main building tree) & $\approx$178 \\
+Floors / buildings / campuses & 10 / 5 / 1 \\
+Rooms (relational) & 11 \\
+Cross-floor hotspots & 849 \\
+\midrule
+Accumulated chat sessions (development) & 378 \\
+Accumulated chat messages (development) & 1{,}400 \\
+\midrule
+Intent classifier: training / validation examples & 134 / 34 \\
+Intent classifier: classes & 12 \\
+Intent classifier: vocabulary size & 283 \\
+Alembic migration revisions & 14 \\
+\bottomrule
+\end{tabular}
+\end{table}

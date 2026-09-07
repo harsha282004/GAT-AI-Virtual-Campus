@@ -1,0 +1,27 @@
+\begin{table}[!t]
+\centering
+\caption{Intent Classifier: Measured Per-Class Metrics on the Reconstructed
+$34$-Example Validation Split (Seed $42$). Overall Accuracy $0.5294$;
+Macro $F_1$ $0.4042$; Weighted $F_1$ $0.4869$.}
+\label{tab:lstmperclass}
+\footnotesize
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{Class} & \textbf{Prec.} & \textbf{Rec.} & \textbf{$F_1$} & \textbf{Supp.} \\
+\midrule
+ADMISSIONS          & 1.000 & 0.200 & 0.333 & 5 \\
+COURSES             & 0.400 & 0.500 & 0.444 & 4 \\
+DEPARTMENTS         & 0.667 & 1.000 & 0.800 & 2 \\
+ACADEMICS           & 0.667 & 1.000 & 0.800 & 2 \\
+FACILITIES          & 0.600 & 1.000 & 0.750 & 3 \\
+ROOM\_LOCATION      & 1.000 & 0.857 & 0.923 & 7 \\
+DEPARTMENT\_LOCATION & 0.250 & 1.000 & 0.400 & 1 \\
+LABORATORY\_LOCATION & 0.000 & 0.000 & 0.000 & 3 \\
+VIRTUAL\_TOUR       & 0.333 & 0.500 & 0.400 & 2 \\
+CAMPUS\_INFO        & 0.000 & 0.000 & 0.000 & 1 \\
+GENERAL            & 0.000 & 0.000 & 0.000 & 1 \\
+UNKNOWN            & 0.000 & 0.000 & 0.000 & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}

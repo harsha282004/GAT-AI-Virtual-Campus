@@ -1,0 +1,34 @@
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize, node distance=6mm and 8mm,
+  e/.style={draw, rounded corners=2pt, align=center, minimum height=6mm, inner sep=3pt, fill=black!3},
+  rel/.style={draw, -{Latex[length=1.6mm]}}
+]
+\node[e] (campus) {Campus};
+\node[e, below=of campus] (building) {Building\\{\tiny lat/long nullable}};
+\node[e, below=of building] (floor) {Floor\\{\tiny (building, level) unique}};
+\node[e, below=of floor] (room) {Room\\{\tiny room\_number, type, dept}};
+\node[e, right=16mm of floor] (nd) {Node\\{\tiny node\_type$\in$13, pos\_x/y, lat/long}};
+\node[e, above=of nd] (eg) {Edge\\{\tiny distance, bidir, edge\_type, direction, accessible, entry\_yaw/pitch}};
+\node[e, below=of nd] (pano) {Panorama\\{\tiny image\_path, initial\_yaw/pitch, hfov}};
+\node[e, right=10mm of eg] (cfh) {CrossFloor\\Hotspot\\{\tiny yaw, pitch, label}};
+\node[e, below=14mm of room] (sess) {ChatSession};
+\node[e, right=8mm of sess] (msg) {ChatMessage\\{\tiny role, content, resolved\_location}};
+
+\draw[rel] (campus) -- node[right]{1:N} (building);
+\draw[rel] (building) -- node[right]{1:N} (floor);
+\draw[rel] (floor) -- node[right]{1:N} (room);
+\draw[rel] (room) -- node[above]{1:1} (nd);
+\draw[rel] (nd) -- node[right]{1:N} (pano);
+\draw[rel] (nd.north) -- node[left]{src/tgt} (eg.south);
+\draw[rel] (nd.east) -- node[above]{src/tgt} (cfh.west);
+\draw[rel] (campus.east) to[bend left=30] node[above]{1:N} (nd.north east);
+\draw[rel] (sess) -- node[above]{1:N cascade} (msg);
+\end{tikzpicture}
+\caption{Campus relational model (SQLAlchemy). The \textsf{Node} table is
+the single graph vertex used by pathfinding, tour scenes, and the minimap;
+\textsf{CrossFloorHotspot} is a visual sightline layer and is \emph{not}
+part of the pathfinding graph.}
+\label{fig:er}
+\end{figure}

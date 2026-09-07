@@ -1,0 +1,22 @@
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize, node distance=4mm,
+  b/.style={draw, rounded corners=2pt, align=center, text width=6.6cm, minimum height=6mm, inner sep=3pt, fill=black!3},
+  pf/.style={-{Latex[length=1.8mm]}}
+]
+\node[b] (req) {\code{GET /api/v1/navigate} with \code{start\_node\_id}, \code{destination\_node\_id}, \code{accessible\_only}};
+\node[b, below=of req] (build) {\code{build\_graph(db, accessible\_only)}: query all \textsf{Node}, all \textsf{Edge}; expand bidirectional edges; drop non-accessible if requested};
+\node[b, below=of build] (astar) {\code{find\_shortest\_path}: A$^{\star}$ with binary heap, $f(n){=}g(n){+}h(n)$};
+\node[b, below=of astar] (heur) {heuristic $h$: planar $\|\cdot\|_2$ $\rightarrow$ equirectangular great-circle $\rightarrow$ $0$};
+\node[b, below=of heur] (fmt) {\code{format\_directions}: template turn-by-turn from \code{edge\_type}/\code{direction}/\code{floor\_transition}};
+\node[b, below=of fmt] (resp) {\code{RouteResponse}: node ids, names, distance, walk time, accessibility, steps};
+\draw[pf] (req)--(build); \draw[pf] (build)--(astar); \draw[pf] (astar)-- (heur);
+\draw[pf] (heur.east) to[bend left=40] (astar.east);
+\draw[pf] (astar)--(fmt); \draw[pf] (fmt)--(resp);
+\end{tikzpicture}
+\caption{A$^{\star}$ navigation pipeline. The graph is rebuilt from the live
+relational schema on every request; there is no persistent in-process graph
+cache and (currently) no front-end consumer of the endpoint.}
+\label{fig:astar}
+\end{figure}

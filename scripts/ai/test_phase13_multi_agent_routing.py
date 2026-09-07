@@ -45,7 +45,11 @@ _DOMAIN_CASES: list[tuple[str, str, str]] = [
     ("NAVIGATION-2", "Which floor is the CSE department on?", "navigation_agent"),
     ("NAVIGATION-3", "Show me the panorama for the library", "navigation_agent"),
     ("GENERAL-1", "What is Global Academy of Technology?", "general_agent"),
-    ("GENERAL-2", "Hello", "general_agent"),
+    # "Hello" used to land here (general_agent -> "no relevant information");
+    # it is now handled by the conversational layer (smalltalk.detect ->
+    # conversation_agent), verified in test_smalltalk_conversational.py.
+    # This slot keeps a genuine general-info query for agent coverage.
+    ("GENERAL-2", "What is the NAAC accreditation of GAT?", "general_agent"),
 ]
 
 

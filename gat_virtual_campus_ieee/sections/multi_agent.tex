@@ -1,0 +1,159 @@
+\section{Multi-Agent Query Routing and Intent Classification}
+\label{sec:agents}
+\input{figures/fig_routing}
+\input{tables/routing_approaches}
+
+The assistant is organized as a supervisor and five specialist agents ---
+\code{admission\_agent}, \code{academic\_agent}, \code{facilities\_agent},
+\code{navigation\_agent}, \code{general\_agent}. Here ``multi-agent''
+denotes an intent-driven routing architecture~\cite{wooldridge2009mas}, not
+concurrency and not an LLM-driven agent loop~\cite{wu2023autogen}: the
+supervisor makes no factual claims, calls no LLM, and merely classifies and
+dispatches.
+
+\subsection{Specialist Agents}
+All five agents are thin wrappers over one shared function,
+\code{run\_specialist}, which executes the identical pipeline of
+Section~\ref{sec:rag} (hybrid retrieval $\to$ rerank $\to$ context
+selection $\to$ confidence $\to$ gated generation $\to$ grounding check
+$\to$ curated fallback). What differs between agents is \emph{which queries
+the supervisor sends them}, plus two agent-specific behaviors:
+\code{navigation\_agent} first attempts two deterministic lookup paths
+(a panorama-signage spatial knowledge store built from real main-building
+room numbers, and a PostgreSQL entity resolver) and only falls through to
+RAG on a miss, forcing confidence to $1.0$/HIGH on an exact structured
+hit; and \code{general\_agent} is a pure pass-through appropriate for a
+no-clear-domain fallback. No agent has a private retriever or model client;
+none answers from parametric memory. This shared-pipeline discipline is an
+explicit architectural invariant.
+
+\subsection{Routing Algorithm}
+\code{supervisor.classify} (Algorithm~\ref{alg:routing},
+Fig.~\ref{fig:routing}) is a cascade evaluated in a fixed order:
+
+\begin{enumerate}
+\item \textbf{Navigation phrases.} A $23$-entry list of high-specificity
+substrings (``where is'', ``how do i get to'', ``which floor'', ``take me
+to'', ``panorama'', \dots) is checked first, because these are unambiguous
+location signals even when the object contains another domain's keyword
+(``Where is the CSE \emph{department}?'' is a location question).
+\item \textbf{Bare room number.} A regular expression matching an optional
+``room''/``room no.''/``\#'' prefix followed by a $2$--$4$ digit number and
+an optional letter routes ``room 202'' to navigation regardless of
+surrounding verbs.
+\item \textbf{Domain keyword scoring.} Each of four domain keyword sets is
+scored by the count of its members occurring in $q$; the highest-scoring
+non-empty set wins.
+\item \textbf{LSTM fallback.} \emph{Only} if steps 1--3 all fail, the
+trained LSTM classifier is consulted; if $P(\text{intent}) \ge 0.6$, its
+predicted class is mapped to an agent via a $12\!\to\!5$ dictionary,
+otherwise \code{general\_agent} is chosen.
+\end{enumerate}
+Every decision returns a human-readable reason, and the supervisor logs
+\code{"Routing decision: query=\%r -> agent=\%s (\%s)"} at \code{INFO}
+level --- an explicit functional requirement for demonstrability and
+auditability. This is a deliberate design choice against LLM-router
+approaches (Table~\ref{tab:routing}): it costs no routing latency, needs no
+per-query model call, and any decision can be explained from a single log
+line.
+
+\begin{algorithm}[!t]
+\caption{Multi-Agent Query Routing}
+\label{alg:routing}
+\begin{algorithmic}[1]
+\Require query $q$; navigation phrases $\mathcal{N}$; keyword sets $\{\mathcal{K}_a\}$;
+threshold $\tau = 0.6$
+\Ensure agent name(s) and reason
+\State \textbf{// multi-domain pre-check}
+\State $\Gamma \gets \textsc{SplitOnConjunction}(q)$ \Comment{on `` and '' / `` ; ''}
+\If{$|\Gamma| \ge 2$ \textbf{and} $|\{\textsc{Classify}(\gamma) : \gamma \in \Gamma\}| \ge 2$}
+  \State \textbf{return} $\{(\gamma, \textsc{Classify}(\gamma)) : \gamma \in \Gamma\}$ \Comment{run each, concatenate}
+\EndIf
+\State $\hat q \gets \text{lowercase}(q)$
+\ForAll{$\pi \in \mathcal{N}$}
+  \If{$\pi \subseteq \hat q$}\ \textbf{return} (\code{navigation\_agent}, ``phrase '$\pi$' '') \EndIf
+\EndFor
+\If{\textsc{RoomNumberRegex}$(q)$}\ \textbf{return} (\code{navigation\_agent}, ``bare room number'') \EndIf
+\ForAll{agent $a$}\ $\sigma_a \gets |\{w \in \mathcal{K}_a : w \subseteq \hat q\}|$ \EndFor
+\State $a^\star \gets \arg\max_a \sigma_a$
+\If{$\sigma_{a^\star} > 0$}\ \textbf{return} $(a^\star,\ \text{``keywords ''} \dots)$ \EndIf
+\State $(\iota, p) \gets \textsc{ClassifyIntentLSTM}(q)$ \Comment{Alg.~\ref{alg:lstm}}
+\If{$\iota \ne \varnothing$ \textbf{and} $p \ge \tau$}
+  \State \textbf{return} $(\textsc{IntentToAgent}[\iota],\ \text{``LSTM } \iota\ (p)\text{''})$
+\EndIf
+\State \textbf{return} (\code{general\_agent}, ``no rule matched; LSTM not confident'')
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Multi-Domain Queries}
+A thin opt-in layer splits a query on an explicit conjunction (`` and '',
+`` ; '') and classifies each clause with the same \code{classify}. Only if
+two or more clauses land on genuinely \emph{different} agents is the
+multi-domain path taken: each clause is answered independently by its agent
+and the answers are concatenated with no second LLM merge call. A query
+like ``What is the admission process and what is the fee structure?''
+splits into two clauses that both classify to \code{admission\_agent} and
+therefore falls straight through to the ordinary single-agent path.
+
+\subsection{LSTM Intent Classifier}
+The classifier (Algorithm~\ref{alg:lstm}) is a compact recurrent
+network~\cite{hochreiter1997lstm}:
+\begin{align}
+\mathbf{x}_t &= \mathbf{E}\,\text{onehot}(w_t), \quad \mathbf{E}\in\mathbb{R}^{|\mathcal{V}|\times 32},\\
+(\mathbf{h}_t,\mathbf{c}_t) &= \mathrm{LSTM}(\mathbf{x}_t, \mathbf{h}_{t-1}, \mathbf{c}_{t-1}), \quad \mathbf{h}_t\in\mathbb{R}^{32},\\
+\mathbf{z} &= \mathbf{W}\,\mathrm{dropout}_{0.2}(\mathbf{h}_{T}) + \mathbf{b}, \quad \mathbf{W}\in\mathbb{R}^{12\times 32},\\
+P(\text{class} = j \mid q) &= \mathrm{softmax}(\mathbf{z})_j,
+\end{align}
+where $w_1{:}w_T$ are the query's lowercase alphanumeric tokens,
+$\mathbf{h}_T$ is the final hidden state after a packed sequence pass, and
+the classifier head produces logits over $12$ classes. Vocabulary
+$\mathcal{V}$ has $283$ entries (plus \code{<pad>}/\code{<unk>}); the same
+minimal tokenizer as BM25 is used so that room numbers and acronyms are not
+fragmented. Inference applies \code{softmax} and returns the arg-max class
+with its probability; if artifacts are missing the classifier returns
+$(\varnothing, 0)$ and the supervisor treats that as ``no opinion.''
+
+\begin{algorithm}[!t]
+\caption{LSTM Intent Classification Pipeline}
+\label{alg:lstm}
+\begin{algorithmic}[1]
+\Require query $q$; vocab $\mathcal{V}$; trained params $(\mathbf{E},\text{LSTM},\mathbf{W},\mathbf{b})$; classes $\mathcal{I}$ ($|\mathcal{I}|{=}12$)
+\Ensure $(\text{intent},\ \text{probability})$
+\If{artifacts absent} \textbf{return} $(\varnothing,\ 0)$ \EndIf
+\State $[w_1,\dots,w_T] \gets \textsc{Tokenize}(q)$ \Comment{\code{[a-z0-9]+}}
+\If{$T = 0$} \textbf{return} $(\varnothing,\ 0)$ \EndIf
+\State $\text{ids} \gets [\,\mathcal{V}.\text{get}(w_t, \langle\text{unk}\rangle)\,]_{t=1}^{T}$
+\State $\mathbf{z} \gets \textsc{IntentLSTM}(\text{ids},\ \text{lengths}{=}T)$ \Comment{embed $\to$ pack $\to$ LSTM $\to$ dropout $\to$ linear}
+\State $\mathbf{p} \gets \mathrm{softmax}(\mathbf{z})$;\ $j^\star \gets \arg\max_j p_j$
+\State \textbf{return} $(\mathcal{I}[j^\star],\ p_{j^\star})$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Training and Its Limitations}
+Training uses $168$ hand-authored synthetic utterances (the module's own
+docstring labels them ``not logged real user queries''), a seeded $80/20$
+split ($134$ train, $34$ validation), Adam ($\text{lr}=0.01$, weight decay
+$10^{-3}$), cross-entropy loss, $150$ epochs, and best-validation-accuracy
+early stopping. The saved checkpoint reports \textbf{training accuracy
+$1.00$ and validation accuracy $0.529$} --- a textbook overfitting
+signature on a tiny synthetic set~\cite{goodfellow2016deep}. An independent
+re-evaluation reproduced exactly $0.529$ and produced the per-class
+breakdown in Section~\ref{sec:results}: four of the twelve classes have
+$F_1 = 0$. \textbf{We therefore make no generalization claim for this
+classifier.} Its role is strictly a fallback signal behind the
+deterministic rules, and even in that role it is gated at $P \ge 0.6$.
+The $12$ fine-grained classes (e.g.\ separating \code{ROOM\_LOCATION} from
+\code{DEPARTMENT\_LOCATION}) collapse onto the $5$ agents; the finer labels
+exist so the classifier reports a useful intent even though several map to
+the same agent.
+
+\subsection{Design Rationale}
+The deterministic-first design is justified by four constraints from
+Section~\ref{sec:problem}: (i)~zero routing latency matters when the
+generation step already costs seconds; (ii)~the deterministic rules are
+zero-false-negative for the phrasings they cover and were not tuned to pass
+any particular test; (iii)~every routing decision must be explainable from
+logs; and (iv)~no labeled routing corpus exists to train a primary
+classifier on. The LSTM adds coverage for paraphrases outside the keyword
+lists (``What can I study here?'' contains no course keyword) without
+making routing confidence-dependent for the common case.

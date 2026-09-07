@@ -1,0 +1,83 @@
+\section{System Architecture}
+\label{sec:architecture}
+\input{figures/fig_system_architecture}
+\input{figures/fig_request_flow}
+
+\system{} is a four-tier web application (Fig.~\ref{fig:arch}): a
+single-page front end, a versioned HTTP API, an orchestration layer, and a
+set of domain services backed by relational, vector, model-serving, and
+file infrastructure. The architecture was reconstructed for this paper
+directly from the implemented import graph rather than from design
+documents, several of which are stale relative to the code.
+
+\subsection{Tier 1 --- Front End}
+The front end is a Next.js~15 App-Router application in TypeScript
+(\code{strict} mode). Routes are thin compositions of feature components;
+all HTTP traffic is funnelled through a single \code{axios} client layer;
+server state is held in TanStack Query caches and cross-component client
+state in three Zustand stores (chat, campus, language). The five
+user-facing surfaces are the landing/campus pages, the Pannellum-based
+360$^{\circ}$ tour, a Google-satellite map view, a full-page chat, and a
+site-wide floating assistant that mounts the same chat component in a
+compact panel. Voice input is a browser-native Web Speech API hook that
+writes its transcript into the ordinary chat send path.
+
+\subsection{Tier 2 --- API}
+The API is a FastAPI application. Every route declares a Pydantic
+\code{response\_model}; cross-origin access is restricted to configured
+origins. The chat route, \code{POST /api/v1/chat}, is deliberately a
+\emph{synchronous} handler: the entire downstream pipeline (ChromaDB
+queries, sentence-transformer encoding, SQLAlchemy calls, the Ollama HTTP
+call) is blocking code, and Starlette dispatches synchronous handlers on a
+thread pool, so a slow request does not block the event loop. Tour data is
+served by \code{/api/v1/tour/*}; the campus graph is exposed through
+generic CRUD routers; and \code{GET /api/v1/navigate} exposes the
+A$^{\star}$ engine (it currently has no front-end consumer).
+
+\subsection{Tier 3 --- Orchestration}
+The RAG and multi-agent logic resides in \code{scripts/ai/} and is imported
+into the FastAPI process by inserting that directory on \code{sys.path}.
+This is a documented deviation from the repository's own folder convention,
+made so that each pipeline stage remains independently runnable and
+testable outside a live server. The chat handler performs three steps:
+(i)~best-effort session resolution against PostgreSQL; (ii)~contextual
+follow-up resolution, which may short-circuit the request with a clarifying
+question when a pronominal reference is ambiguous; and (iii)~a single call
+into \code{supervisor.route()}, which is the sole path from the HTTP layer
+into the AI pipeline. Figure~\ref{fig:reqflow} shows the full flow.
+
+\subsection{Tier 4 --- Domain Services and Infrastructure}
+Six domain services are invoked by the orchestration layer: hybrid
+retrieval, reranking, confidence estimation, grounded generation (with the
+post-hoc grounding check), the A$^{\star}$ pathfinder with its graph
+builder, and the LSTM intent classifier. Infrastructure comprises
+PostgreSQL~16 (the campus schema and chat-session persistence), an
+on-disk ChromaDB collection with an HNSW cosine index, an Ollama server
+hosting Llama~3.2, and a panorama/media asset tree. Docker Compose defines
+exactly four services (\code{frontend}, \code{backend}, \code{db},
+\code{ollama}); there is no cache or queue service.
+
+\subsection{Shared Campus Model}
+All three subsystems key off one relational model:
+$\textsf{Campus}\!\rightarrow\!\textsf{Building}\!\rightarrow\!\textsf{Floor}\!\rightarrow\!\textsf{Room}$,
+with a central $\textsf{Node}$ table (the graph vertex) that a $\textsf{Room}$
+optionally maps to one-to-one, $\textsf{Edge}$ rows forming the navigation
+graph, and $\textsf{Panorama}$ rows attaching tour imagery to nodes. The
+tour's scene list, the minimap's coordinates, and the pathfinder's graph
+are three views of this same data; there is no separate graph file. This
+shared model is what makes the integration (objective~O and constraint~P5)
+concrete rather than nominal: a node added for wayfinding is immediately a
+candidate tour scene and a minimap point.
+
+\subsection{Key Data Contracts}
+The chat contract is
+$\{message,\ session\_id?,\ language?\}\rightarrow\{answer,\ status,\
+confidence,\ confidence\_level,\ selected\_agent,\ tool\_used,\
+sources[],\ navigation?,\ panorama?,\ session\_id\}$.
+The navigation contract is
+$\{start\_node\_id,\ destination\_node\_id,\ accessible\_only\}\rightarrow
+\{path\_node\_ids,\ path\_node\_names,\ total\_distance,\
+estimated\_walk\_time\_minutes,\ is\_accessible,\ turn\_by\_turn[]\}$.
+Every AI-generated answer carries its grounding sources as a structural
+field, and those sources are always built from retrieved-chunk metadata,
+never parsed from the model's text.

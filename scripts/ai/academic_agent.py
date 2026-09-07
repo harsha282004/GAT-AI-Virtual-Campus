@@ -49,6 +49,7 @@ from typing import Any
 
 from agent_base import run_specialist
 from build_embeddings import load_chunks
+from llm_generator import naturalize_answer
 
 AGENT_NAME = "academic_agent"
 
@@ -173,6 +174,10 @@ def _aggregate_departments(query: str) -> dict[str, Any] | None:
         "refusal_reason": None,
         "grounded": True,
         "tool_used": "department_aggregation",
+        # PHASE C — the exact grounded entity set the naturalized answer
+        # must preserve; popped by handle() before the dict is returned.
+        "_required_entities": [name for name, _ in departments]
+        + [name for name, _ in postgraduate],
     }
 
 
@@ -180,6 +185,21 @@ def handle(query: str) -> dict[str, Any]:
     if _looks_like_department_list_query(query):
         aggregated = _aggregate_departments(query)
         if aggregated is not None:
+            # PHASE C — the aggregated list is verified (names come straight
+            # from each page's real <title>). Rephrase it conversationally
+            # via Llama, but only accept the rephrase if EVERY department /
+            # program name survives (naturalize_answer's entity guard) plus
+            # the existing numeric / number-word grounding checks. Any
+            # failure -> the deterministic list below, unchanged.
+            required = aggregated.pop("_required_entities", [])
+            natural, used_llm = naturalize_answer(
+                query,
+                aggregated["answer"],
+                required_entities=required,
+                context="academic_aggregated",
+            )
+            if used_llm:
+                aggregated = {**aggregated, "answer": natural}
             return aggregated
     return run_specialist(AGENT_NAME, query)
 

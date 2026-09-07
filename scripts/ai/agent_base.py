@@ -47,6 +47,7 @@ succeeded.
 
 from __future__ import annotations
 
+import os
 import re
 from typing import Any
 
@@ -55,18 +56,16 @@ from confidence import compute_confidence
 from context_selection import apply_domain_boost, select_context
 from curated_answers import find_curated_answer
 from hybrid_retrieval import DEFAULT_CANDIDATE_N, hybrid_search
-from llm_generator import generate_answer
+from llm_generator import generate_answer, naturalize_answer
 from reranker import DEFAULT_TOP_K, rerank
 
 logger = configure_logging("agent_base")
 
-# Matches Phase 4's own preferred-model default. Deliberately NOT imported
-# from llm_generator.OLLAMA_MODEL: this project's pre-existing .env sets
-# OLLAMA_MODEL=llama3 (a legacy value that predates Phase 4), which would
-# silently shadow llama3.2 — the model Phase 4/5 actually target and the
-# one confirmed pulled (`ollama list` -> llama3.2:latest). See Phase 4's
-# test_llm_generation.py for the same fix applied the same way.
-DEFAULT_AGENT_MODEL = "llama3.2"
+# PHASE A — single source of truth: the OLLAMA_MODEL env var (see
+# .env.example), defaulting to llama3.2 — the model this project runs on.
+# backend/app/core/config.py and llm_generator.OLLAMA_MODEL read the same
+# var with the same default; there is now exactly one place to change it.
+DEFAULT_AGENT_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.2")
 
 # Maps Phase 4's existing generation_status values to a human-readable
 # refusal reason. Only statuses that represent "no answer was generated"
@@ -138,7 +137,8 @@ def run_specialist(
         curated = find_curated_answer(query)
         if curated is not None:
             logger.info(
-                "Using curated answer for query=%r (agent=%s, matched_question=%r, similarity=%.3f)",
+                "Using curated answer for query=%r (agent=%s, matched_question=%r, "
+                "similarity=%.3f)",
                 query,
                 agent_name,
                 curated["question"],
@@ -159,6 +159,23 @@ def run_specialist(
                 ],
                 "grounded": True,
             }
+
+    # PHASE B — naturalize a verified curated answer so it reads
+    # conversationally instead of returning the stored wording verbatim.
+    # Only the curated path is touched here: RAG "generated" answers already
+    # come from the LLM, and every refusal/error status is left untouched.
+    # naturalize_answer() never raises and returns the original text on any
+    # failure, so this cannot break the request or alter a fact. (The
+    # aggregated department/program list has its own exact entity guard in
+    # academic_agent.py; curated answers rely on the shared numeric /
+    # number-word grounding checks plus the "include every item" prompt.)
+    if generation.get("generation_status") == "curated_answer":
+        natural, used_llm = naturalize_answer(
+            query, generation["answer"], model=model, context="curated"
+        )
+        if used_llm:
+            logger.info("Naturalized curated answer for query=%r (agent=%s)", query, agent_name)
+            generation = {**generation, "answer": natural}
 
     retrieved_context = [
         {

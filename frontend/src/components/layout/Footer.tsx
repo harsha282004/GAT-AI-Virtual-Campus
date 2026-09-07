@@ -52,9 +52,9 @@ export function Footer() {
             <Image
               src="/images/gat_logo.jpeg"
               alt="Global Academy of Technology"
-              width={40}
-              height={40}
-              className="shrink-0 rounded-md object-contain"
+              width={972}
+              height={681}
+              className="h-9 w-auto shrink-0 rounded-md object-contain"
             />
             <span className="font-display text-sm font-bold text-white">
               Global Academy of Technology

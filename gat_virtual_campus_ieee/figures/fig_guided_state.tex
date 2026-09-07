@@ -1,0 +1,31 @@
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize, node distance=7mm and 12mm,
+  s/.style={draw, rounded corners=3pt, minimum height=6mm, inner sep=3pt, fill=black!4},
+  pf/.style={-{Latex[length=1.6mm]}}
+]
+\node[s] (idle) {idle};
+\node[s, right=of idle] (play) {playing};
+\node[s, above=of play] (pause) {paused};
+\node[s, right=of play] (done) {completed};
+\node[s, below=of play] (err) {error};
+\node[s, below=of idle] (stop) {stopped};
+
+\draw[pf] (idle) -- node[above]{\code{start()} (seed usable)} (play);
+\draw[pf] (idle) to[bend right=15] node[left]{seed unusable} (err);
+\draw[pf] (play) to[bend left=12] node[right]{\code{pause()}} (pause);
+\draw[pf] (pause) to[bend left=12] node[left]{\code{resume()} (from phase $i$)} (play);
+\draw[pf] (play) -- node[above]{no \code{node.next}} (done);
+\draw[pf] (play) -- node[right]{next unusable / revisited} (err);
+\draw[pf] (play) to[bend left=10] node[below]{\code{stop()} (token${+}{+}$)} (stop);
+\draw[pf] (pause) to[bend left=30] (stop);
+\draw[pf] (stop) to[bend left=20] node[below]{\code{restart()} $\to$ seed node} (play);
+\draw[pf] (done) to[bend right=30] node[above]{\code{restart()}} (play);
+\end{tikzpicture}
+\caption{Guided-tour status automaton (\code{useGuidedTour}). A monotonic
+cancellation token orphans in-flight timer chains on every transition out
+of \emph{playing}; a per-run visited set aborts to \emph{error} on a
+repeated scene.}
+\label{fig:guided}
+\end{figure}

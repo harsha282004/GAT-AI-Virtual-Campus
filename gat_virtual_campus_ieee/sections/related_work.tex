@@ -1,0 +1,225 @@
+\section{Related Work and Literature Survey}
+\label{sec:related}
+\system{} sits at the intersection of ten research areas. We review each,
+identify representative methods, their strengths and limitations, and how
+the implemented architecture relates to them. Table~\ref{tab:comparison}
+consolidates the comparison against representative campus-oriented and
+RAG-oriented systems.
+
+\subsection{Retrieval-Augmented Generation}
+RAG~\cite{lewis2020rag} conditions a generative model on passages retrieved
+from a non-parametric memory, improving factuality on knowledge-intensive
+tasks and allowing the knowledge store to be updated without retraining.
+The now-standard pipeline --- chunk a corpus, embed the chunks, retrieve
+top-$k$ by vector similarity, and prompt an LLM with the concatenated
+passages --- is surveyed comprehensively by Gao~\etal~\cite{gao2023ragsurvey},
+who taxonomize \emph{naive}, \emph{advanced}, and \emph{modular} RAG and
+catalogue the failure points: retrieval misses, low-precision context,
+context-conflict, and over-generation beyond the evidence. Shuster
+\etal~\cite{shuster2021retrieval} show that retrieval augmentation
+measurably reduces hallucination in dialogue but does not eliminate it,
+motivating additional grounding safeguards. Agentic variants such as
+ReAct~\cite{yao2023react} interleave retrieval with reasoning steps.
+
+\emph{Relation to \system{}.} The implemented pipeline is ``advanced RAG''
+in Gao~\etal's taxonomy: it adds pre-retrieval query expansion, a
+post-retrieval reranking and context-selection stage, a confidence gate,
+and a post-generation verification stage around the core retrieve-then-read
+loop. It is deliberately \emph{not} agentic in the ReAct sense --- the LLM
+is never given tools or a multi-step scratchpad --- because the target
+deployment is a low-resource, CPU-only local model where each generation
+call costs several seconds and predictable single-shot latency was judged
+more important than iterative refinement.
+
+\subsection{Dense Retrieval and Sentence Embeddings}
+Dense passage retrieval (DPR)~\cite{karpukhin2020dpr} trains a dual-encoder
+to embed queries and passages into a shared space where relevance is inner
+product, outperforming BM25 on open-domain QA when in-domain training data
+is available. Sentence-BERT~\cite{reimers2019sbert} makes such embeddings
+practical for unsupervised semantic similarity by fine-tuning
+BERT~\cite{devlin2019bert} --- itself a Transformer
+encoder~\cite{vaswani2017attention} --- with a siamese objective. Earlier
+static embeddings~\cite{mikolov2013word2vec,pennington2014glove} lacked the
+contextualization such tasks need. The widely used \code{all-MiniLM-L6-v2}
+model combines the Sentence-BERT recipe with the MiniLM distillation of
+Wang~\etal~\cite{wang2020minilm} to yield a 384-dimensional encoder small
+enough to run on commodity CPUs.
+Late-interaction models such as ColBERT~\cite{khattab2020colbert} retain
+token-level detail at higher index cost. Approximate nearest-neighbor
+indexes --- HNSW~\cite{malkov2020hnsw}, the graph structure used by the
+ChromaDB store in this work, and IVF/PQ methods~\cite{johnson2019faiss} ---
+make vector search scale.
+
+\emph{Relation to \system{}.} Dense retrieval is used as an
+\emph{adopted component}, not a contribution: the pretrained
+\code{all-MiniLM-L6-v2} encoder is run locally with L2-normalized
+embeddings and cosine ANN search over an HNSW-indexed ChromaDB collection.
+No fine-tuning is performed, because no in-domain (query, passage) relevance
+data exists for this institution.
+
+\subsection{Lexical Retrieval and BM25}
+The probabilistic relevance framework and its BM25 instantiation
+\cite{robertson1994okapi,robertson2009bm25} remain the strongest
+unsupervised sparse baseline. BM25 scores a document by a saturating
+term-frequency function, an inverse-document-frequency weight derived from
+Sp\"arck~Jones's term-specificity argument~\cite{sparckjones1972idf}, and a
+length-normalization term controlled by parameters $k_1$ and $b$
+\cite{manning2008ir}. Its strength is exact-term precision --- it never
+confuses ``CSE'' with ``ECE'' the way a smooth embedding space can --- and
+its weakness is vocabulary mismatch: a paraphrased query with no shared
+terms retrieves nothing.
+
+\emph{Relation to \system{}.} BM25 (the Okapi variant, \code{rank\_bm25})
+is indexed over the same chunk set as the dense store, with a deliberately
+minimal lowercase-alphanumeric tokenizer and no stemming or stop-word
+removal, so that acronyms, department codes, and room numbers survive
+intact. It is one of two retrieval signals, never used alone.
+
+\subsection{Hybrid Retrieval and Reranking}
+Combining dense and sparse signals consistently beats either alone
+\cite{wang2021interpolation}. Fusion can be score-level (weighted sums of
+normalized scores) or rank-level (reciprocal rank fusion,
+RRF~\cite{cormack2009rrf}); Bruch~\etal~\cite{bruch2023fusion} analyze
+convex combinations and show that normalization choice matters more than
+the exact weight. A second stage typically reranks a shortlist with a
+cross-encoder~\cite{nogueira2019bertrerank} or a sequence-to-sequence
+model~\cite{nogueira2020monot5}, trading latency for precision; learning-
+to-rank with support-vector regression~\cite{smola2004svr} is a lighter
+alternative when labeled relevance judgments exist.
+
+\emph{Relation to \system{}.} The implemented fusion is a convex score-level
+combination ($0.6$ dense, $0.4$ lexical) over per-method min--max
+normalized candidate sets, consistent with Bruch~\etal's finding that
+per-method normalization is what makes a fixed weight meaningful. The
+second stage is a \emph{deterministic four-feature weighted sum}, not a
+neural cross-encoder, chosen for explainability and zero added model cost.
+A support-vector reranker is implemented behind the same interface but is
+\emph{never trained} for lack of relevance labels, and is reported as an
+unevaluated extension point rather than a result.
+
+\subsection{Hallucination Mitigation and Grounded Generation}
+Ji~\etal~\cite{ji2023hallucination} survey intrinsic and extrinsic
+hallucination and the mitigation families: faithful decoding, retrieval
+grounding, and post-hoc verification. Post-hoc approaches include
+SelfCheckGPT~\cite{manakul2023selfcheckgpt}, which samples multiple
+generations and checks consistency, and FActScore~\cite{min2023factscore},
+which decomposes a generation into atomic facts and verifies each against a
+knowledge source. RAGAS~\cite{es2024ragas} operationalizes
+\emph{faithfulness}, \emph{answer relevancy}, and \emph{context relevancy}
+as LLM-judged metrics for RAG systems.
+
+\emph{Relation to \system{}.} The implemented design layers four
+independent safeguards: (i)~retrieval grounding; (ii)~a grounding-only
+system prompt with explicit negative instructions; (iii)~a confidence gate
+that returns a fixed refusal string \emph{without invoking the LLM} when
+the retrieval-quality signal is low; and (iv)~a deterministic
+post-generation pass that extracts phone-number, currency, room-number, and
+year patterns from the generated answer, reduces each to a digit sequence,
+and withholds the whole answer if any such sequence is absent from the
+retrieved context. This last check is narrower than FActScore (it targets
+checkable numeric claims, not arbitrary sentences) but requires no
+additional model call --- an appropriate trade-off for a local-inference
+deployment. Formal faithfulness measurement in the style of RAGAS is
+proposed but not yet performed (Section~\ref{sec:eval}).
+
+\subsection{Multi-Agent Systems and Query Routing}
+The multi-agent paradigm~\cite{wooldridge2009mas} decomposes a task across
+specialized agents coordinated by a supervisor or a shared protocol. LLM-
+based instantiations --- AutoGen~\cite{wu2023autogen},
+MetaGPT~\cite{hong2024metagpt}, HuggingGPT~\cite{shen2023hugginggpt}, and
+generative agents~\cite{park2023generative} --- use an LLM both to route
+and to execute, which is powerful but expensive and hard to audit. Intent-
+based routing, by contrast, classifies the query once and dispatches to a
+handler; the classifier can be rule-based, a shallow neural model, or an
+LLM.
+
+\emph{Relation to \system{}.} The router is a \emph{deterministic}
+phrase- and keyword-matching supervisor: a $23$-entry navigation-phrase
+list, a bare-room-number regular expression, and four domain keyword sets
+are checked in order, and a trained LSTM intent classifier is consulted
+\emph{only} when no deterministic rule fires. Every routing decision is a
+literal substring match logged with its trigger, satisfying an explicit
+auditability requirement. This is a design choice against the LLM-router
+trend, motivated by predictability, zero routing latency, and the ability
+to explain any decision post hoc. A lightweight ``multi-domain'' path
+splits conjunctive queries into clauses and dispatches each independently.
+
+\subsection{Intent Classification with Recurrent Models}
+Spoken-language-understanding research established RNN-based joint intent
+detection and slot filling on corpora such as ATIS~\cite{hemphill1990atis}
+and SNIPS~\cite{coucke2018snips}; attention-augmented
+bi-LSTMs~\cite{liu2016attention} and later BERT-based
+classifiers~\cite{chen2019bertintent} are the standard baselines. LSTMs
+\cite{hochreiter1997lstm} remain a reasonable choice for short-utterance
+classification when training data is scarce and inference must be cheap,
+though small datasets invite overfitting~\cite{goodfellow2016deep}. Open
+instruction-tuned LLMs~\cite{touvron2023llama2,grattafiori2024llama3} are
+an alternative zero-shot classifier but incur per-query inference cost.
+
+\emph{Relation to \system{}.} The implemented classifier is an
+\code{embedding}$\rightarrow$\code{LSTM}$\rightarrow$\code{dropout}$\rightarrow$\code{linear}
+network with $32$-dimensional embeddings and hidden state, trained on
+$168$ hand-authored synthetic utterances across $12$ intent classes. Its
+measured held-out accuracy ($0.529$, against a training accuracy of
+$1.00$) is characteristic of overfitting on a tiny synthetic set; we
+therefore use it strictly as a \emph{fallback signal} behind the
+deterministic rules and report its confusion matrix honestly
+(Section~\ref{sec:results}).
+
+\subsection{Virtual Tours and 360$^{\circ}$ Panoramic Navigation}
+Immersive 360$^{\circ}$ tours are widely used in cultural heritage and
+real estate~\cite{argyriou2020360design}, and hyperlinked panoramic video
+navigation~\cite{neng2010hypervideo} predates them. The dominant
+consumer reference is Google Street View~\cite{anguelov2010streetview},
+which models the world as a graph of panoramas connected by navigable
+links and preserves camera heading across transitions to maintain a sense
+of continuous motion. Web viewers such as
+Pannellum~\cite{petroff2019pannellum} render equirectangular imagery in the
+browser.
+
+\emph{Relation to \system{}.} The tour is a Street-View-style panorama
+graph, but with an explicit data-structure contribution: each floor is a
+\emph{doubly linked list} of scene nodes (enabling $O(1)$ sequential
+traversal and ``scene $x$ of $y$'' counting scoped to a floor), branch and
+vertical connections are held as separate cross-reference pointers, and a
+dedicated construction pass links each floor's tail node to the next
+floor's head node so that sequential traversal --- manual or automatic ---
+crosses floor boundaries with no boundary-aware code. Entry heading is
+carried on each link, Street-View style.
+
+\subsection{Indoor Navigation, Wayfinding, and A$^{\star}$}
+Indoor navigation systems~\cite{fallah2013indoor} combine a localization
+technology~\cite{zafari2019localization} with a routing algorithm over a
+navigation graph. The routing algorithm is almost always
+Dijkstra's~\cite{dijkstra1959note} or its informed generalization
+A$^{\star}$~\cite{hart1968astar}, which expands nodes in order of
+$f(n)=g(n)+h(n)$ and is optimal when the heuristic $h$ is admissible
+\cite{russell2020aima}.
+
+\emph{Relation to \system{}.} The engine implements A$^{\star}$ with a
+binary heap over an adjacency-list graph built on demand from the
+relational schema. Its heuristic degrades in three tiers --- Euclidean
+distance on planar floor-plan coordinates, an equirectangular great-circle
+approximation on latitude/longitude, or zero --- and at the zero tier the
+search is provably equivalent to Dijkstra's, which is used directly for
+single-source nearest-facility queries. Localization is out of scope: the
+endpoint consumes graph node identifiers, and mapping a physical position
+to a node is left to the client.
+
+\subsection{Conversational AI for Educational Institutions}
+Systematic reviews of educational chatbots
+\cite{okonkwo2021chatbots,perez2020chatbots,winkler2018chatbots} report
+that most deployed systems are intent-and-response or FAQ retrieval
+systems, that admissions and student-services queries dominate real usage,
+and that trust and answer correctness are the principal barriers to
+adoption. Few reported systems combine a conversational assistant with
+spatial exploration of the same campus.
+
+\emph{Relation to \system{}.} \system{} targets exactly the
+admissions/academics/facilities query mix these reviews identify, but
+replaces the FAQ-retrieval or scripted-intent backend with grounded RAG
+over the institution's own documents, and couples it to a spatial tour and
+a wayfinding graph of the same campus --- the integration that the reviews
+find largely absent.
+
+\input{tables/comparison}
