@@ -100,10 +100,10 @@ export function Navbar() {
           <Image
             src="/images/gat_logo.jpeg"
             alt="GAT Logo"
-            width={256}
-            height={256}
+            width={972}
+            height={681}
             priority
-            className="h-16 w-16 object-contain transition-all duration-300"
+            className="h-16 w-auto object-contain transition-all duration-300"
           />
         </Link>
 

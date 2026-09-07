@@ -1,0 +1,23 @@
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize, node distance=3mm,
+  b/.style={draw, rounded corners=2pt, align=center, text width=6.5cm, minimum height=6mm, inner sep=3pt, fill=black!3},
+  pf/.style={-{Latex[length=1.8mm]}}
+]
+\node[b] (src) {Official domain crawl (depth-2, same-domain BFS) + linked PDFs};
+\node[b, below=of src] (raw) {\code{data/raw/\{website,pdfs\}/}: HTML/PDF + metadata + per-page text};
+\node[b, below=of raw] (clean) {Clean: strip nav/header/footer/boilerplate (HTML); drop lines repeating on $>$50\% of PDF pages};
+\node[b, below=of clean] (chunk) {Split: \code{RecursiveCharacterTextSplitter}, size 800, overlap 120; SHA-256 dedup; per-chunk metadata};
+\node[b, below=of chunk] (jsonl) {\code{data/processed/chunks.jsonl} --- 1{,}507 chunks};
+\node[b, below=of jsonl] (emb) {Embed: \code{all-MiniLM-L6-v2}, L2-normalized, batch 64, deterministic IDs (upsert)};
+\node[b, below=of emb] (store) {ChromaDB \code{PersistentClient}, collection \code{gat\_kb}, \code{hnsw:space=cosine}};
+\draw[pf] (src)--(raw); \draw[pf] (raw)--(clean); \draw[pf] (clean)--(chunk);
+\draw[pf] (chunk)--(jsonl); \draw[pf] (jsonl)--(emb); \draw[pf] (emb)--(store);
+\end{tikzpicture}
+\caption{Offline knowledge-base construction pipeline
+(\code{scripts/ai/}). Every stage is independently runnable; the source
+manifest records each URL's status (collected / chunked / embedded /
+failed-with-reason).}
+\label{fig:kbpipe}
+\end{figure}

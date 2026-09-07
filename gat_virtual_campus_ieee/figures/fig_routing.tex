@@ -1,0 +1,39 @@
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize, node distance=3.4mm,
+  b/.style={draw, rounded corners=2pt, align=center, text width=5.7cm, minimum height=5.5mm, inner sep=2.5pt, fill=black!3},
+  d/.style={draw, diamond, aspect=2.6, align=center, inner sep=0pt, text width=3.0cm, fill=black!5},
+  a/.style={draw, rounded corners=2pt, align=center, text width=1.7cm, minimum height=5mm, inner sep=2pt, fill=black!8},
+  pf/.style={-{Latex[length=1.7mm]}}
+]
+\node[b] (q) {query $q$ (already reformulated by context resolver)};
+\node[d, below=of q] (multi) {conjunction split $\to$ $\ge 2$ different agents?};
+\node[d, below=6mm of multi] (nav) {contains one of 23 navigation phrases?};
+\node[d, below=6mm of nav] (room) {bare room-number regex matches?};
+\node[d, below=6mm of room] (kw) {any domain keyword set non-empty?};
+\node[d, below=6mm of kw] (rnn) {LSTM confidence $\ge 0.6$?};
+\node[a, right=5mm of nav] (na1) {navigation\_agent};
+\node[a, right=5mm of room] (na2) {navigation\_agent};
+\node[a, right=5mm of kw] (best) {argmax domain agent};
+\node[a, right=5mm of rnn] (map) {\code{INTENT\_TO\_AGENT}};
+\node[a, below=6mm of rnn] (gen) {general\_agent};
+\node[b, right=5mm of multi, text width=1.7cm] (mrun) {run each clause; concat};
+
+\draw[pf] (q)--(multi);
+\draw[pf] (multi)-- node[left]{no} (nav);
+\draw[pf] (multi)-- node[above]{yes} (mrun);
+\draw[pf] (nav)-- node[left]{no} (room);
+\draw[pf] (nav)-- node[above]{yes} (na1);
+\draw[pf] (room)-- node[left]{no} (kw);
+\draw[pf] (room)-- node[above]{yes} (na2);
+\draw[pf] (kw)-- node[left]{no} (rnn);
+\draw[pf] (kw)-- node[above]{yes} (best);
+\draw[pf] (rnn)-- node[above]{yes} (map);
+\draw[pf] (rnn)-- node[left]{no} (gen);
+\end{tikzpicture}
+\caption{Supervisor routing cascade. The first four tests are deterministic
+substring/regex matches; the learned LSTM classifier is reached only when
+none of them fire. Every decision is logged with its trigger.}
+\label{fig:routing}
+\end{figure}

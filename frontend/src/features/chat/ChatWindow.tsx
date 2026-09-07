@@ -1,6 +1,6 @@
 "use client";
 
-import { Trash2, Volume2, VolumeX } from "lucide-react";
+import { Trash2, Volume2, VolumeX, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { useChatConversation, useSpeechSynthesis, useTranslation } from "@/hooks";
@@ -12,7 +12,18 @@ import { ChatInput } from "./ChatInput";
 import { ChatMessageBubble } from "./ChatMessageBubble";
 import { TypingIndicator } from "./TypingIndicator";
 
-export function ChatWindow() {
+interface ChatWindowProps {
+  /** Overrides the default full-page height (h-[calc(100vh-11rem)]) — the
+   * floating assistant widget (FloatingAssistant.tsx) renders this same
+   * component inside a fixed-size panel instead of a full page. */
+  className?: string;
+  /** Renders an extra close (X) button in the existing header — used only
+   * by FloatingAssistant.tsx so the widget doesn't need a second, duplicate
+   * header wrapped around this component. Omit on the full /chat page. */
+  onClose?: () => void;
+}
+
+export function ChatWindow({ className, onClose }: ChatWindowProps = {}) {
   const { t } = useTranslation();
   const messages = useChatStore((state) => state.messages);
   const isAssistantTyping = useChatStore((state) => state.isAssistantTyping);
@@ -61,7 +72,12 @@ export function ChatWindow() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-11rem)] flex-col overflow-hidden rounded-3xl border border-hairline bg-white shadow-soft dark:bg-[#0F172A] dark:shadow-black/30">
+    <div
+      className={cn(
+        "flex flex-col overflow-hidden rounded-3xl border border-hairline bg-white shadow-soft dark:bg-[#0F172A] dark:shadow-black/30",
+        className ?? "h-[calc(100vh-11rem)]",
+      )}
+    >
       <div className="flex items-center justify-between border-b border-hairline px-6 py-4">
         <div>
           <p className="font-display text-sm font-semibold text-ink">{t("GAT Assistant")}</p>
@@ -95,6 +111,16 @@ export function ChatWindow() {
           >
             <Trash2 className="h-4 w-4" />
           </button>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={t("Close")}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-muted transition-colors hover:bg-brand/5 hover:text-brand"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 

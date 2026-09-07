@@ -1,0 +1,109 @@
+\section{Campus Knowledge Representation and Dataset}
+\label{sec:dataset}
+\input{figures/fig_kb_pipeline}
+\input{figures/fig_er}
+\input{tables/dataset_counts}
+
+\system{} maintains two deliberately separate knowledge stores: an
+\emph{institutional} store (unstructured text in ChromaDB, for the RAG
+assistant) and a \emph{spatial} store (the relational campus model in
+PostgreSQL, for the tour and the pathfinder). They are never merged; a
+chunk is tagged \code{knowledge\_category = "official\_institutional"} and
+spatial facts are never scraped or inferred into it.
+
+\subsection{Institutional Knowledge Base}
+The knowledge base is built offline by the pipeline of
+Fig.~\ref{fig:kbpipe} and Algorithm~\ref{alg:kb}. A polite depth-2
+same-domain breadth-first crawl of the institution's website records every
+page and every linked PDF; a separate collector downloads the PDFs and
+extracts per-page text. Cleaning removes navigation, header, footer, and
+cookie-banner boilerplate from HTML (by tag and by class/id hint) and
+removes running headers/footers from PDFs by dropping any line that appears
+on more than half of a document's pages. Text is split with a recursive
+character splitter (chunk size $800$, overlap $120$, separator preference
+\code{["\textbackslash n\textbackslash n", "\textbackslash n", ". ", " "]}).
+Each chunk is fingerprinted by the SHA-256 hash of its whitespace-collapsed,
+lower-cased text, and the first occurrence of any duplicate wins. Every
+surviving chunk carries \code{chunk\_id}, \code{source\_url},
+\code{source\_title}, \code{source\_type}, \code{section} (nearest preceding
+heading, for web pages), \code{page} (exact, for PDFs), \code{document\_name},
+a best-effort \code{department} label from URL pattern matching, and a
+collection date.
+
+The current build contains $1{,}507$ chunks. The cumulative source manifest
+records $186$ unique URLs ever attempted, with typed failure reasons (most
+commonly ``no extractable text --- likely scanned/image-only PDF''); nothing
+is silently dropped. Chunks are embedded with \code{all-MiniLM-L6-v2}
+(384-dimensional, L2-normalized)~\cite{sbertlib} in batches of $64$ and
+upserted into the persistent ChromaDB collection~\cite{chroma2023}
+\code{gat\_kb} with \code{hnsw:space = cosine}. Chunk identifiers are deterministic, so re-running the pipeline
+updates rather than duplicates records. A direct query against the
+persisted store confirms the collection holds exactly $1{,}507$ records,
+i.e.\ the pipeline has been executed end to end.
+
+\begin{algorithm}[!t]
+\caption{Institutional Knowledge Acquisition and Chunking}
+\label{alg:kb}
+\begin{algorithmic}[1]
+\Require seed URL $u_0$; domain $\delta$; sizes $c=800$, $o=120$
+\Ensure chunk records $\mathcal{C}$; embedded collection \code{gat\_kb}
+\State $\mathcal{R}\gets \textsc{Crawl}(u_0,\delta,\text{depth}{=}2)$;
+       $\mathcal{F}\gets$ PDF links found in $\mathcal{R}$
+\State download and per-page-extract each $f\in\mathcal{F}$ ($\le 15$\,MB)
+\State $\mathcal{C}\gets\emptyset$;\ \ $H\gets\emptyset$ \Comment{seen SHA-256 fingerprints}
+\ForAll{documents $d \in \mathcal{R}\cup\mathcal{F}$}
+  \If{$d$ is HTML}
+     \State $t\gets\textsc{StripBoilerplate}(d)$; track nearest heading per span
+  \Else
+     \State $P\gets$ pages of $d$;\ drop lines on $>\!\tfrac{|P|}{2}$ pages;\ $t\gets P$
+  \EndIf
+  \State $K\gets \textsc{RecursiveSplit}(t, c, o)$
+  \ForAll{$k \in K$}
+     \State $h\gets \textsc{SHA256}(\textsc{Normalize}(k))$
+     \If{$h \notin H$}
+        \State $H\gets H\cup\{h\}$
+        \State attach $\{$\code{source\_url}, \code{section}, \code{page},
+               \code{department}, $\dots\}$ to $k$
+        \State $\mathcal{C}\gets\mathcal{C}\cup\{k\}$
+     \EndIf
+  \EndFor
+\EndFor
+\ForAll{batches $B$ of $\mathcal{C}$ ($|B|\le 64$)}
+  \State $\bm{e}\gets \textsc{Encode}_{\text{MiniLM}}(B)$;\ normalize $\|\bm{e}\|_2{=}1$
+  \State \code{gat\_kb.upsert}(ids$(B)$, $\bm{e}$, text$(B)$, meta$(B)$)
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Spatial / Relational Campus Model}
+The relational model (Fig.~\ref{fig:er}) is the single source of truth for
+everything spatial. A $\textsf{Node}$ has a $13$-value type enumeration
+(entrance, junction, corridor, room, staircase, elevator, landmark,
+outdoor, classroom, lab, office, library, cafeteria), optional planar
+coordinates $(\text{pos\_x}, \text{pos\_y})$, and optional geographic
+coordinates. An $\textsf{Edge}$ is directed with a \code{distance}, an
+\code{is\_bidirectional} flag, a $6$-value \code{edge\_type}, a $6$-value
+relative \code{direction} (for turn-by-turn phrasing), an \code{accessible}
+flag, and optional \code{entry\_yaw}/\code{entry\_pitch} for tour-hotspot
+placement. A $\textsf{Panorama}$ attaches to a node and carries a resting
+\code{initial\_yaw}/\code{initial\_pitch} and horizontal field of view.
+$\textsf{CrossFloorHotspot}$ rows are a hand-authored visual sightline
+layer and are explicitly excluded from the pathfinding graph.
+
+The live database contains $180$ nodes, $325$ edges, $161$ panorama rows,
+$849$ cross-floor hotspots, $10$ floors, $5$ buildings, and $11$ relational
+rooms (Table~\ref{tab:counts}). Fourteen Alembic migrations define the
+schema history, including one feature (visibility zones) that was added and
+later reverted. All building \code{latitude}/\code{longitude} values are
+currently null; the only geographic coordinate in the system is a single
+campus-level point sourced from public third-party map data and documented
+as unsurveyed. Panorama imagery and coordinates are placeholders by design;
+the code path from placeholder to real assets is a file/identifier
+substitution.
+
+\subsection{Development Usage Evidence}
+The chat-session tables have accumulated $378$ sessions and $1{,}400$
+messages during development. This is not an experimental result --- it is
+evidence that the end-to-end path (front end $\to$ API $\to$ supervisor
+$\to$ retrieval $\to$ Ollama $\to$ persistence) has been exercised against
+a live stack rather than only unit-tested.

@@ -1,0 +1,50 @@
+\section{Voice Interaction}
+\label{sec:voice}
+\input{figures/fig_voice}
+
+Voice input is provided entirely in the browser through the Web Speech API,
+consistent with the constraint of incurring no server-side voice cost
+(Fig.~\ref{fig:voice}). There is \emph{zero} voice code in the back end.
+
+\subsection{Speech-to-Text}
+The \code{useSpeechRecognition} hook wraps \code{SpeechRecognition} /
+\code{webkitSpeechRecognition}. Feature detection runs post-mount to avoid a
+server/client hydration mismatch. Recognition runs in continuous mode with
+interim results so a brief mid-sentence pause does not end the session
+early; final fragments are accumulated and submitted exactly once, when
+recognition ends (user release, a $3$-second post-speech silence timeout, a
+$7$-second initial-silence timeout, or a $25$-second hard cap). Error codes
+are mapped to actionable messages distinguishing permission denial, no
+speech, no microphone, and an engine that cannot open the OS default input.
+
+A microphone-acquisition routine, \code{acquireMicStream}, first attempts
+an unconstrained \code{getUserMedia(\{audio:true\})}; on
+\code{NotFoundError}, \code{OverconstrainedError}, or \code{NotReadableError}
+it enumerates every real \code{audioinput} device and tries each with
+\code{deviceId:\{ideal\}}. This specifically addresses the case where the
+operating system's default communication device is stale (e.g.\ a
+disconnected Bluetooth headset) while the built-in microphone is present
+and usable as a non-default device. It never retries on a permission
+denial. A development-only diagnostic panel reports device counts before
+and after permission, track state, and which acquisition step succeeded.
+
+On a successful transcript, the text is written into the chat input and
+auto-submitted after $350$\,ms through the \emph{same} send path as typed
+input --- voice never talks to the back end directly. Recognition language
+follows the selected UI language.
+
+\subsection{Text-to-Speech}
+An optional ``read answers aloud'' toggle uses \code{speechSynthesis}. The
+hook ranks available voices (preferring a regional and then a
+network/neural voice, never requiring one), strips markdown and citation
+artifacts before speaking, and splits the answer into moderate-length
+utterances for natural pacing. This affects only spoken output; the
+displayed text is untouched.
+
+\subsection{What Is Not Implemented}
+There is no voice-navigation command parsing: a transcript such as ``take
+me to the library'' is passed to the chat pipeline as an ordinary query and
+is \emph{not} intercepted as a navigation intent. There are no server-side
+speech endpoints. These omissions are consistent with the browser-only
+design intent; they are narrower in scope than an aspirational ``voice
+navigation'' feature.

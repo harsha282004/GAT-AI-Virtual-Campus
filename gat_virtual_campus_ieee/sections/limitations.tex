@@ -1,0 +1,68 @@
+\section{Limitations}
+\label{sec:limitations}
+We state the limitations of the current artifact plainly; a system paper
+that hides them is less useful, not more.
+
+\subsubsection*{Evaluation}
+No formal evaluation pipeline exists. Retrieval quality, answer
+faithfulness and relevancy, citation correctness, hallucination rate,
+confidence calibration, reranker contribution, pathfinding performance, and
+usability are all unmeasured (Section~\ref{sec:eval}). No baseline
+comparison of any kind has been performed. The only quantitative ML metric
+in the artifact is the intent classifier's held-out accuracy, which is
+low and overfit.
+
+\subsubsection*{Machine-learning components}
+The intent classifier is trained on $168$ synthetic utterances and is
+measurably overfit (train $1.00$ / val $0.53$); it is used only as a gated
+fallback. The support-vector reranker is implemented but never trained ---
+the production path is always the four-feature heuristic. The LSTM's
+$P(\text{intent})$ is not wired into the confidence estimator, so the
+intent term of Eq.~\eqref{eq:conf} is currently a placeholder.
+
+\subsubsection*{Groundedness}
+The post-generation check verifies only numeric-pattern claims (phone,
+currency, room, year); a fluent wrong sentence with no numeric pattern is
+not caught. The confidence thresholds are fitted to nine queries. Grounding
+is enforced by prompt instruction, evidence-only context, a low-$n$
+confidence gate, and a narrow post-hoc check --- not by any validated
+fact-checking model. Hallucination is reduced, not eliminated.
+
+\subsubsection*{Retrieval}
+The fusion weight ($\lambda = 0.6$) and candidate/top-$k$ counts are not
+tuned against labeled data. The embedding model is a small general-purpose
+encoder with no domain adaptation. Retrieval is English-only; non-English
+queries are answered by translating the \emph{generation}, not the
+retrieval.
+
+\subsubsection*{Navigation}
+The A$^{\star}$ engine has no front-end consumer; a map UI with GPS
+turn-by-turn guidance was built and then removed. All building geographic
+coordinates and most node coordinates are null, so the heuristic runs
+mostly at its zero tier (Dijkstra behavior). Edge distances and the
+navigation graph are placeholder survey data.
+
+\subsubsection*{Tour}
+Panorama imagery and orientation calibration are placeholders. There is no
+wraparound from the last floor to the first. Only two traversal modes
+(manual, guided) are implemented; additional named routes are supported by
+the data structure but have no data.
+
+\subsubsection*{Voice}
+Speech-to-text and text-to-speech are browser-native and functional; there
+is no voice-navigation command parsing and no server-side speech
+processing. STT language coverage depends on the browser.
+
+\subsubsection*{Systems and operations}
+The backend chat path is synchronous by design. There is no streaming
+response. There is no authentication on any endpoint, including mutating
+CRUD routes. Raw user messages are logged verbatim. There is no rate
+limiting. CI runs no checks and the automated test suites are empty. The
+only supported deployment is local Docker Compose. Concurrency behavior is
+known only from a single two-request anecdote.
+
+\subsubsection*{Documentation drift}
+Several repository documents (the README, parts of the architecture
+document, and phase notes for a deleted 3D-map/GPS subsystem) are stale
+relative to the code; this paper was written from the code, not those
+documents.

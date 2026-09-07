@@ -226,7 +226,7 @@ def _tool_response(
     never altered (grounding-checked against the template itself) and any
     LLM failure returns the exact template, so status/confidence/provenance
     are unchanged either way."""
-    display_answer, _ = naturalize_answer(query, answer)
+    display_answer, _ = naturalize_answer(query, answer, context="navigation_tool")
     return {
         "original_query": query,
         "selected_agent": AGENT_NAME,

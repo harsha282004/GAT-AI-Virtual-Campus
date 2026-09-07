@@ -1,0 +1,89 @@
+\section{Current Implementation Measurements and Discussion}
+\label{sec:results}
+\input{tables/lstm_perclass}
+\input{figures/fig_confusion}
+
+This section reports only measurements that actually exist in the artifact.
+They are of two kinds: implementation-scale figures
+(Table~\ref{tab:counts}), and the few quantitative observations captured
+during development. None constitutes an experimental performance evaluation
+of the kind specified in Section~\ref{sec:eval}.
+
+\subsection{Implementation Scale}
+The system integrates a $1{,}507$-chunk knowledge base (from $128$ PDFs and
+$42$ web pages; $186$ URLs attempted with typed failure logging), a
+$180$-node/$325$-edge campus graph, $161$ panorama scenes with $849$
+cross-floor sightline hotspots across a six-bucket floor sequence, a
+$12$-class LSTM over a $283$-word vocabulary, and a relational schema with
+$14$ migrations. The chat tables have accumulated $378$ sessions and
+$1{,}400$ messages during development, evidence that the full front-end
+$\to$ API $\to$ supervisor $\to$ retrieval $\to$ Ollama $\to$ persistence
+path runs end to end. \emph{These are scale figures, not accuracy figures};
+in particular the chunk count and the message count say nothing about
+answer quality.
+
+\subsection{Intent Classifier}
+The only quantitative machine-learning result in the artifact is the intent
+classifier's held-out accuracy. Training reports \textbf{training accuracy
+$1.000$} and \textbf{validation accuracy $0.529$} on a seeded $80/20$ split
+of $168$ synthetic utterances ($134$ train, $34$ validation). An
+independent re-evaluation, reconstructing the identical split, reproduced
+accuracy $0.5294$ exactly and additionally reports macro precision $0.410$,
+macro recall $0.505$, macro $F_1$ $0.404$, and weighted $F_1$ $0.487$.
+Table~\ref{tab:lstmperclass} gives the per-class breakdown and
+Fig.~\ref{fig:confusion} the confusion matrix.
+
+\emph{Discussion.} The gap between training accuracy $1.00$ and validation
+accuracy $0.53$ on $168$ examples is a clear overfitting
+signature~\cite{goodfellow2016deep}; the model's own metadata and its
+dataset module say so explicitly. Four of twelve classes
+(\code{LABORATORY\_LOCATION}, \code{CAMPUS\_INFO}, \code{GENERAL},
+\code{UNKNOWN}) score $F_1 = 0$ on the validation split, several with
+support $1$--$3$. \code{LABORATORY\_LOCATION} is entirely absorbed into
+\code{DEPARTMENT\_LOCATION}. \textbf{This classifier must not be presented
+as accurate}, and the architecture does not depend on it being so: it is a
+fallback signal, reached only when the deterministic router finds no match,
+and accepted only above a $0.6$ probability. The high-support, lexically
+distinctive classes it does need to handle in that fallback role ---
+\code{ROOM\_LOCATION} ($F_1 = 0.923$), \code{DEPARTMENTS}/\code{ACADEMICS}/
+\code{FACILITIES} ($F_1 \ge 0.75$) --- are its strongest. Experiment E3
+(Section~\ref{sec:eval}) is what would establish real generalization, on
+real logged queries.
+
+\subsection{Confidence Thresholds}
+The category thresholds $\theta_{\text{HIGH}} = 0.58$ and
+$\theta_{\text{MED}} = 0.48$ were placed in the gaps observed on a
+\textbf{nine-query} development sample (Table~\ref{tab:confsample}): all
+three out-of-domain queries scored below $0.48$ and all six in-domain
+queries scored $0.48$ or above, with a secondary gap between $0.516$ and
+$0.641$ separating ``one strong supporting chunk'' from ``relevant but
+thin, spread-out evidence.'' \emph{This is a calibration artifact with
+$n = 9$, not a validated decision boundary.} Its behavior on a
+statistically sized set is unknown and is the subject of Experiment E5. We
+also note again that the intent term in Eq.~\eqref{eq:conf} is currently
+the retrieval fallback, so the deployed confidence score is effectively a
+function of retrieval quality alone.
+
+\subsection{Concurrency Observation}
+During a Phase-10 timeout investigation, two chat requests issued
+simultaneously against the CPU-only development host were measured
+completing in \textbf{$17$\,s and $45$\,s} respectively, versus an
+estimated $\approx 8$\,s each in isolation --- a super-linear degradation
+attributed to CPU contention between two concurrent Ollama generations
+running in Starlette's thread pool with no concurrency bound. The response
+was to serialize Ollama calls behind a semaphore (default width $1$), which
+converts ``$N$ requests all degrade together'' into ``requests queue and
+each receives the full $\approx 8$\,s service time.'' \textbf{This is a
+single anecdotal engineering observation, not a load-test result}; no
+throughput curve, latency percentile, or concurrency sweep exists.
+Experiment E6 and a proper load test (asyncio + httpx, $\ge 50$ concurrent
+sessions) are required to characterize behavior under load.
+
+\subsection{What Is Not Measured}
+For completeness and to prevent misreading: there is no retrieval
+precision/recall, no MRR or nDCG, no reranker A/B comparison, no
+faithfulness or answer-relevancy score, no citation-correctness rate, no
+hallucination rate, no confidence-threshold sensitivity analysis, no
+A$^{\star}$ latency or expanded-node benchmark, no cross-floor transition
+success rate, and no usability or user-study data. Section~\ref{sec:eval}
+specifies how each would be obtained.

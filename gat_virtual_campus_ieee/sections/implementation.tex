@@ -1,0 +1,72 @@
+\section{Implementation and Technology Stack}
+\label{sec:impl}
+\input{tables/tech_stack}
+
+\system{} is implemented as a Dockerized multi-service application
+(Table~\ref{tab:stack}). This section records implementation decisions that
+affect the system's behavior and that a reader reproducing the work needs
+to know.
+
+\subsection{Front End}
+The front end is a Next.js~15 App-Router application in strict TypeScript.
+Business logic is kept out of route files; the \code{lib}/\code{api} layer
+is the only place HTTP is issued; three Zustand stores hold cross-component
+state, with the chat store persisted to \code{localStorage} so a
+conversation and its session id survive a reload. The 360$^{\circ}$ viewer
+is \code{pannellum-react}, dynamically imported with \code{ssr:false}. UI
+translation for English, Kannada, and Hindi is a hand-maintained lookup
+dictionary keyed on the English source string, deliberately not a
+full i18n framework, because the static-string surface is small and a
+missing key degrades gracefully to English.
+
+\subsection{Back End}
+The API is FastAPI~\cite{ramirez2018fastapi} with Pydantic response models
+on every route and a non-wildcard CORS origin list. The chat route is synchronous by design (see
+Section~\ref{sec:architecture}); the tour and CRUD routes are likewise
+synchronous, matching the codebase's actual prevailing convention rather
+than an aspirational async-everywhere rule. The RAG/agent code in
+\code{scripts/ai/} is imported into the API process through a
+\code{sys.path} insertion --- a documented, deliberate deviation from the
+repository's folder convention that avoids duplicating a six-stage,
+independently tested pipeline inside \code{backend/app/}.
+
+\subsection{Model Serving and Concurrency}
+Generation uses Ollama-served Llama~3.2 (note: the model actually pulled
+and used is \code{llama3.2}, not the \code{llama3} that a stale
+configuration default names). Both the embedding model and the BM25 index
+are process singletons, and both --- together with the Ollama model --- are
+explicitly warmed at server startup, because a cold first request loaded
+the encoder and tokenized/indexed $1{,}507$ chunks inline and exceeded the
+front-end's $10$-second HTTP timeout. Concurrent Ollama calls are
+serialized by a semaphore (default width $1$) after two simultaneous
+requests were measured degrading to $17$\,s and $45$\,s on the CPU-only
+host (Section~\ref{sec:results}).
+
+\subsection{Persistence and Migrations}
+PostgreSQL holds the campus schema and chat-session history; SQLAlchemy is
+used synchronously with the \code{psycopg2} driver. Fourteen Alembic
+revisions define the schema. Session writes are best-effort: a database
+hiccup degrades conversation \emph{persistence} (loss of follow-up
+continuity for one exchange) but never the answer itself.
+
+\subsection{Deployment}
+Docker Compose defines exactly four services --- \code{frontend},
+\code{backend}, \code{db} (\code{postgres:16-alpine}), and \code{ollama}
+--- with no cache or message-queue service. There is no hosted-deployment
+configuration; the only supported deployment path is local Compose. The CI
+workflow is a placeholder that runs no lint, type-check, or test step,
+although the repository configures \code{ruff}/\code{black}/\code{mypy}/
+\code{pytest} and the front end has lint and type-check scripts. The
+automated test suites (\code{tests/backend}, \code{tests/frontend},
+\code{tests/e2e}) are currently empty placeholders; testing to date has
+been via standalone per-stage scripts.
+
+\subsection{Security Posture}
+There is no authentication on any endpoint, including the CRUD routes that
+can mutate campus data; the chat-session model carries no user concept.
+CORS origins are restricted but methods and headers are wildcarded. Raw
+user chat messages are logged verbatim at \code{INFO} level, which is a
+deviation from the project's own PII-logging guidance and should be
+addressed before any real deployment. Dev-only authoring panels are gated
+only by build-time client flags, not server-side authorization. These
+issues are enumerated so they are not mistaken for solved problems.

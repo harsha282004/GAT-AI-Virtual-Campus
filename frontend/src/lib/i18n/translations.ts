@@ -71,12 +71,16 @@ const kn: Record<string, string> = {
   "Read answers aloud": "ಉತ್ತರಗಳನ್ನು ಗಟ್ಟಿಯಾಗಿ ಓದಿ",
   Copy: "ನಕಲಿಸಿ",
   Copied: "ನಕಲಿಸಲಾಗಿದೆ",
+  Close: "ಮುಚ್ಚಿ",
+  "Chat with GAT Assistant": "GAT ಸಹಾಯಕರೊಂದಿಗೆ ಚಾಟ್ ಮಾಡಿ",
 
   // Voice error messages (useSpeechRecognition.ts)
   "Microphone access was denied. Allow microphone permission to use voice input.":
     "ಮೈಕ್ರೊಫೋನ್ ಪ್ರವೇಶ ನಿರಾಕರಿಸಲಾಗಿದೆ. ಧ್ವನಿ ಇನ್‌ಪುಟ್ ಬಳಸಲು ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿ ನೀಡಿ.",
   "No speech detected. Please try again.": "ಯಾವುದೇ ಮಾತು ಪತ್ತೆಯಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
   "No microphone was found on this device.": "ಈ ಸಾಧನದಲ್ಲಿ ಯಾವುದೇ ಮೈಕ್ರೊಫೋನ್ ಕಂಡುಬಂದಿಲ್ಲ.",
+  "Your microphone works, but voice recognition couldn't use it — check that your laptop's built-in microphone (not a disconnected Bluetooth device) is set as the default input in your system's sound settings, then try again.":
+    "ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ, ಆದರೆ ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ಅದನ್ನು ಬಳಸಲಾಗಲಿಲ್ಲ — ನಿಮ್ಮ ಲ್ಯಾಪ್‌ಟಾಪ್‌ನ ಅಂತರ್ನಿರ್ಮಿತ ಮೈಕ್ರೊಫೋನ್ (ಸಂಪರ್ಕ ಕಡಿತಗೊಂಡ ಬ್ಲೂಟೂತ್ ಸಾಧನವಲ್ಲ) ನಿಮ್ಮ ಸಿಸ್ಟಂನ ಧ್ವನಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಡೀಫಾಲ್ಟ್ ಇನ್‌ಪುಟ್ ಆಗಿ ಹೊಂದಿಸಲಾಗಿದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಿ, ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
   "A network error interrupted voice recognition. Please try again.":
     "ನೆಟ್‌ವರ್ಕ್ ದೋಷ ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆಗೆ ಅಡ್ಡಿಪಡಿಸಿತು. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
   "Voice input couldn't be processed. Please try typing your question instead.":
@@ -311,12 +315,16 @@ const hi: Record<string, string> = {
   "Read answers aloud": "उत्तर ज़ोर से पढ़ें",
   Copy: "कॉपी करें",
   Copied: "कॉपी हो गया",
+  Close: "बंद करें",
+  "Chat with GAT Assistant": "GAT सहायक से चैट करें",
 
   // Voice error messages (useSpeechRecognition.ts)
   "Microphone access was denied. Allow microphone permission to use voice input.":
     "माइक्रोफ़ोन एक्सेस अस्वीकृत कर दिया गया। वॉयस इनपुट उपयोग करने के लिए माइक्रोफ़ोन अनुमति दें।",
   "No speech detected. Please try again.": "कोई आवाज़ नहीं मिली। कृपया फिर से प्रयास करें।",
   "No microphone was found on this device.": "इस डिवाइस पर कोई माइक्रोफ़ोन नहीं मिला।",
+  "Your microphone works, but voice recognition couldn't use it — check that your laptop's built-in microphone (not a disconnected Bluetooth device) is set as the default input in your system's sound settings, then try again.":
+    "आपका माइक्रोफ़ोन काम कर रहा है, लेकिन वॉयस रिकग्निशन इसका उपयोग नहीं कर सका — जाँचें कि आपके लैपटॉप का बिल्ट-इन माइक्रोफ़ोन (डिस्कनेक्ट किया गया ब्लूटूथ डिवाइस नहीं) आपके सिस्टम की साउंड सेटिंग्स में डिफ़ॉल्ट इनपुट के रूप में सेट है, फिर पुनः प्रयास करें।",
   "A network error interrupted voice recognition. Please try again.":
     "एक नेटवर्क त्रुटि ने वॉयस पहचान में बाधा डाली। कृपया फिर से प्रयास करें।",
   "Voice input couldn't be processed. Please try typing your question instead.":

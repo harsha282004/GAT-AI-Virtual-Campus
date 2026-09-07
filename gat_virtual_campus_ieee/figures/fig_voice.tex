@@ -1,0 +1,22 @@
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize, node distance=3.4mm,
+  b/.style={draw, rounded corners=2pt, align=center, text width=6.6cm, minimum height=5.5mm, inner sep=2.5pt, fill=black!3},
+  pf/.style={-{Latex[length=1.7mm]}}
+]
+\node[b] (press) {mic control: press-and-hold, or quick tap $\to$ hands-free toggle};
+\node[b, below=of press] (pre) {preflight: \code{acquireMicStream()} --- try OS default, else enumerate every \code{audioinput} and try each with \code{deviceId:\{ideal\}}};
+\node[b, below=of pre] (rec) {\code{SpeechRecognition} (continuous, interim results); silence timers $7$\,s / $3$\,s; hard cap $25$\,s};
+\node[b, below=of rec] (tx) {final transcript accumulated, submitted once};
+\node[b, below=of tx] (send) {written into the input field; auto-submit after $350$\,ms via the \emph{same} chat send path};
+\node[b, below=of send] (rag) {RAG assistant (Section~\ref{sec:rag}); answer optionally read aloud via \code{speechSynthesis}};
+\draw[pf] (press)--(pre); \draw[pf] (pre)--(rec); \draw[pf] (rec)--(tx);
+\draw[pf] (tx)--(send); \draw[pf] (send)--(rag);
+\end{tikzpicture}
+\caption{Voice-to-RAG interaction pipeline. Speech-to-text is
+browser-native and never contacts the back end directly; text-to-speech is
+optional and browser-native. Voice-navigation command parsing is not
+implemented.}
+\label{fig:voice}
+\end{figure}

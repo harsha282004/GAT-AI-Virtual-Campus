@@ -1,0 +1,43 @@
+\section{Future Work}
+\label{sec:future}
+The following items are realistic next steps, ordered roughly by
+cost-to-value. Each has concrete scaffolding already present in the
+codebase or a clear specification in Section~\ref{sec:eval}.
+
+\begin{enumerate}
+\item \textbf{Run the evaluation protocol.} Execute E1--E8
+(Table~\ref{tab:evalprotocol}), starting with E4 (answer faithfulness) and
+E1 (retrieval quality), which together produce the relevance labels E2 and
+E5 also need. This is the single most valuable next step and the
+prerequisite for any results-section claims.
+\item \textbf{Close the confidence gap.} Supply the LSTM's
+$P(\text{intent})$ to Eq.~\eqref{eq:conf} (the interface already exists) and
+re-calibrate the thresholds on a statistically sized set (E5).
+\item \textbf{Train the reranker.} Once E1 yields labeled
+$(q,d)$ relevance judgments, fit and evaluate the existing SVR against the
+heuristic (E2).
+\item \textbf{Retrain the intent classifier on real data.} Label a sample
+of the accumulated chat logs and retrain; report a real confusion matrix
+(E3). Consider replacing the LSTM with a distilled transformer classifier
+if the data supports it.
+\item \textbf{Load testing and rate limiting.} Implement an
+asyncio/httpx load test ($\ge 50$ concurrent sessions) and per-session rate
+limiting; measure the Ollama-semaphore trade-off quantitatively (E6-adjacent).
+\item \textbf{Reconnect wayfinding to the UI.} The A$^{\star}$ endpoint is
+complete; a front-end route view and a ``how do I get there'' affordance in
+chat would require no backend change. Survey real building and node
+coordinates to activate the informed heuristic tiers.
+\item \textbf{Real tour assets.} Replace placeholder panoramas and
+orientation calibration with surveyed 360$^{\circ}$ captures via the
+existing file/identifier substitution path; add named routes as their scene
+data becomes available.
+\item \textbf{Voice navigation.} Parse transcripts for navigation intent
+(``take me to X'') and dispatch to the wayfinding engine or the tour.
+\item \textbf{Retrieval improvements.} Evaluate a domain-adapted or larger
+embedding model, reciprocal-rank fusion~\cite{cormack2009rrf} as an
+alternative to weighted score fusion, and a lightweight cross-encoder
+reranker if latency budget allows.
+\item \textbf{Operational hardening.} Add authentication to mutating
+routes, redact PII in logs, wire CI to run the existing lint/type/test
+tooling, and populate the empty test suites.
+\end{enumerate}

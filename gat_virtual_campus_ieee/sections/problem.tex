@@ -1,0 +1,88 @@
+\section{Problem Formulation and Research Objectives}
+\label{sec:problem}
+
+\subsection{Problem Statement}
+Let $\mathcal{D}$ be the set of authoritative documents an institution
+publishes about itself (web pages, PDF brochures, regulations), and let
+$\mathcal{G}=(V,E)$ be a graph model of its physical campus in which
+vertices $V$ are navigable points (entrances, junctions, corridors, rooms,
+staircases, landmarks) and edges $E$ are walkable connections with
+traversal costs. Let $\mathcal{P}$ be a set of 360$^{\circ}$ panoramic
+images, each associated with a vertex $v\in V$.
+
+A user issues either a natural-language query $q$ or a spatial request
+$(v_s, v_g)$. The system must:
+
+\begin{itemize}
+\item \textbf{P1 (grounded answering).} For a query $q$, return an answer
+$a$ together with a set of provenance references $S\subseteq\mathcal{D}$
+such that every verifiable claim in $a$ is entailed by
+$\bigcup_{s\in S}\mathrm{text}(s)$, \emph{or} return an explicit refusal
+when $\mathcal{D}$ does not adequately support an answer. The system must
+prefer refusal to an unsupported answer.
+\item \textbf{P2 (routing).} Assign $q$ to the specialist handler(s) whose
+domain it belongs to, deterministically and explainably where possible.
+\item \textbf{P3 (wayfinding).} For $(v_s,v_g)$, return a minimum-cost walk
+$\pi = (v_s,\dots,v_g)$ in $\mathcal{G}$, its total cost, an estimated
+walking time, an accessibility flag, and human-readable turn-by-turn
+directions.
+\item \textbf{P4 (tour traversal).} Support both manual step-by-step and
+automatic sequential traversal of $\mathcal{P}$ along $\mathcal{G}$,
+including transitions between floors, while preserving camera-heading
+continuity.
+\item \textbf{P5 (integration).} Serve P1--P4 from one application over one
+shared campus model, deployable on commodity hardware with no external
+paid API.
+\end{itemize}
+
+\subsection{Design Constraints}
+The implemented system operates under constraints that shape every
+subsequent design decision:
+
+\begin{enumerate}
+\item \emph{No external LLM API.} All generation and embedding runs locally
+(Ollama-served Llama~3.2; \code{all-MiniLM-L6-v2}). This bounds model
+capability and makes each generation call cost several seconds of CPU time.
+\item \emph{Authoritative sources only.} The knowledge base is built
+exclusively from the institution's own domain; third-party aggregators,
+encyclopedias, and search snippets are excluded by policy.
+\item \emph{Groundedness over coverage.} A wrong answer is a more serious
+failure than a refusal, because the system's purpose is to be a trustworthy
+substitute for the official sources.
+\item \emph{Auditability.} Routing decisions and low-confidence refusals
+must be explainable after the fact from logs.
+\item \emph{Placeholder-to-real asset path.} Panorama imagery and surveyed
+coordinates are placeholders; the code must accept real assets by
+file/identifier substitution without logic changes.
+\end{enumerate}
+
+\subsection{Research Objectives}
+\begin{description}
+\item[O1] Design and implement a hybrid retrieval pipeline that combines
+semantic and exact-term matching for an acronym- and number-heavy
+institutional corpus (Section~\ref{sec:rag}).
+\item[O2] Design a layered generation-time safety mechanism --- confidence
+gating plus post-hoc claim verification --- that reduces the risk of
+unsupported institutional claims without a second model call
+(Section~\ref{sec:rag}).
+\item[O3] Design a routing mechanism that is deterministic and auditable
+for covered phrasings and gracefully falls back to a learned classifier for
+uncovered ones (Section~\ref{sec:agents}).
+\item[O4] Design a scene-graph data structure for 360$^{\circ}$ tour
+navigation that makes cross-floor traversal transparent to traversal code
+(Section~\ref{sec:tour}).
+\item[O5] Implement graph-based wayfinding whose heuristic adapts to
+whatever spatial information is available and remains correct in all cases
+(Section~\ref{sec:nav}).
+\item[O6] Define a rigorous evaluation protocol for all of the above, and
+report honestly the measurements that currently exist
+(Sections~\ref{sec:eval}--\ref{sec:results}).
+\end{description}
+
+\subsection{Non-Goals}
+The following are explicitly out of scope for the implemented artifact:
+real-time indoor localization; outdoor GPS turn-by-turn guidance (a
+prototype was built and then removed); automatic translation of retrieved
+evidence (the assistant answers in the user's selected language via the
+LLM, but retrieval remains English); authentication and multi-tenant
+isolation; and streaming token-by-token responses.

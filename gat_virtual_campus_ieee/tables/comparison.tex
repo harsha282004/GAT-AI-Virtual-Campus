@@ -1,0 +1,78 @@
+\begin{table*}[!t]
+\centering
+\caption{Positioning of \system{} Against Representative Campus-Oriented and RAG-Oriented Systems.
+Entries describe \emph{category} characteristics; \system{} entries describe the \emph{implemented} artifact.}
+\label{tab:comparison}
+\footnotesize
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}p{2.7cm}p{2.1cm}p{2.0cm}p{1.9cm}p{1.6cm}p{1.7cm}p{3.0cm}@{}}
+\toprule
+\textbf{System class} & \textbf{Info.\ retrieval} & \textbf{Generation / QA} & \textbf{Multi-agent routing} & \textbf{360$^{\circ}$ tour} & \textbf{Graph wayfinding} & \textbf{Principal limitation} \\
+\midrule
+Institutional website + scripted chatbot &
+Keyword / FAQ match &
+Templated / canned &
+No &
+No &
+No &
+No paraphrase robustness; no spatial context \\
+
+Educational FAQ chatbot \cite{okonkwo2021chatbots,perez2020chatbots} &
+Intent + slot &
+Retrieval of stored answers &
+Intent classifier only &
+No &
+No &
+Answer set is fixed; brittle to unseen intents \\
+
+Naive RAG assistant \cite{lewis2020rag,gao2023ragsurvey} &
+Dense top-$k$ &
+LLM over concatenated passages &
+No &
+No &
+No &
+Hallucinates on weak/thin retrieval; no refusal \\
+
+Agentic RAG (ReAct-style) \cite{yao2023react,wu2023autogen} &
+Iterative dense &
+LLM with tool loop &
+LLM-as-router &
+No &
+No &
+High latency; routing not auditable; cost \\
+
+360$^{\circ}$ virtual tour product \cite{argyriou2020360design,petroff2019pannellum} &
+None &
+None &
+No &
+Yes (scenes + hotspots) &
+No &
+No queryable knowledge; no routes \\
+
+Street View-style panorama graph \cite{anguelov2010streetview} &
+None &
+None &
+No &
+Yes (panorama graph) &
+Partial (link graph) &
+Outdoor scale; no institutional knowledge \\
+
+Indoor navigation system \cite{fallah2013indoor,zafari2019localization} &
+None &
+None &
+No &
+No &
+Yes (Dijkstra / A$^{\star}$) &
+Requires a localization technology; no QA \\
+
+\midrule
+\textbf{\system{} (this work)} &
+\textbf{Hybrid dense + BM25, $0.6/0.4$ fusion, 4-feature rerank} &
+\textbf{Local Llama~3.2, grounding-only prompt, confidence gate + post-hoc numeric check} &
+\textbf{Deterministic phrase/keyword first; LSTM fallback; logged} &
+\textbf{Yes: per-floor doubly linked list, cross-floor stitching, guided walk} &
+\textbf{Yes: A$^{\star}$ over live relational graph, 3-tier heuristic} &
+\textbf{No formal evaluation yet; A$^{\star}$ has no front-end; SVR reranker untrained} \\
+\bottomrule
+\end{tabular}
+\end{table*}

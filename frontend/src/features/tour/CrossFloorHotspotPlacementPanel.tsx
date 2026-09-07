@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Crosshair, Target, Trash2 } from "lucide-react";
+import { Check, Crosshair, Target, Trash2 } from "lucide-react";
 
 import { useTranslation } from "@/hooks";
 import { cn } from "@/utils";
@@ -56,6 +56,9 @@ export function CrossFloorHotspotPlacementPanel({
   const [label, setLabel] = useState("");
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  // Non-blocking "saved" confirmation for the rapid-placement workflow — it
+  // auto-clears so it never has to be dismissed before placing the next one.
+  const [justSaved, setJustSaved] = useState(false);
 
   const editing = useMemo(
     () => hotspots.find((h) => h.id === editingHotspotId) ?? null,
@@ -68,6 +71,12 @@ export function CrossFloorHotspotPlacementPanel({
     setTargetSceneId(String(editing.target_node_id));
     setLabel(editing.label ?? "");
   }, [editing]);
+
+  useEffect(() => {
+    if (!justSaved) return;
+    const timer = setTimeout(() => setJustSaved(false), 2200);
+    return () => clearTimeout(timer);
+  }, [justSaved]);
 
   const floorGroups = useMemo(() => {
     const excludeId = editing ? String(editing.source_node_id) : sceneId;
@@ -88,6 +97,7 @@ export function CrossFloorHotspotPlacementPanel({
       await onSave(targetSceneId, label);
       setTargetSceneId("");
       setLabel("");
+      setJustSaved(true);
     } finally {
       setSaving(false);
     }
@@ -194,9 +204,17 @@ export function CrossFloorHotspotPlacementPanel({
       )}
 
       {!editing && placing && !pickedCoords && (
-        <p className="rounded-lg bg-black/5 px-2.5 py-2 text-xs text-muted dark:bg-white/5">
-          {t("Click on the panorama where another floor is visible.")}
-        </p>
+        <div className="space-y-1.5">
+          {justSaved && (
+            <p className="flex items-center gap-1.5 rounded-lg bg-emerald-500/15 px-2.5 py-2 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              <Check className="h-3.5 w-3.5 shrink-0" />
+              {t("Hotspot saved — ready for the next one")}
+            </p>
+          )}
+          <p className="rounded-lg bg-black/5 px-2.5 py-2 text-xs text-muted dark:bg-white/5">
+            {t("Click on the panorama where another floor is visible.")}
+          </p>
+        </div>
       )}
 
       {!editing && pickedCoords && (

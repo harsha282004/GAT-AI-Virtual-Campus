@@ -1,0 +1,23 @@
+\begin{table}[!t]
+\centering
+\caption{Qualitative Comparison of Retrieval Signals (No In-Domain
+Effectiveness Measurement Has Been Performed; See Section~\ref{sec:eval}).}
+\label{tab:retrieval}
+\footnotesize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}p{1.9cm}p{1.75cm}p{1.75cm}p{1.9cm}@{}}
+\toprule
+\textbf{Property} & \textbf{BM25 (lexical)} & \textbf{Dense (MiniLM)} & \textbf{Hybrid $0.6/0.4$ (implemented)} \\
+\midrule
+Paraphrase / synonymy & weak & strong & strong \\
+Exact acronym / code / room \# & strong & weak--moderate & strong \\
+Rare-term precision & strong & moderate & strong \\
+Vocabulary-mismatch recall & weak & strong & strong \\
+Keyword-coincidence noise & high & low & low (dense anchors) \\
+Training data required & none & none (pretrained) & none \\
+Index cost & low & moderate (HNSW) & sum of both \\
+Query latency & sub-ms & few ms & few ms \\
+Explainability & high (term hits) & low & moderate \\
+\bottomrule
+\end{tabular}
+\end{table}
