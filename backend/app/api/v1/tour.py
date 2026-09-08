@@ -1,7 +1,7 @@
 import logging
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.api.deps import get_db
 from app.core.exceptions import NotFoundError
@@ -122,9 +122,20 @@ def list_scenes(
     floor_id: int | None = Query(None, description="Restrict to a single floor"),
     db: Session = Depends(get_db),
 ) -> list[SceneRead]:
+    # Eager-load every relationship _build_scene()/_hotspots_for_node() touch
+    # (building, floor, and each node's outgoing edges). Without this, each of
+    # the ~156 Main Building scenes triggers its own lazy SELECTs — a few
+    # hundred extra round-trips that are ~nothing against a local Postgres but
+    # ~30s against a network-hop-away managed Postgres (Railway -> Supabase),
+    # which blows past the frontend's request timeout. Same rows, ~3 queries.
     query = (
         db.query(Node, Panorama)
         .join(Panorama, Panorama.node_id == Node.id)
+        .options(
+            joinedload(Node.building),
+            joinedload(Node.floor),
+            selectinload(Node.outgoing_edges),
+        )
         .filter(Node.building_id == building_id, Node.floor_id.isnot(None))
     )
     if floor_id is not None:
