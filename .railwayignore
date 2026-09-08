@@ -1,0 +1,40 @@
+# Railway upload excludes for `railway up` (CLI deploy from the repo root).
+#
+# This file exists so `railway up` INCLUDES the git-ignored RAG assets the
+# Docker build needs — data/chroma_db/, data/processed/, data/campus_spatial/
+# — which .gitignore would otherwise drop from the upload. It still excludes
+# secrets, virtualenvs, caches, node_modules and other local-only files.
+#
+# NOTE: data/chroma_db/ is deliberately NOT listed here. It is intentionally
+# git-ignored (regenerable), but the production image must ship the existing
+# collection without a rebuild, so it is uploaded and baked into the image.
+
+.git
+.github
+.vscode
+.idea
+.claude
+**/.mypy_cache
+**/.ruff_cache
+**/.pytest_cache
+venv
+.venv
+backend/venv
+**/__pycache__
+**/*.py[cod]
+*.egg-info
+frontend
+**/node_modules
+.next
+.env
+.env.*
+**/.env
+**/.env.local
+**/.env.*.local
+**/postgres_data
+*.dump
+data/raw
+data/logs
+screenshots
+**/*.log
+backend/structure.txt

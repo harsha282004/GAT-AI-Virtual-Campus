@@ -1,0 +1,55 @@
+# Docker build context excludes (build context = repository root).
+# Everything the backend image actually needs is COPYed explicitly in
+# backend/Dockerfile: backend/, scripts/, data/processed/,
+# data/campus_spatial/, data/chroma_db/. This file only trims the context
+# so the build stays small and fast — it must NOT exclude any of those.
+
+# --- VCS & CI ---
+.git
+.github
+
+# --- Editor / tooling caches ---
+.vscode
+.idea
+.claude
+**/.mypy_cache
+**/.ruff_cache
+**/.pytest_cache
+
+# --- Python virtualenvs & bytecode ---
+venv
+.venv
+backend/venv
+**/__pycache__
+**/*.py[cod]
+*.egg-info
+
+# --- Node / frontend (not part of the backend image) ---
+frontend
+**/node_modules
+.next
+
+# --- Secrets & local environment ---
+.env
+.env.*
+**/.env
+**/.env.local
+**/.env.*.local
+
+# --- Local database data & dumps ---
+**/postgres_data
+*.dump
+
+# --- Large / regenerable data NOT needed by the backend at runtime ---
+data/raw
+data/logs
+data/metadata
+
+# --- Docs, media sources, screenshots, misc ---
+docs
+assets
+screenshots
+gat_virtual_campus_ieee
+*.pdf
+**/*.log
+backend/structure.txt
