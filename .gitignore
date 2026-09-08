@@ -28,7 +28,12 @@ npm-debug.log*
 postgres_data/
 
 # --- AI / Vector store / model artifacts ---
-data/chroma_db/
+# data/chroma_db/ IS committed: Railway builds the backend image from the
+# GitHub context, so the existing `gat_kb` vector collection (~23 MB, 1507
+# documents) must be in Git to be baked into the image. It is never rebuilt
+# or re-embedded. The broad *.sqlite3 rule above is re-negated for this one
+# file so ChromaDB's metadata store is tracked with the rest of the dir.
+!data/chroma_db/chroma.sqlite3
 *.pt
 *.pth
 # Exception: the trained intent-classifier weights (75 KB) are a committed
