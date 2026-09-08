@@ -1,0 +1,1289 @@
+{
+  "building": "Main Building",
+  "buildingCode": "MAIN",
+  "floors": [
+    {
+      "slug": "entrance",
+      "level": 0,
+      "name": "Entrance",
+      "scenes": [
+        {
+          "index": 1,
+          "filename": "01.jpg",
+          "primary": "/panoramas/main-building/entrance/01.jpg",
+          "preview": "/panoramas/main-building/entrance/01-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 2,
+          "filename": "02.jpg",
+          "primary": "/panoramas/main-building/entrance/02.jpg",
+          "preview": "/panoramas/main-building/entrance/02-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 3,
+          "filename": "03.jpg",
+          "primary": "/panoramas/main-building/entrance/03.jpg",
+          "preview": "/panoramas/main-building/entrance/03-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 4,
+          "filename": "04.jpg",
+          "primary": "/panoramas/main-building/entrance/04.jpg",
+          "preview": "/panoramas/main-building/entrance/04-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 5,
+          "filename": "05.jpg",
+          "primary": "/panoramas/main-building/entrance/05.jpg",
+          "preview": "/panoramas/main-building/entrance/05-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 6,
+          "filename": "06.jpg",
+          "primary": "/panoramas/main-building/entrance/06.jpg",
+          "preview": "/panoramas/main-building/entrance/06-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 7,
+          "filename": "07.jpg",
+          "primary": "/panoramas/main-building/entrance/07.jpg",
+          "preview": "/panoramas/main-building/entrance/07-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 8,
+          "filename": "08.jpg",
+          "primary": "/panoramas/main-building/entrance/08.jpg",
+          "preview": "/panoramas/main-building/entrance/08-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 9,
+          "filename": "09.jpg",
+          "primary": "/panoramas/main-building/entrance/09.jpg",
+          "preview": "/panoramas/main-building/entrance/09-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 10,
+          "filename": "10.jpg",
+          "primary": "/panoramas/main-building/entrance/10.jpg",
+          "preview": "/panoramas/main-building/entrance/10-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 11,
+          "filename": "11.jpg",
+          "primary": "/panoramas/main-building/entrance/11.jpg",
+          "preview": "/panoramas/main-building/entrance/11-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 12,
+          "filename": "12.jpg",
+          "primary": "/panoramas/main-building/entrance/12.jpg",
+          "preview": "/panoramas/main-building/entrance/12-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 13,
+          "filename": "13.jpg",
+          "primary": "/panoramas/main-building/entrance/13.jpg",
+          "preview": "/panoramas/main-building/entrance/13-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 14,
+          "filename": "14.jpg",
+          "primary": "/panoramas/main-building/entrance/14.jpg",
+          "preview": "/panoramas/main-building/entrance/14-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 15,
+          "filename": "15.jpg",
+          "primary": "/panoramas/main-building/entrance/15.jpg",
+          "preview": "/panoramas/main-building/entrance/15-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 16,
+          "filename": "16.jpg",
+          "primary": "/panoramas/main-building/entrance/16.jpg",
+          "preview": "/panoramas/main-building/entrance/16-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 17,
+          "filename": "17.jpg",
+          "primary": "/panoramas/main-building/entrance/17.jpg",
+          "preview": "/panoramas/main-building/entrance/17-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 18,
+          "filename": "18.jpg",
+          "primary": "/panoramas/main-building/entrance/18.jpg",
+          "preview": "/panoramas/main-building/entrance/18-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 19,
+          "filename": "19.jpg",
+          "primary": "/panoramas/main-building/entrance/19.jpg",
+          "preview": "/panoramas/main-building/entrance/19-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 20,
+          "filename": "20.jpg",
+          "primary": "/panoramas/main-building/entrance/20.jpg",
+          "preview": "/panoramas/main-building/entrance/20-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 21,
+          "filename": "21.jpg",
+          "primary": "/panoramas/main-building/entrance/21.jpg",
+          "preview": "/panoramas/main-building/entrance/21-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 22,
+          "filename": "22.jpg",
+          "primary": "/panoramas/main-building/entrance/22.jpg",
+          "preview": "/panoramas/main-building/entrance/22-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 23,
+          "filename": "23.jpg",
+          "primary": "/panoramas/main-building/entrance/23.jpg",
+          "preview": "/panoramas/main-building/entrance/23-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        }
+      ]
+    },
+    {
+      "slug": "ground-floor",
+      "level": 1,
+      "name": "Ground Floor",
+      "scenes": [
+        {
+          "index": 1,
+          "filename": "gf_01.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_01.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_01-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 2,
+          "filename": "gf_02.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_02.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_02-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 3,
+          "filename": "gf_03.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_03.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_03-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 4,
+          "filename": "gf_04.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_04.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_04-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 5,
+          "filename": "gf_05.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_05.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_05-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 6,
+          "filename": "gf_06.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_06.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_06-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 7,
+          "filename": "gf_07.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_07.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_07-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 8,
+          "filename": "gf_08.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_08.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_08-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 9,
+          "filename": "gf_09.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_09.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_09-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 10,
+          "filename": "gf_10.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_10.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_10-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 11,
+          "filename": "gf_11.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_11.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_11-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 12,
+          "filename": "gf_12.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_12.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_12-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 13,
+          "filename": "gf_13.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_13.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_13-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 14,
+          "filename": "gf_14.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_14.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_14-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 15,
+          "filename": "gf_15.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_15.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_15-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 16,
+          "filename": "gf_16.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_16.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_16-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 17,
+          "filename": "gf_17.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_17.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_17-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 18,
+          "filename": "gf_18.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_18.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_18-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 19,
+          "filename": "gf_19.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_19.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_19-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 20,
+          "filename": "gf_20.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_20.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_20-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 21,
+          "filename": "gf_21.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_21.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_21-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 22,
+          "filename": "gf_22.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_22.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_22-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 23,
+          "filename": "gf_23.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_23.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_23-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 24,
+          "filename": "gf_24.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_24.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_24-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 25,
+          "filename": "gf_25.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_25.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_25-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 26,
+          "filename": "gf_26.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_26.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_26-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 27,
+          "filename": "gf_27.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_27.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_27-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 28,
+          "filename": "gf_28.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_28.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_28-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 29,
+          "filename": "gf_29.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_29.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_29-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 30,
+          "filename": "gf_30.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_30.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_30-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 31,
+          "filename": "gf_31.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_31.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_31-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 32,
+          "filename": "gf_32.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_32.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_32-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 33,
+          "filename": "gf_33.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_33.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_33-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 34,
+          "filename": "gf_34.jpg",
+          "primary": "/panoramas/main-building/ground-floor/gf_34.jpg",
+          "preview": "/panoramas/main-building/ground-floor/gf_34-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        }
+      ]
+    },
+    {
+      "slug": "first-floor",
+      "level": 2,
+      "name": "First Floor",
+      "scenes": [
+        {
+          "index": 1,
+          "filename": "01.jpg",
+          "primary": "/panoramas/main-building/first-floor/01.jpg",
+          "preview": "/panoramas/main-building/first-floor/01-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 2,
+          "filename": "02.jpg",
+          "primary": "/panoramas/main-building/first-floor/02.jpg",
+          "preview": "/panoramas/main-building/first-floor/02-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 3,
+          "filename": "03.jpg",
+          "primary": "/panoramas/main-building/first-floor/03.jpg",
+          "preview": "/panoramas/main-building/first-floor/03-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 4,
+          "filename": "04.jpg",
+          "primary": "/panoramas/main-building/first-floor/04.jpg",
+          "preview": "/panoramas/main-building/first-floor/04-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 5,
+          "filename": "05.jpg",
+          "primary": "/panoramas/main-building/first-floor/05.jpg",
+          "preview": "/panoramas/main-building/first-floor/05-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 6,
+          "filename": "06.jpg",
+          "primary": "/panoramas/main-building/first-floor/06.jpg",
+          "preview": "/panoramas/main-building/first-floor/06-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 7,
+          "filename": "07.jpg",
+          "primary": "/panoramas/main-building/first-floor/07.jpg",
+          "preview": "/panoramas/main-building/first-floor/07-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 8,
+          "filename": "08.jpg",
+          "primary": "/panoramas/main-building/first-floor/08.jpg",
+          "preview": "/panoramas/main-building/first-floor/08-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 9,
+          "filename": "09.jpg",
+          "primary": "/panoramas/main-building/first-floor/09.jpg",
+          "preview": "/panoramas/main-building/first-floor/09-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 10,
+          "filename": "10.jpg",
+          "primary": "/panoramas/main-building/first-floor/10.jpg",
+          "preview": "/panoramas/main-building/first-floor/10-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 11,
+          "filename": "11.jpg",
+          "primary": "/panoramas/main-building/first-floor/11.jpg",
+          "preview": "/panoramas/main-building/first-floor/11-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 12,
+          "filename": "12.jpg",
+          "primary": "/panoramas/main-building/first-floor/12.jpg",
+          "preview": "/panoramas/main-building/first-floor/12-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 13,
+          "filename": "13.jpg",
+          "primary": "/panoramas/main-building/first-floor/13.jpg",
+          "preview": "/panoramas/main-building/first-floor/13-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 14,
+          "filename": "14.jpg",
+          "primary": "/panoramas/main-building/first-floor/14.jpg",
+          "preview": "/panoramas/main-building/first-floor/14-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 15,
+          "filename": "15.jpg",
+          "primary": "/panoramas/main-building/first-floor/15.jpg",
+          "preview": "/panoramas/main-building/first-floor/15-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 16,
+          "filename": "16.jpg",
+          "primary": "/panoramas/main-building/first-floor/16.jpg",
+          "preview": "/panoramas/main-building/first-floor/16-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 17,
+          "filename": "17.jpg",
+          "primary": "/panoramas/main-building/first-floor/17.jpg",
+          "preview": "/panoramas/main-building/first-floor/17-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 18,
+          "filename": "18.jpg",
+          "primary": "/panoramas/main-building/first-floor/18.jpg",
+          "preview": "/panoramas/main-building/first-floor/18-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 19,
+          "filename": "19.jpg",
+          "primary": "/panoramas/main-building/first-floor/19.jpg",
+          "preview": "/panoramas/main-building/first-floor/19-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 20,
+          "filename": "20.jpg",
+          "primary": "/panoramas/main-building/first-floor/20.jpg",
+          "preview": "/panoramas/main-building/first-floor/20-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 21,
+          "filename": "21.jpg",
+          "primary": "/panoramas/main-building/first-floor/21.jpg",
+          "preview": "/panoramas/main-building/first-floor/21-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 22,
+          "filename": "22.jpg",
+          "primary": "/panoramas/main-building/first-floor/22.jpg",
+          "preview": "/panoramas/main-building/first-floor/22-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 23,
+          "filename": "23.jpg",
+          "primary": "/panoramas/main-building/first-floor/23.jpg",
+          "preview": "/panoramas/main-building/first-floor/23-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 24,
+          "filename": "24.jpg",
+          "primary": "/panoramas/main-building/first-floor/24.jpg",
+          "preview": "/panoramas/main-building/first-floor/24-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 25,
+          "filename": "25.jpg",
+          "primary": "/panoramas/main-building/first-floor/25.jpg",
+          "preview": "/panoramas/main-building/first-floor/25-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 26,
+          "filename": "26.jpg",
+          "primary": "/panoramas/main-building/first-floor/26.jpg",
+          "preview": "/panoramas/main-building/first-floor/26-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 27,
+          "filename": "27.jpg",
+          "primary": "/panoramas/main-building/first-floor/27.jpg",
+          "preview": "/panoramas/main-building/first-floor/27-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 28,
+          "filename": "28.jpg",
+          "primary": "/panoramas/main-building/first-floor/28.jpg",
+          "preview": "/panoramas/main-building/first-floor/28-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 29,
+          "filename": "29.jpg",
+          "primary": "/panoramas/main-building/first-floor/29.jpg",
+          "preview": "/panoramas/main-building/first-floor/29-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 30,
+          "filename": "30.jpg",
+          "primary": "/panoramas/main-building/first-floor/30.jpg",
+          "preview": "/panoramas/main-building/first-floor/30-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 31,
+          "filename": "31.jpg",
+          "primary": "/panoramas/main-building/first-floor/31.jpg",
+          "preview": "/panoramas/main-building/first-floor/31-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 32,
+          "filename": "32.jpg",
+          "primary": "/panoramas/main-building/first-floor/32.jpg",
+          "preview": "/panoramas/main-building/first-floor/32-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 33,
+          "filename": "33.jpg",
+          "primary": "/panoramas/main-building/first-floor/33.jpg",
+          "preview": "/panoramas/main-building/first-floor/33-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 34,
+          "filename": "34.jpg",
+          "primary": "/panoramas/main-building/first-floor/34.jpg",
+          "preview": "/panoramas/main-building/first-floor/34-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        }
+      ]
+    },
+    {
+      "slug": "second-floor",
+      "level": 3,
+      "name": "Second Floor",
+      "scenes": [
+        {
+          "index": 1,
+          "filename": "01.jpg",
+          "primary": "/panoramas/main-building/second-floor/01.jpg",
+          "preview": "/panoramas/main-building/second-floor/01-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 2,
+          "filename": "02.jpg",
+          "primary": "/panoramas/main-building/second-floor/02.jpg",
+          "preview": "/panoramas/main-building/second-floor/02-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 3,
+          "filename": "03.jpg",
+          "primary": "/panoramas/main-building/second-floor/03.jpg",
+          "preview": "/panoramas/main-building/second-floor/03-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 4,
+          "filename": "04.jpg",
+          "primary": "/panoramas/main-building/second-floor/04.jpg",
+          "preview": "/panoramas/main-building/second-floor/04-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 5,
+          "filename": "05.jpg",
+          "primary": "/panoramas/main-building/second-floor/05.jpg",
+          "preview": "/panoramas/main-building/second-floor/05-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 6,
+          "filename": "06.jpg",
+          "primary": "/panoramas/main-building/second-floor/06.jpg",
+          "preview": "/panoramas/main-building/second-floor/06-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 7,
+          "filename": "07.jpg",
+          "primary": "/panoramas/main-building/second-floor/07.jpg",
+          "preview": "/panoramas/main-building/second-floor/07-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 8,
+          "filename": "08.jpg",
+          "primary": "/panoramas/main-building/second-floor/08.jpg",
+          "preview": "/panoramas/main-building/second-floor/08-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 9,
+          "filename": "09.jpg",
+          "primary": "/panoramas/main-building/second-floor/09.jpg",
+          "preview": "/panoramas/main-building/second-floor/09-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 10,
+          "filename": "10.jpg",
+          "primary": "/panoramas/main-building/second-floor/10.jpg",
+          "preview": "/panoramas/main-building/second-floor/10-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 11,
+          "filename": "11.jpg",
+          "primary": "/panoramas/main-building/second-floor/11.jpg",
+          "preview": "/panoramas/main-building/second-floor/11-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 12,
+          "filename": "12.jpg",
+          "primary": "/panoramas/main-building/second-floor/12.jpg",
+          "preview": "/panoramas/main-building/second-floor/12-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 13,
+          "filename": "13.jpg",
+          "primary": "/panoramas/main-building/second-floor/13.jpg",
+          "preview": "/panoramas/main-building/second-floor/13-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 14,
+          "filename": "14.jpg",
+          "primary": "/panoramas/main-building/second-floor/14.jpg",
+          "preview": "/panoramas/main-building/second-floor/14-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 15,
+          "filename": "15.jpg",
+          "primary": "/panoramas/main-building/second-floor/15.jpg",
+          "preview": "/panoramas/main-building/second-floor/15-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 16,
+          "filename": "16.jpg",
+          "primary": "/panoramas/main-building/second-floor/16.jpg",
+          "preview": "/panoramas/main-building/second-floor/16-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 17,
+          "filename": "17.jpg",
+          "primary": "/panoramas/main-building/second-floor/17.jpg",
+          "preview": "/panoramas/main-building/second-floor/17-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 18,
+          "filename": "18.jpg",
+          "primary": "/panoramas/main-building/second-floor/18.jpg",
+          "preview": "/panoramas/main-building/second-floor/18-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 19,
+          "filename": "19.jpg",
+          "primary": "/panoramas/main-building/second-floor/19.jpg",
+          "preview": "/panoramas/main-building/second-floor/19-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 20,
+          "filename": "20.jpg",
+          "primary": "/panoramas/main-building/second-floor/20.jpg",
+          "preview": "/panoramas/main-building/second-floor/20-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 21,
+          "filename": "21.jpg",
+          "primary": "/panoramas/main-building/second-floor/21.jpg",
+          "preview": "/panoramas/main-building/second-floor/21-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 22,
+          "filename": "22.jpg",
+          "primary": "/panoramas/main-building/second-floor/22.jpg",
+          "preview": "/panoramas/main-building/second-floor/22-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 23,
+          "filename": "23.jpg",
+          "primary": "/panoramas/main-building/second-floor/23.jpg",
+          "preview": "/panoramas/main-building/second-floor/23-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 24,
+          "filename": "24.jpg",
+          "primary": "/panoramas/main-building/second-floor/24.jpg",
+          "preview": "/panoramas/main-building/second-floor/24-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 25,
+          "filename": "25.jpg",
+          "primary": "/panoramas/main-building/second-floor/25.jpg",
+          "preview": "/panoramas/main-building/second-floor/25-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 26,
+          "filename": "26.jpg",
+          "primary": "/panoramas/main-building/second-floor/26.jpg",
+          "preview": "/panoramas/main-building/second-floor/26-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 27,
+          "filename": "27.jpg",
+          "primary": "/panoramas/main-building/second-floor/27.jpg",
+          "preview": "/panoramas/main-building/second-floor/27-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 28,
+          "filename": "28.jpg",
+          "primary": "/panoramas/main-building/second-floor/28.jpg",
+          "preview": "/panoramas/main-building/second-floor/28-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 29,
+          "filename": "29.jpg",
+          "primary": "/panoramas/main-building/second-floor/29.jpg",
+          "preview": "/panoramas/main-building/second-floor/29-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 30,
+          "filename": "30.jpg",
+          "primary": "/panoramas/main-building/second-floor/30.jpg",
+          "preview": "/panoramas/main-building/second-floor/30-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 31,
+          "filename": "31.jpg",
+          "primary": "/panoramas/main-building/second-floor/31.jpg",
+          "preview": "/panoramas/main-building/second-floor/31-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        }
+      ]
+    },
+    {
+      "slug": "third-floor",
+      "level": 4,
+      "name": "Third Floor",
+      "scenes": [
+        {
+          "index": 1,
+          "filename": "01.jpg",
+          "primary": "/panoramas/main-building/third-floor/01.jpg",
+          "preview": "/panoramas/main-building/third-floor/01-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 2,
+          "filename": "02.jpg",
+          "primary": "/panoramas/main-building/third-floor/02.jpg",
+          "preview": "/panoramas/main-building/third-floor/02-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 3,
+          "filename": "03.jpg",
+          "primary": "/panoramas/main-building/third-floor/03.jpg",
+          "preview": "/panoramas/main-building/third-floor/03-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 4,
+          "filename": "04.jpg",
+          "primary": "/panoramas/main-building/third-floor/04.jpg",
+          "preview": "/panoramas/main-building/third-floor/04-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 5,
+          "filename": "05.jpg",
+          "primary": "/panoramas/main-building/third-floor/05.jpg",
+          "preview": "/panoramas/main-building/third-floor/05-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 6,
+          "filename": "06.jpg",
+          "primary": "/panoramas/main-building/third-floor/06.jpg",
+          "preview": "/panoramas/main-building/third-floor/06-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 7,
+          "filename": "07 (2).jpg",
+          "primary": "/panoramas/main-building/third-floor/07 (2).jpg",
+          "preview": "/panoramas/main-building/third-floor/07 (2)-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 8,
+          "filename": "08.jpg",
+          "primary": "/panoramas/main-building/third-floor/08.jpg",
+          "preview": "/panoramas/main-building/third-floor/08-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 9,
+          "filename": "09.jpg",
+          "primary": "/panoramas/main-building/third-floor/09.jpg",
+          "preview": "/panoramas/main-building/third-floor/09-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 10,
+          "filename": "10.jpg",
+          "primary": "/panoramas/main-building/third-floor/10.jpg",
+          "preview": "/panoramas/main-building/third-floor/10-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 11,
+          "filename": "11.jpg",
+          "primary": "/panoramas/main-building/third-floor/11.jpg",
+          "preview": "/panoramas/main-building/third-floor/11-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 12,
+          "filename": "12.jpg",
+          "primary": "/panoramas/main-building/third-floor/12.jpg",
+          "preview": "/panoramas/main-building/third-floor/12-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 13,
+          "filename": "13.jpg",
+          "primary": "/panoramas/main-building/third-floor/13.jpg",
+          "preview": "/panoramas/main-building/third-floor/13-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 14,
+          "filename": "14.jpg",
+          "primary": "/panoramas/main-building/third-floor/14.jpg",
+          "preview": "/panoramas/main-building/third-floor/14-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 15,
+          "filename": "15.jpg",
+          "primary": "/panoramas/main-building/third-floor/15.jpg",
+          "preview": "/panoramas/main-building/third-floor/15-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 16,
+          "filename": "16.jpg",
+          "primary": "/panoramas/main-building/third-floor/16.jpg",
+          "preview": "/panoramas/main-building/third-floor/16-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 17,
+          "filename": "17.jpg",
+          "primary": "/panoramas/main-building/third-floor/17.jpg",
+          "preview": "/panoramas/main-building/third-floor/17-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 18,
+          "filename": "18.jpg",
+          "primary": "/panoramas/main-building/third-floor/18.jpg",
+          "preview": "/panoramas/main-building/third-floor/18-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 19,
+          "filename": "19.jpg",
+          "primary": "/panoramas/main-building/third-floor/19.jpg",
+          "preview": "/panoramas/main-building/third-floor/19-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 20,
+          "filename": "20.jpg",
+          "primary": "/panoramas/main-building/third-floor/20.jpg",
+          "preview": "/panoramas/main-building/third-floor/20-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 21,
+          "filename": "21.jpg",
+          "primary": "/panoramas/main-building/third-floor/21.jpg",
+          "preview": "/panoramas/main-building/third-floor/21-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 22,
+          "filename": "22.jpg",
+          "primary": "/panoramas/main-building/third-floor/22.jpg",
+          "preview": "/panoramas/main-building/third-floor/22-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 23,
+          "filename": "23.jpg",
+          "primary": "/panoramas/main-building/third-floor/23.jpg",
+          "preview": "/panoramas/main-building/third-floor/23-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 24,
+          "filename": "24.jpg",
+          "primary": "/panoramas/main-building/third-floor/24.jpg",
+          "preview": "/panoramas/main-building/third-floor/24-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 25,
+          "filename": "25.jpg",
+          "primary": "/panoramas/main-building/third-floor/25.jpg",
+          "preview": "/panoramas/main-building/third-floor/25-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 26,
+          "filename": "26.jpg",
+          "primary": "/panoramas/main-building/third-floor/26.jpg",
+          "preview": "/panoramas/main-building/third-floor/26-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 27,
+          "filename": "27.jpg",
+          "primary": "/panoramas/main-building/third-floor/27.jpg",
+          "preview": "/panoramas/main-building/third-floor/27-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 28,
+          "filename": "28.jpg",
+          "primary": "/panoramas/main-building/third-floor/28.jpg",
+          "preview": "/panoramas/main-building/third-floor/28-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 29,
+          "filename": "29.jpg",
+          "primary": "/panoramas/main-building/third-floor/29.jpg",
+          "preview": "/panoramas/main-building/third-floor/29-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 30,
+          "filename": "30.jpg",
+          "primary": "/panoramas/main-building/third-floor/30.jpg",
+          "preview": "/panoramas/main-building/third-floor/30-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 31,
+          "filename": "31.jpg",
+          "primary": "/panoramas/main-building/third-floor/31.jpg",
+          "preview": "/panoramas/main-building/third-floor/31-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 32,
+          "filename": "32.jpg",
+          "primary": "/panoramas/main-building/third-floor/32.jpg",
+          "preview": "/panoramas/main-building/third-floor/32-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 33,
+          "filename": "33.jpg",
+          "primary": "/panoramas/main-building/third-floor/33.jpg",
+          "preview": "/panoramas/main-building/third-floor/33-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        },
+        {
+          "index": 34,
+          "filename": "34.jpg",
+          "primary": "/panoramas/main-building/third-floor/34.jpg",
+          "preview": "/panoramas/main-building/third-floor/34-preview.jpg",
+          "width": 4096,
+          "height": 2048
+        }
+      ]
+    }
+  ]
+}

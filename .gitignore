@@ -50,9 +50,14 @@ postgres_data/
 data/raw/
 data/logs/
 
-# --- Generated tour panoramas (regenerate via scripts/media/build_panoramas.py
-# from the real source photos; too large to track in git) ---
-frontend/public/panoramas/main-building/
+# --- Generated tour panoramas (regenerated via scripts/media/build_panoramas.py
+# from the real source photos). Tracked in git so they deploy with the Next.js
+# frontend on Vercel — `image_path` values from the tour API are frontend-origin
+# static paths (e.g. /panoramas/main-building/entrance/01.jpg), served from
+# public/ exactly like /images/*. ~113 MiB of web-optimized JPEGs; consider
+# Git LFS if repo size becomes a concern. The full-resolution SOURCE photos
+# stay out of the repo (they live outside it entirely — see
+# docs/adding_real_photos.md). ---
 
 # --- Docker / logs ---
 *.log
