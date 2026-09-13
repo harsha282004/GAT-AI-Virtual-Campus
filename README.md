@@ -1,148 +1,142 @@
-# AI Agent-Based Indoor Virtual Campus Tour and Query Assistant
+# AI Agent–Driven Smart Campus Assistant with Immersive Virtual Tour Navigation
 
-A virtual campus tour and RAG-based query assistant for Global Academy of Technology (GAT), Bangalore.
+<p align="center">
+  <strong>
+    An intelligent smart-campus platform combining AI agents, Hybrid RAG,
+    grounded question answering, immersive 360° virtual navigation,
+    indoor A* pathfinding, and interactive campus exploration.
+  </strong>
+</p>
 
-See [`docs/architecture.md`](docs/architecture.md) for the full approved architecture, and [`GAT_Virtual_Tour_Build_Guide.md`](GAT_Virtual_Tour_Build_Guide.md) / [`CLAUDE.md`](CLAUDE.md) for the phased build plan this project follows.
+<p align="center">
+  🌐 <a href="https://gat-ai-virtual-campus.vercel.app/">Live Application</a>
+  &nbsp;&nbsp;•&nbsp;&nbsp;
+  💻 <a href="https://github.com/harsha282004/GAT-AI-Virtual-Campus">GitHub Repository</a>
+</p>
 
-## How to Run the Project Manually (Windows / PowerShell)
+---
 
-The app is **four services**: PostgreSQL, Ollama, the FastAPI backend, and the Next.js
-frontend. Running only `npm run dev` starts **just the frontend** — the tour, the AI
-Assistant and every `/api` call then fail because the backend is not up. Use the
-startup script instead; it starts everything and health-checks it.
+## 📌 Overview
 
-### Prerequisites (one time)
+The **AI Agent–Driven Smart Campus Assistant** is an intelligent web-based platform designed for exploring and interacting with a university campus digitally.
 
-| Need | Check / install |
-|---|---|
-| Python venv with deps | `python -m venv venv` ; `.\venv\Scripts\Activate.ps1` ; `pip install -r requirements.txt` |
-| Node modules | `cd frontend` ; `npm install` |
-| `.env` at repo root | `copy .env.example .env` then fill in `POSTGRES_PASSWORD` / `DATABASE_URL` / `SECRET_KEY` |
-| `frontend\.env.local` | `copy frontend\.env.local.example frontend\.env.local` (keeps `NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000/api/v1`) |
-| PostgreSQL running | Windows service `postgresql-x64-18` (the script starts it if stopped) |
-| Ollama + model | `ollama pull llama3.2` (only the AI Assistant needs this; the tour does not) |
+The system combines:
 
-### Start everything
+- 🤖 Multi-agent AI query routing
+- 📚 Hybrid Retrieval-Augmented Generation (RAG)
+- 🧠 Meta Llama 3.2 for grounded response naturalization
+- 🔎 Dense + BM25 information retrieval
+- 🗺️ Indoor A* pathfinding
+- 🌐 360° immersive virtual campus navigation
+- 🛰️ Interactive satellite campus mapping
+- 🏫 Academic and campus information discovery
+- 🏢 Building, floor, room and facility exploration
+- ☁️ Cloud deployment using Vercel, Railway and Supabase
 
-```powershell
-# from the repo root
-npm run start:dev
-#   └─ equivalent to: powershell -ExecutionPolicy Bypass -File scripts\start-project.ps1
-```
+The implementation is based on **Global Academy of Technology (GAT), Bengaluru**, using institutional information and campus spatial data.
 
-This verifies PostgreSQL + Ollama, then opens **two new PowerShell windows** —
-`GAT backend :8000` and `GAT frontend :3001` — and does not print success until
-`/health`, the frontend, the Virtual Tour API and CORS all pass.
+The objective is to create a single digital interface through which a student, visitor, faculty member or prospective applicant can:
 
-Variants: `npm run start:dev:no-ollama` (skip the LLM), `npm run start:backend`,
-`npm run start:frontend`.
+> **Ask → Discover → Navigate → Explore**
 
-### Expected ports & URLs
+without requiring separate systems for campus information, navigation and virtual exploration.
 
-| Service | URL / port |
-|---|---|
-| Frontend (Next.js) | http://localhost:3001 |
-| Backend (FastAPI) | http://127.0.0.1:8000  (API docs: http://127.0.0.1:8000/docs) |
-| Virtual Tour | http://localhost:3001/tour |
-| AI Assistant | http://localhost:3001/chat |
-| PostgreSQL | 127.0.0.1:5432 |
-| Ollama | http://localhost:11434 (model `llama3.2`) |
+---
 
-### Verify the backend is healthy
+# 🎯 Problem Statement
 
-```powershell
-curl.exe http://127.0.0.1:8000/health
-# -> {"status":"ok"}
-curl.exe "http://127.0.0.1:8000/api/v1/tour/scenes?building_id=6"
-# -> JSON array of 156 Main Building scenes
-```
+Traditional campus information systems are generally fragmented.
 
-### Stop the GAT services
+A user may need to:
 
-```powershell
-npm run stop:dev
-#   └─ powershell -ExecutionPolicy Bypass -File scripts\stop-project.ps1
-# ...or just close the "GAT backend :8000" and "GAT frontend :3001" windows.
-```
+1. Search the institution's website for academic information.
+2. Find PDFs for syllabus or regulations.
+3. Contact the institution for admission-related information.
+4. Physically locate buildings and rooms.
+5. Use separate maps for outdoor navigation.
+6. Ask different departments for campus information.
+7. Visit the campus physically to understand its layout.
 
-`stop:dev` leaves PostgreSQL and Ollama running (they are shared services).
+These processes make campus discovery time-consuming and difficult, especially for:
 
-> **Port 3000 belongs to a separate project (ORCA).** The GAT frontend is pinned to
-> **3001** and the backend to **127.0.0.1:8000** so the two never collide. Neither
-> `start-project.ps1` nor `stop-project.ps1` ever inspects, starts, or kills anything
-> on port 3000.
+- New students
+- Parents
+- Visitors
+- Prospective students
+- Faculty
+- Students unfamiliar with campus
 
-## Tech Stack
+This project addresses the problem by combining **AI-based information retrieval, campus intelligence, spatial navigation and immersive virtual exploration into one platform.**
 
-| Layer | Technologies |
-|---|---|
-| Frontend | Next.js 15, React, TypeScript, Tailwind CSS, App Router |
-| Backend | FastAPI, SQLAlchemy, Alembic, PostgreSQL, Pydantic |
-| AI | LangChain, ChromaDB, Ollama, Meta Llama 3.2 (local) |
-| Other | Docker, Git, Python virtual environment |
+---
 
-## Folder Structure
+# 💡 Proposed Solution
 
-```
-.
-├── frontend/       Next.js 15 application (App Router, TypeScript, Tailwind)
-├── backend/        FastAPI application (SQLAlchemy models, Alembic config, LangChain/RAG modules)
-├── database/       Alembic migrations, seed scripts, Postgres init scripts
-├── docs/           Architecture and design documentation
-├── assets/         Shared static assets not tied to the frontend build (images, icons, diagrams)
-├── tests/          Backend, frontend, and end-to-end test suites
-├── scripts/        Operational/dev scripts (setup, db, ai) — placeholders for now
-├── .github/        CI workflow placeholders
-└── .vscode/        Editor settings shared across the team
-```
+The platform acts as a unified **Smart Campus Assistant**.
 
-## Getting Started (once code lands)
+A user can enter a natural-language query such as:
 
-### 1. Backend — Python environment
+```text
+Where is the Computer Science department?
 
-```bash
-python -m venv venv
-source venv/bin/activate        # venv\Scripts\activate on Windows
-pip install -r requirements.txt
-```
 
-### 2. Environment variables
-
-```bash
-cp .env.example .env
-```
-
-Fill in the values. Note: Next.js only reads env files from its own project root, so for local (non-Docker) frontend development, copy the `NEXT_PUBLIC_*` values from `.env.example` into `frontend/.env.local` as well.
-
-### 3. Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### 4. Database
-
-```bash
-cd backend
-alembic upgrade head
-```
-
-### 5. Ollama (local LLM)
-
-```bash
-ollama pull llama3.2
-```
-
-### 6. Full stack via Docker
-
-```bash
-docker-compose up --build
-```
-
-This starts the frontend, backend, PostgreSQL, and Ollama containers.
-
-## Project Status
-
-This is a phased build (see the build guide). Current status: **architecture approved, skeleton scaffolded, no phase implementation started.**
+User Query
+    │
+    ▼
+Next.js Frontend
+    │
+    ▼
+FastAPI /api/v1/chat
+    │
+    ▼
+Multi-Agent Supervisor
+    │
+    ├── Navigation
+    ├── Admissions
+    ├── Academic
+    ├── Facilities / Events
+    └── General
+    │
+    ▼
+Agent-specific processing
+    │
+    ▼
+Hybrid Retrieval / Campus Tools
+    │
+    ├── Dense Retrieval
+    ├── BM25 Retrieval
+    ├── Heuristic Reranking
+    ├── PostgreSQL Queries
+    └── Spatial / Navigation Tools
+    │
+    ▼
+Confidence Gate
+    │
+    ├── HIGH
+    ├── MEDIUM
+    └── LOW
+    │
+    ├── LOW → Verified Refusal
+    │
+    ▼
+Grounded Answer
+    │
+    ▼
+Meta Llama 3.2
+    │
+    ▼
+Naturalized Response
+    │
+    ▼
+Post-generation Grounding Checks
+    │
+    ├── Unsupported claim?
+    ├── New number?
+    ├── Missing entity?
+    ├── Grounded token dropped?
+    └── Invalid output?
+    │
+    ├── FAIL → Original verified response
+    │
+    ▼
+Final Response
